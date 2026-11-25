@@ -97,6 +97,7 @@ Node 20+. Reads lockfiles from six ecosystems:
 
 | Command | What it does |
 |---|---|
+| `foster-oss scan --sbom <file>` | Same, from a CycloneDX or SPDX JSON SBOM (any tool that emits one) |
 | `foster-oss scan [dir]` | Report orphaned and unpatched dependencies. `--json`, `--markdown`, `--sarif <file>`, `--all`, `--fail-on <level>`, `--offline` |
 | `foster-oss fix [dir]` | Point dependencies at published drop-in patches. `--dry-run`, `--force` |
 | `foster-oss check <name[@version]>` | Maintenance status, reach, unfixed advisories, patches and replacements for one package. `--ecosystem pypi\|cargo\|go\|rubygems\|packagist` |
@@ -112,8 +113,10 @@ What the findings mean:
 | `UPGRADE` | Fixed upstream. Just upgrade. |
 | `ORPHANED` | Widely used and unmaintained, no known vulnerability. Shown with `--all`. |
 
-For npm packages, findings also name **maintained replacements** (`consider: fetch (built in), ofetch, ky`)
-from the e18e community's [module-replacements](https://github.com/e18e/module-replacements) dataset.
+Findings also name **maintained replacements** (`consider: fetch (built in), ofetch, ky`): for npm from
+the e18e community's [module-replacements](https://github.com/e18e/module-replacements) dataset, and for
+every ecosystem from Foster's reviewed list in [`registry/alternatives.json`](registry/alternatives.json)
+(e.g. `jwt-go` → `golang-jwt/jwt/v5`, `failure` → `anyhow`/`thiserror`, `phpexcel` → `phpspreadsheet`).
 
 `fix` is npm-ecosystem only for now (npm, pnpm, yarn). Other ecosystems get findings only.
 
@@ -154,6 +157,12 @@ don't exist, a common sign of a hallucinated package), `foster_scan_project`, `f
 import { scanProject, checkPackage } from "foster-oss";
 const result = await scanProject("./my-app");
 ```
+
+## Adding a replacement suggestion
+
+Know the maintained successor of an abandoned package? Add it to
+[`registry/alternatives.json`](registry/alternatives.json) by pull request. Only official successors,
+or replacements the original project itself recommends, with a link to the migration guide.
 
 ## Adding a patch to the registry
 

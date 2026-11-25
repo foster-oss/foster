@@ -15,6 +15,22 @@ describe("alternatives (e18e module-replacements)", () => {
     expect(describeAlternatives(req!)).toMatch(/fetch \(built in\)/);
   });
 
+  it("uses Foster's reviewed list for other ecosystems", () => {
+    expect(alternativesFor("go", "github.com/dgrijalva/jwt-go")?.options[0]?.name).toBe("github.com/golang-jwt/jwt/v5");
+    expect(alternativesFor("cargo", "failure")?.options.map((o) => o.name)).toEqual(["anyhow", "thiserror"]);
+    expect(alternativesFor("pypi", "Nose")?.source).toBe("Foster registry");
+  });
+
+  it("every curated entry names at least one option and a valid ecosystem", async () => {
+    const { readFileSync } = await import("node:fs");
+    const file = JSON.parse(readFileSync(join(__dirname, "..", "registry", "alternatives.json"), "utf8"));
+    for (const a of file.alternatives) {
+      expect(["npm", "pypi", "cargo", "go", "rubygems", "packagist"]).toContain(a.ecosystem);
+      expect(a.options.length).toBeGreaterThan(0);
+      for (const o of a.options) expect(["native", "package", "snippet", "remove"]).toContain(o.kind);
+    }
+  });
+
   it("drops self-referencing mappings and other ecosystems", () => {
     expect(alternativesFor("npm", "safe-buffer")).toBeUndefined();
     expect(alternativesFor("pypi", "request")).toBeUndefined();

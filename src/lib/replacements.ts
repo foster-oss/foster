@@ -3,9 +3,9 @@ import { createRequire } from "node:module";
 import type { Ecosystem } from "./types.js";
 
 /**
- * Suggested replacements for npm packages, from the e18e community's module-replacements
- * dataset (MIT, https://github.com/e18e/module-replacements). Foster uses it to tell people
- * what to move to when a dependency is orphaned.
+ * Suggested replacements for orphaned packages: Foster's own reviewed list
+ * (registry/alternatives.json, all ecosystems) first, then, for npm, the e18e community's
+ * module-replacements dataset (MIT, https://github.com/e18e/module-replacements).
  */
 
 interface Manifest {
@@ -24,7 +24,26 @@ export interface AlternativeSet {
   options: Alternative[];
   /** Guide explaining the migration, when the dataset links one. */
   docs?: string;
-  source: "e18e module-replacements";
+  source: "e18e module-replacements" | "Foster registry";
+}
+
+interface CuratedFile {
+  alternatives: { ecosystem: Ecosystem; name: string; options: Alternative[]; docs?: string }[];
+}
+
+let curated: Map<string, AlternativeSet> | null = null;
+
+/** registry/alternatives.json: reviewed successors for packages outside npm (and npm overrides). */
+function loadCurated(): Map<string, AlternativeSet> {
+  if (curated) return curated;
+  curated = new Map();
+  try {
+    const file = JSON.parse(readFileSync(new URL("../../registry/alternatives.json", import.meta.url), "utf8")) as CuratedFile;
+    for (const a of file.alternatives) curated.set(`${a.ecosystem}:${a.name}`, { options: a.options, docs: a.docs, source: "Foster registry" });
+  } catch {
+    // optional data
+  }
+  return curated;
 }
 
 let cache: Map<string, AlternativeSet> | null = null;
@@ -59,6 +78,8 @@ function load(): Map<string, AlternativeSet> {
 }
 
 export function alternativesFor(ecosystem: Ecosystem, name: string): AlternativeSet | undefined {
+  const own = loadCurated().get(`${ecosystem}:${ecosystem === "pypi" ? name.toLowerCase() : name}`);
+  if (own) return own;
   if (ecosystem !== "npm") return undefined;
   return load().get(name);
 }
