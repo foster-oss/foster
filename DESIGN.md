@@ -196,3 +196,14 @@ Strategi ini mengikuti pola dari survey (`reports/Survey proyek GitHub viral ber
 - Chainguard Repository: https://thenewstack.io/chainguard-repository-ai-agents/
 - Package Health Check: https://apify.com/m_ctim/package-health-check · freshdeps-mcp: https://catalog.agentage.io/mcp/io-github-solvohq-freshdeps-mcp
 - Laporan survey internal: `../reports/Survey proyek GitHub viral bermanfaat.md`
+
+## Perubahan arah (26 Nov 2026, setelah repo terbit)
+
+Saat menyiapkan kontak ke upstream `ip`, ternyata [Keep LTS](https://keep-lts.com) sudah menerbitkan
+tambalan drop-in untuk 12 package npm terlantar (termasuk `ip` dan `extract-zip`), dengan model yang
+sama seperti Patch Lab. Ada juga fork `@bybrave/ip2` dan PR perbaikan di upstream. Klaim "belum ada
+yang membangun" di bagian 3 ternyata salah untuk bagian penambalan.
+
+Keputusan: Foster menjadi **index dan scanner yang netral**. Registry menautkan tambalan dari
+penyedia mana pun, dan Patch Lab hanya dipakai untuk celah yang belum ditambal siapa pun. Tambalan
+`ip` milik Foster dipensiunkan (status `retired`) dan disimpan sebagai verifikasi independen.

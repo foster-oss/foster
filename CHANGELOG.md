@@ -11,5 +11,6 @@ First version.
 - `foster-oss check`: one-package lookup.
 - `foster-oss mcp`: MCP server with `foster_check_package`, `foster_scan_project`, `foster_list_patches`.
 - Orphan Index builder, static site and weekly workflow.
-- Patch Lab with build-and-verify script; first patch: `ip` (GHSA-2p57-rm9w-gvfp), staged.
+- Patch registry listing drop-in patches from any provider (12 from Keep LTS).
+- Patch Lab with build-and-verify script for gaps no one has patched; the `ip` patch is retired in favour of `@keep-lts/ip`.
 - GitHub Action, agent skill, governance and AI policy.

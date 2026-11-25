@@ -6,7 +6,7 @@
 | Upstream version patched | 2.0.1 (latest, released 2024-02-19) |
 | Replacement | `@foster-oss/ip@2.0.1-foster.1` |
 | Advisories | [GHSA-2p57-rm9w-gvfp](https://github.com/advisories/GHSA-2p57-rm9w-gvfp) / CVE-2024-29415 (HIGH); [CVE-2025-59436](https://osv.dev/vulnerability/CVE-2025-59436) (`017700000001`, [node-ip#160](https://github.com/indutny/node-ip/issues/160)); octal dotted quads such as `0254.020.0.1` ([node-ip#170](https://github.com/indutny/node-ip/issues/170), no CVE yet) |
-| Status | **staged**: patch written and verified, waiting for upstream contact window and two reviewers |
+| Status | **retired**: superseded by [`@keep-lts/ip@2.0.2`](https://keep-lts.com), a released drop-in patch for the same advisories. Foster does not duplicate existing patches; this folder stays as an independent, reproducible verification of the fix. |
 | Reach (ecosyste.ms, Nov 2026) | ~38M downloads/month · ~2.9M dependent repos · ~4.2K dependent packages |
 | Maintenance (Orphan Index) | dormant: no release for 2.8 years, no push for 2.3 years |
 
