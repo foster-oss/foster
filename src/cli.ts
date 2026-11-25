@@ -12,7 +12,7 @@ const HELP = `foster-oss ${fosterVersion()}: find dependencies nobody maintains,
 
 Usage:
   foster-oss scan [dir]            Check a project's lockfiles
-  foster-oss fix [dir]             Point dependencies at released Foster patches (edits package.json)
+  foster-oss fix [dir]             Point dependencies at released drop-in patches (edits package.json)
   foster-oss check <name[@ver]>    Look up one package
   foster-oss mcp                   Start the MCP server (stdio) for AI agents
 
@@ -31,7 +31,7 @@ Options:
   -v, --version          Print version
   -h, --help             Show this help
 
-Data: ecosyste.ms (maintenance, reach), OSV.dev (vulnerabilities), Foster patch registry.
+Data: ecosyste.ms (maintenance, reach), OSV.dev (vulnerabilities), patch registry (Foster and other providers such as Keep LTS).
 Docs: https://github.com/rekalnx/foster`;
 
 const FAIL_LEVELS: FailOn[] = ["none", "patch-available", "orphaned-vulnerable", "unpatched", "any"];

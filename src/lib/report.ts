@@ -2,7 +2,7 @@ import type { FixResult } from "./fix.js";
 import type { Finding, FindingKind, OrphanRecord, ScanResult } from "./types.js";
 
 const KIND_LABEL: Record<FindingKind, string> = {
-  "patch-available": "FOSTER PATCH",
+  "patch-available": "PATCH READY",
   "orphaned-vulnerable": "ORPHANED+VULN",
   "unpatched-vulnerable": "NO FIX YET",
   "upgrade-available": "UPGRADE",
@@ -10,7 +10,7 @@ const KIND_LABEL: Record<FindingKind, string> = {
 };
 
 const KIND_TITLE: Record<FindingKind, string> = {
-  "patch-available": "Foster patch available",
+  "patch-available": "Drop-in security patch available",
   "orphaned-vulnerable": "Vulnerable, no fix exists, and nobody maintains it",
   "unpatched-vulnerable": "Vulnerable, no fix released yet",
   "upgrade-available": "Vulnerable, fixed upstream: just upgrade",
@@ -102,7 +102,7 @@ export function formatMarkdown(result: ScanResult): string {
 
 export function formatFix(result: FixResult, installCmd: string): string {
   const lines: string[] = [];
-  if (result.changes.length === 0 && result.skipped.length === 0) return "Nothing to fix: no released Foster patch matches your dependencies.";
+  if (result.changes.length === 0 && result.skipped.length === 0) return "Nothing to fix: no released drop-in patch matches your dependencies.";
   for (const ch of result.changes) {
     const verb = ch.applied ? (result.written ? "updated" : "would update") : "kept";
     lines.push(`${verb} ${ch.field}["${ch.key}"]: ${ch.from ?? "(none)"} → ${ch.to}${ch.note ? `  (${ch.note})` : ""}`);

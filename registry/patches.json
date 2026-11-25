@@ -3,6 +3,228 @@
   "patches": [
     {
       "ecosystem": "npm",
+      "name": "extract-zip",
+      "affected": ">=2.0.0 <=2.0.1",
+      "replacement": {
+        "name": "@keep-lts/extract-zip",
+        "version": "2.0.2"
+      },
+      "advisories": [
+        "GHSA-7pqw-9j4j-h8q3",
+        "GHSA-jmr9-qjv8-65gv"
+      ],
+      "status": "released",
+      "provider": {
+        "name": "Keep LTS",
+        "url": "https://keep-lts.com"
+      },
+      "summary": "Symlink entries can no longer write outside the extraction directory."
+    },
+    {
+      "ecosystem": "npm",
+      "name": "xlsx",
+      "affected": ">=0.18.0 <=0.18.5",
+      "replacement": {
+        "name": "@keep-lts/xlsx",
+        "version": "0.18.6"
+      },
+      "advisories": [
+        "GHSA-4r6h-8v6p-xvw6",
+        "GHSA-5pgg-2g8v-p4x9"
+      ],
+      "status": "released",
+      "provider": {
+        "name": "Keep LTS",
+        "url": "https://keep-lts.com"
+      },
+      "summary": "Prototype pollution and ReDoS fixes for the last npm release of SheetJS."
+    },
+    {
+      "ecosystem": "npm",
+      "name": "ip",
+      "affected": ">=2.0.0 <=2.0.1",
+      "replacement": {
+        "name": "@keep-lts/ip",
+        "version": "2.0.2"
+      },
+      "advisories": [
+        "GHSA-2p57-rm9w-gvfp"
+      ],
+      "status": "released",
+      "provider": {
+        "name": "Keep LTS",
+        "url": "https://keep-lts.com"
+      },
+      "summary": "isPublic/isPrivate/isLoopback classify the parsed address bytes, so other spellings of private addresses are no longer public."
+    },
+    {
+      "ecosystem": "npm",
+      "name": "html-minifier",
+      "affected": "4.0.0",
+      "replacement": {
+        "name": "@keep-lts/html-minifier",
+        "version": "4.0.1"
+      },
+      "advisories": [
+        "GHSA-pfq8-rq6v-vf5m"
+      ],
+      "status": "released",
+      "provider": {
+        "name": "Keep LTS",
+        "url": "https://keep-lts.com"
+      },
+      "summary": "ReDoS fix."
+    },
+    {
+      "ecosystem": "npm",
+      "name": "parse-git-config",
+      "affected": "3.0.0",
+      "replacement": {
+        "name": "@keep-lts/parse-git-config",
+        "version": "3.0.1"
+      },
+      "advisories": [
+        "GHSA-8g77-54rh-46hx"
+      ],
+      "status": "released",
+      "provider": {
+        "name": "Keep LTS",
+        "url": "https://keep-lts.com"
+      },
+      "summary": "Prototype pollution fix."
+    },
+    {
+      "ecosystem": "npm",
+      "name": "expr-eval",
+      "affected": ">=2.0.0 <=2.0.2",
+      "replacement": {
+        "name": "@keep-lts/expr-eval",
+        "version": "2.0.3"
+      },
+      "advisories": [
+        "GHSA-8gw3-rxh4-v6jx",
+        "GHSA-jc85-fpwf-qm7x",
+        "GHSA-q9v2-7m5w-4693"
+      ],
+      "status": "released",
+      "provider": {
+        "name": "Keep LTS",
+        "url": "https://keep-lts.com"
+      },
+      "summary": "Prototype pollution and code execution fixes."
+    },
+    {
+      "ecosystem": "npm",
+      "name": "url-regex",
+      "affected": "5.0.0",
+      "replacement": {
+        "name": "@keep-lts/url-regex",
+        "version": "5.0.1"
+      },
+      "advisories": [
+        "GHSA-v4rh-8p82-6h5w"
+      ],
+      "status": "released",
+      "provider": {
+        "name": "Keep LTS",
+        "url": "https://keep-lts.com"
+      },
+      "summary": "ReDoS fix."
+    },
+    {
+      "ecosystem": "npm",
+      "name": "csvjson",
+      "affected": ">=5.0.0 <=5.1.0",
+      "replacement": {
+        "name": "@keep-lts/csvjson",
+        "version": "5.1.1"
+      },
+      "advisories": [
+        "GHSA-xq4f-3jxp-qv6m"
+      ],
+      "status": "released",
+      "provider": {
+        "name": "Keep LTS",
+        "url": "https://keep-lts.com"
+      },
+      "summary": "Prototype injection fix."
+    },
+    {
+      "ecosystem": "npm",
+      "name": "utils-extend",
+      "affected": ">=1.0.0 <=1.0.8",
+      "replacement": {
+        "name": "@keep-lts/utils-extend",
+        "version": "1.0.9"
+      },
+      "advisories": [
+        "GHSA-6pq3-928q-x6w6",
+        "GHSA-7qgg-vw88-cc99"
+      ],
+      "status": "released",
+      "provider": {
+        "name": "Keep LTS",
+        "url": "https://keep-lts.com"
+      },
+      "summary": "Prototype pollution fixes."
+    },
+    {
+      "ecosystem": "npm",
+      "name": "apidoc-core",
+      "affected": "0.15.0",
+      "replacement": {
+        "name": "@keep-lts/apidoc-core",
+        "version": "0.15.1"
+      },
+      "advisories": [
+        "GHSA-5q53-78f2-6gf8",
+        "GHSA-6vj3-p34w-xxjp"
+      ],
+      "status": "released",
+      "provider": {
+        "name": "Keep LTS",
+        "url": "https://keep-lts.com"
+      },
+      "summary": "Prototype pollution fixes."
+    },
+    {
+      "ecosystem": "npm",
+      "name": "defaults-deep",
+      "affected": ">=0.2.0 <=0.2.4",
+      "replacement": {
+        "name": "@keep-lts/defaults-deep",
+        "version": "0.2.5"
+      },
+      "advisories": [
+        "GHSA-pjxw-22xf-6pwc"
+      ],
+      "status": "released",
+      "provider": {
+        "name": "Keep LTS",
+        "url": "https://keep-lts.com"
+      },
+      "summary": "Prototype pollution fix."
+    },
+    {
+      "ecosystem": "npm",
+      "name": "deep-defaults",
+      "affected": ">=1.0.0 <=1.0.5",
+      "replacement": {
+        "name": "@keep-lts/deep-defaults",
+        "version": "1.0.6"
+      },
+      "advisories": [
+        "GHSA-h6xg-rg33-9mf4"
+      ],
+      "status": "released",
+      "provider": {
+        "name": "Keep LTS",
+        "url": "https://keep-lts.com"
+      },
+      "summary": "Prototype pollution fix."
+    },
+    {
+      "ecosystem": "npm",
       "name": "ip",
       "affected": "<=2.0.1",
       "replacement": {
@@ -13,9 +235,9 @@
         "GHSA-2p57-rm9w-gvfp",
         "CVE-2025-59436"
       ],
-      "status": "staged",
+      "status": "retired",
       "patchDir": "patches/npm/ip",
-      "summary": "isPrivate/isPublic/isLoopback parse addresses numerically, so alternative spellings (127.1, 012.1.2.3, 0254.020.0.1, 017700000001, ::fFFf:127.0.0.1, 000:0:0000::01) are no longer reported as public. Fixes CVE-2024-29415, CVE-2025-59436 and node-ip#170."
+      "summary": "Superseded by @keep-lts/ip@2.0.2, a released drop-in patch for the same advisory. Kept for reference and verification. isPrivate/isPublic/isLoopback parse addresses numerically, so alternative spellings (127.1, 012.1.2.3, 0254.020.0.1, 017700000001, ::fFFf:127.0.0.1, 000:0:0000::01) are no longer reported as public. Fixes CVE-2024-29415, CVE-2025-59436 and node-ip#170."
     }
   ]
 }

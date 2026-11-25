@@ -50,7 +50,7 @@ function overrideContainer(pkg: Json, manager: NodeManager): { field: string; ob
 }
 
 /**
- * Point every dependency that has a released Foster patch at the patched package, using an npm alias
+ * Point every dependency that has a released drop-in patch (Foster or another provider) at the patched package, using an npm alias
  * ("npm:@foster-oss/ip@2.0.1-foster.1"). Code keeps importing the original name; only the bytes change.
  * Direct dependencies are rewritten in place (npm rejects overrides that conflict with direct deps);
  * transitive ones get an override/resolution entry.
@@ -91,7 +91,7 @@ export function applyFixes(dirInput: string, findings: Finding[], opts: FixOptio
   for (const [name, group] of byName) {
     const patches = new Map(group.map((f) => [`${f.patch!.replacement.name}@${f.patch!.replacement.version}`, f]));
     if (patches.size > 1) {
-      result.skipped.push({ package: name, reason: "several installed versions map to different Foster patches; fix by hand" });
+      result.skipped.push({ package: name, reason: "several installed versions map to different patches; fix by hand" });
       continue;
     }
     const first = group[0]!;
