@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Orphan Index · Foster</title>
 <link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="alternate" type="application/atom+xml" title="Foster Orphan Index: weekly changes" href="feed.xml">
 <meta name="description" content="Which of the world's most depended-on open source packages has nobody maintaining them, and which have security holes with no fix.">
 <style>
   :root {
@@ -67,6 +68,13 @@
   <section>
     <h2>By ecosystem</h2>
     <div class="tablewrap"><table id="byeco"></table></div>
+  </section>
+
+  <section id="week">
+    <h2>What changed this week</h2>
+    <p class="muted" id="weeksub">Loading…</p>
+    <div id="weeklists"></div>
+    <p class="muted">Follow along: <a href="feed.xml">Atom/RSS feed</a> · <a href="data/history.json">JSON history</a></p>
   </section>
 
   <section>
@@ -175,6 +183,19 @@ document.querySelectorAll("th[data-k]").forEach((th) => th.addEventListener("cli
   const k = th.dataset.k; sortDir = sortKey === k ? -sortDir : (k === "name" ? 1 : -1); sortKey = k; render();
 }));
 ["q", "eco", "status"].forEach((id) => document.getElementById(id).addEventListener("input", render));
+
+fetch("data/history.json").then((r) => r.json()).then((h) => {
+  const e = h[0];
+  const sub = document.getElementById("weeksub");
+  if (!e) { sub.textContent = "The first weekly comparison appears after the next refresh."; return; }
+  const c = e.counts;
+  sub.textContent = `Since ${e.since.slice(0, 10)}: ${c.newlyUnmaintained} packages became unmaintained, ${c.recovered} are maintained again, ${c.newUnfixed} gained advisories that no release fixes, ${c.resolvedUnfixed} had them fixed.`;
+  const list = (title, rows, tail) => rows.length ? `<h3 style="font-size:1rem;margin:16px 0 6px">${title}</h3><ul>${rows.slice(0, 12).map((r) => `<li>${esc(r.ecosystem)} <b>${esc(r.name)}</b> <span class="muted">${fmt(r.dependentRepos)} dependent repos${tail ? " · " + tail(r) : ""}</span></li>`).join("")}</ul>` : "";
+  document.getElementById("weeklists").innerHTML =
+    list("New advisories with no fix", e.newUnfixed, (r) => r.advisories.map((a) => esc(a.id)).join(", ")) +
+    list("Newly unmaintained", e.newlyUnmaintained, (r) => esc(r.status)) +
+    list("Maintained again", e.recovered);
+}).catch(() => { document.getElementById("weeksub").textContent = "No weekly history yet."; });
 
 fetch("data/orphans.json").then((r) => r.json()).then((d) => { all = d.records; render(); })
   .catch(() => { document.getElementById("rows").innerHTML = `<tr><td colspan="6">Could not load data/orphans.json.</td></tr>`; });
