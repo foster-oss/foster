@@ -12,7 +12,7 @@ mengikuti dari atas ke bawah.
 2. **Push kode:**
    ```powershell
    cd D:\DEV\SOCIETY-PROJECT\foster
-   git remote add origin https://github.com/foster-oss/foster.git
+   git remote add origin https://github.com/rekalnx/foster.git
    git push -u origin main
    ```
 3. **Pengaturan repo** di GitHub, Settings:
@@ -26,10 +26,10 @@ mengikuti dari atas ke bawah.
    scope `@foster-oss/*`.
 5. **Terbitkan CLI-nya.** Untuk rilis pertama, cara paling mudah adalah `npm login` lalu
    `npm publish --access public` dari laptop. Setelah itu, aktifkan *Trusted publishing* di
-   npmjs.com → foster-oss → Settings (GitHub Actions, repo `foster-oss/foster`, workflow `release.yml`,
+   npmjs.com → foster-oss → Settings (GitHub Actions, repo `rekalnx/foster`, workflow `release.yml`,
    environment `npm-release`). Rilis berikutnya cukup: naikkan versi di package.json, commit, lalu
    `git tag v0.1.1 && git push --tags`.
-6. **Buat tag `v0` untuk GitHub Action** supaya `uses: foster-oss/foster@v0` di README bisa dipakai:
+6. **Buat tag `v0` untuk GitHub Action** supaya `uses: rekalnx/foster@v0` di README bisa dipakai:
    `git tag v0 && git push origin v0`. Setiap rilis baru, pindahkan tag ini dengan `git tag -f v0 && git push -f origin v0`.
 7. **Isi `MAINTAINERS.md`** dengan akun GitHub kamu.
 
@@ -41,7 +41,7 @@ mengikuti dari atas ke bawah.
 
    > Hi Andrew, your "Weekend at Bernie's" post ended with registries needing "an actual process" for
    > unowned packages with valid CVEs. I've built an open prototype of one: Foster
-   > (github.com/foster-oss/foster). It classifies the ecosyste.ms critical set weekly, and for dead
+   > (github.com/rekalnx/foster). It classifies the ecosyste.ms critical set weekly, and for dead
    > packages with unfixed advisories it publishes minimal, reproducible patches under its own scope
    > (never taking names). Projects switch to them through npm aliases. The first patch fixes the `ip`
    > SSRF (GHSA-2p57-rm9w-gvfp). I'd value your view on the methodology, and whether anyone else is
@@ -109,5 +109,5 @@ Perbarui angka-angkanya dengan data terbaru sebelum mengirim.
 - kontributor eksternal unik dengan PR di-merge (target 20 dalam 12 bulan);
 - PR kamu yang di-merge di repo orang lain (target 100 dalam 12 bulan);
 - download `foster-oss` per bulan (npmjs.com/package/foster-oss);
-- repo yang memakai Action (`uses: foster-oss/foster`, cari lewat GitHub code search);
+- repo yang memakai Action (`uses: rekalnx/foster`, cari lewat GitHub code search);
 - jumlah tambalan yang sudah `released`.

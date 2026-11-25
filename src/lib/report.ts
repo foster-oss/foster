@@ -56,7 +56,7 @@ export function formatText(result: ScanResult, color = false, showAll = false): 
   lines.push(summaryLine(result.findings));
   if (result.findings.some((f) => f.kind === "patch-available")) lines.push(c(36, "Run `npx foster-oss fix` to switch to the patched packages."));
   if (result.findings.some((f) => f.kind === "orphaned-vulnerable"))
-    lines.push("Orphaned + vulnerable packages can be nominated for adoption: https://github.com/foster-oss/foster/issues/new?template=adopt.yml");
+    lines.push("Orphaned + vulnerable packages can be nominated for adoption: https://github.com/rekalnx/foster/issues/new?template=adopt.yml");
   return lines.join("\n");
 }
 
@@ -86,7 +86,7 @@ export function formatMarkdown(result: ScanResult): string {
             : f.kind === "upgrade-available"
               ? `upgrade${f.fixedIn ? ` to ${f.fixedIn}` : ""}`
               : f.kind === "orphaned-vulnerable"
-                ? "[nominate for adoption](https://github.com/foster-oss/foster/issues/new?template=adopt.yml)"
+                ? "[nominate for adoption](https://github.com/rekalnx/foster/issues/new?template=adopt.yml)"
                 : "watch";
         out.push(`| \`${f.dependency.name}@${f.dependency.version}\`${f.dependency.direct ? "" : " (transitive)"} | ${f.severity} | ${f.status} | ${adv} | ${action} |`);
       }
@@ -96,7 +96,7 @@ export function formatMarkdown(result: ScanResult): string {
     out.push(summaryLine(result.findings));
   }
   for (const w of result.warnings) out.push("", `> ⚠️ ${w}`);
-  out.push("", `<sub>Checked ${result.dependencyCount} packages from ${result.lockfiles.join(", ") || "no lockfile"} with [Foster](https://github.com/foster-oss/foster).</sub>`);
+  out.push("", `<sub>Checked ${result.dependencyCount} packages from ${result.lockfiles.join(", ") || "no lockfile"} with [Foster](https://github.com/rekalnx/foster).</sub>`);
   return out.join("\n");
 }
 

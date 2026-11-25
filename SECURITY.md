@@ -3,7 +3,7 @@
 ## Reporting a problem in Foster
 
 Use GitHub's private vulnerability reporting:
-<https://github.com/foster-oss/foster/security/advisories/new>.
+<https://github.com/rekalnx/foster/security/advisories/new>.
 Please do not open public issues for vulnerabilities in Foster's code, workflows or published patches.
 
 We aim to acknowledge within 3 days and to publish a fix or mitigation within 30 days.

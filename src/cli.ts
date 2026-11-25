@@ -32,7 +32,7 @@ Options:
   -h, --help             Show this help
 
 Data: ecosyste.ms (maintenance, reach), OSV.dev (vulnerabilities), Foster patch registry.
-Docs: https://github.com/foster-oss/foster`;
+Docs: https://github.com/rekalnx/foster`;
 
 const FAIL_LEVELS: FailOn[] = ["none", "patch-available", "orphaned-vulnerable", "unpatched", "any"];
 
