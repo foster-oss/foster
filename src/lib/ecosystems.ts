@@ -6,6 +6,10 @@ const BASE = "https://packages.ecosyste.ms/api/v1";
 const REGISTRY: Record<Ecosystem, string> = {
   npm: "npmjs.org",
   pypi: "pypi.org",
+  cargo: "crates.io",
+  go: "proxy.golang.org",
+  rubygems: "rubygems.org",
+  packagist: "packagist.org",
 };
 
 /** The subset of the ecosyste.ms package record that Foster relies on. */

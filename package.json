@@ -1,7 +1,7 @@
 {
   "name": "foster-oss",
-  "version": "0.1.0",
-  "description": "Find dependencies nobody maintains anymore, and swap in reviewed security patches for them without taking anyone's package name.",
+  "version": "0.2.0",
+  "description": "Find dependencies nobody maintains anymore (npm, PyPI, Cargo, Go, RubyGems, Packagist), and switch to published drop-in security patches without changing your imports.",
   "keywords": [
     "security",
     "supply-chain",
@@ -11,7 +11,14 @@
     "vulnerability",
     "overrides",
     "mcp",
-    "ai-agents"
+    "ai-agents",
+    "rust",
+    "golang",
+    "ruby",
+    "php",
+    "python",
+    "sarif",
+    "code-scanning"
   ],
   "license": "Apache-2.0",
   "type": "module",
@@ -52,6 +59,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",
+    "module-replacements": "^3.4.0",
     "semver": "^7.8.6",
     "yaml": "^2.9.1",
     "zod": "^4.6.7"

@@ -56,13 +56,18 @@
   <header>
     <div class="kicker"><img src="logo.svg" alt="" width="28" height="28" style="vertical-align:middle;margin-right:10px;border-radius:7px">Foster · The Orphan Index</div>
     <h1>The software everyone depends on, that nobody maintains.</h1>
-    <p class="lede">We checked the most depended-on open source packages on npm and PyPI and asked a simple question:
+    <p class="lede">We checked the most depended-on open source packages in six ecosystems (npm, PyPI, Cargo, Go, RubyGems and Packagist) and asked a simple question:
       is anyone still looking after them? This index updates weekly from public data.</p>
   </header>
 
   <div class="stats" id="stats"></div>
   <div class="bar" id="bar" aria-hidden="true"></div>
   <div class="legend" id="legend"></div>
+
+  <section>
+    <h2>By ecosystem</h2>
+    <div class="tablewrap"><table id="byeco"></table></div>
+  </section>
 
   <section>
     <h2>Check your own project</h2>
@@ -77,7 +82,7 @@ npx foster-oss check ip@2.0.1</pre>
     <p class="muted" id="count"></p>
     <div class="controls">
       <input id="q" type="search" placeholder="Search a package…" aria-label="Search packages">
-      <select id="eco" aria-label="Ecosystem"><option value="">All ecosystems</option><option value="npm">npm</option><option value="pypi">PyPI</option></select>
+      <select id="eco" aria-label="Ecosystem"><option value="">All ecosystems</option><option value="npm">npm</option><option value="pypi">PyPI</option><option value="cargo">Cargo (Rust)</option><option value="go">Go</option><option value="rubygems">RubyGems</option><option value="packagist">Packagist (PHP)</option></select>
       <select id="status" aria-label="Status">
         <option value="unmaintained">Dead + dormant</option><option value="dead">Dead</option><option value="dormant">Dormant</option>
         <option value="vuln">Has advisory with no fix</option><option value="unknown">Unknown</option><option value="active">Active</option><option value="">Everything</option>
@@ -120,7 +125,7 @@ function renderStats(s) {
   const t = s.totals;
   const unm = t.dead + t.dormant;
   const cards = [
-    [pct(unm, t.packages) + "%", `of the ${fmt(t.packages)} most depended-on npm & PyPI packages are dead or dormant`],
+    [pct(unm, t.packages) + "%", `of the ${fmt(t.packages)} most depended-on open source packages are dead or dormant`],
     [fmt(t.unmaintainedDownloadsPerMonth), "downloads a month go to packages nobody maintains"],
     [fmt(t.unmaintainedDependentRepos), "dependent repositories rely on them"],
     [String(t.unpatchedAdvisories), `security advisories that no release fixes, in ${t.packagesWithUnpatchedAdvisories} packages (${t.orphanedWithUnpatchedAdvisories} of them unmaintained)`],
@@ -130,10 +135,16 @@ function renderStats(s) {
   document.getElementById("bar").innerHTML = parts.map(([k, v]) => `<span style="width:${pct(v, t.packages)}%;background:var(--${k})" title="${k}: ${v}"></span>`).join("");
   document.getElementById("legend").innerHTML = parts.map(([k, v]) => `<span><span class="dot" style="background:var(--${k})"></span>${k} ${v} (${pct(v, t.packages)}%)</span>`).join("");
   document.getElementById("gen").textContent = "Updated " + new Date(s.generatedAt).toISOString().slice(0, 10) + ".";
+  const LABEL = { npm: "npm", pypi: "PyPI", cargo: "Cargo (Rust)", go: "Go", rubygems: "RubyGems", packagist: "Packagist (PHP)" };
+  const rows = Object.entries(s.byEcosystem).sort((a, b) => b[1].packages - a[1].packages);
+  document.getElementById("byeco").innerHTML = "<thead><tr><th>Ecosystem</th><th class=num>Critical packages</th><th class=num>Dead</th><th class=num>Dormant</th><th class=num>Unmaintained</th></tr></thead><tbody>" +
+    rows.map(([k, e]) => `<tr><td>${LABEL[k] || k}</td><td class=num>${e.packages.toLocaleString()}</td><td class=num>${e.dead}</td><td class=num>${e.dormant}</td><td class=num><b>${pct(e.dead + e.dormant, e.packages)}%</b></td></tr>`).join("") + "</tbody>";
 }
 if (STATS) renderStats(STATS);
 
 let all = [], sortKey = "priority", sortDir = -1;
+const REGISTRY_URL = { npm: "https://www.npmjs.com/package/", pypi: "https://pypi.org/project/", cargo: "https://crates.io/crates/", go: "https://pkg.go.dev/", rubygems: "https://rubygems.org/gems/", packagist: "https://packagist.org/packages/" };
+const registryUrl = (r) => (REGISTRY_URL[r.ecosystem] || "") + r.name;
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const LIMIT = 300;
 
@@ -149,7 +160,7 @@ function render() {
   document.getElementById("count").textContent = `${rows.length.toLocaleString()} packages match.`;
   document.getElementById("rows").innerHTML = rows.slice(0, LIMIT).map((r) => `
     <tr>
-      <td><a href="${esc(r.repoUrl || (r.ecosystem === "npm" ? "https://www.npmjs.com/package/" + r.name : "https://pypi.org/project/" + r.name))}">${esc(r.name)}</a> <span class="muted">${r.ecosystem}</span>
+      <td><a href="${esc(r.repoUrl || registryUrl(r))}">${esc(r.name)}</a> <span class="muted">${r.ecosystem}</span>
         ${r.reasons.length ? `<div class="why">${esc(r.reasons.join("; "))}</div>` : ""}</td>
       <td><span class="pill s-${r.status}">${r.status}</span></td>
       <td class="num">${fmt(r.downloadsLastMonth)}</td>

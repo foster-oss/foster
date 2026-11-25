@@ -109,6 +109,16 @@ export function maxSeverity(list: { severity: Severity }[]): Severity {
   return best;
 }
 
+/** How each ecosystem is spelled in GitHub/ecosyste.ms advisory records. */
+const ADVISORY_ECOSYSTEM: Record<Ecosystem, string[]> = {
+  npm: ["npm"],
+  pypi: ["pypi", "pip"],
+  cargo: ["cargo", "crates.io", "rust"],
+  go: ["go", "golang"],
+  rubygems: ["rubygems", "gem"],
+  packagist: ["packagist", "composer"],
+};
+
 /** Same pattern as MALWARE_TITLE in osv.ts; duplicated to keep this module free of network code. */
 const MALWARE_TITLE = /malicious|malware|compromised|hijack|embedded .*(code|payload)|protestware|sabotage/i;
 
@@ -127,7 +137,7 @@ export function unpatchedAdvisories(pkg: RawPackage, ecosystem: Ecosystem): Advi
     if (MALWARE_TITLE.test(adv.title ?? "")) continue;
     for (const p of adv.packages ?? []) {
       if (p.package_name !== pkg.name) continue;
-      if (p.ecosystem && p.ecosystem.toLowerCase() !== (ecosystem === "pypi" ? "pypi" : "npm")) continue;
+      if (p.ecosystem && !ADVISORY_ECOSYSTEM[ecosystem].includes(p.ecosystem.toLowerCase())) continue;
       for (const v of p.versions ?? []) {
         if (v.first_patched_version) continue;
         // If the newest release is outside the range, upgrading fixes it: not an orphan problem.

@@ -21,8 +21,11 @@ inputs:
   comment:
     description: Post (or update) a pull request comment with the report. Needs `pull-requests: write`.
     default: "false"
+  sarif:
+    description: Upload findings to GitHub code scanning (Security tab). Needs `security-events: write`.
+    default: "false"
   github-token:
-    description: Token used for the pull request comment.
+    description: Token used for the pull request comment and the SARIF upload.
     default: ${{ github.token }}
 
 outputs:
@@ -32,6 +35,9 @@ outputs:
   exit-code:
     description: Exit code of the scan (1 when fail-on was reached).
     value: ${{ steps.scan.outputs.exit-code }}
+  sarif:
+    description: Path of the SARIF report.
+    value: ${{ steps.scan.outputs.sarif }}
 
 runs:
   using: composite
@@ -49,16 +55,25 @@ runs:
         FOSTER_VERSION: ${{ inputs.version }}
       run: |
         report="$RUNNER_TEMP/foster-report.md"
+        sarif="$RUNNER_TEMP/foster.sarif"
         staged=""
         if [ "$FOSTER_STAGED" = "true" ]; then staged="--include-staged"; fi
         set +e
-        npx --yes "foster-oss@${FOSTER_VERSION}" scan "$FOSTER_PATH" --markdown $staged --fail-on "$FOSTER_FAIL_ON" > "$report"
+        npx --yes "foster-oss@${FOSTER_VERSION}" scan "$FOSTER_PATH" --markdown $staged --fail-on "$FOSTER_FAIL_ON" --sarif "$sarif" > "$report"
         code=$?
         set -e
         cat "$report" >> "$GITHUB_STEP_SUMMARY"
         echo "report=$report" >> "$GITHUB_OUTPUT"
+        echo "sarif=$sarif" >> "$GITHUB_OUTPUT"
         echo "exit-code=$code" >> "$GITHUB_OUTPUT"
         if [ "$code" -gt 1 ]; then echo "::error::foster-oss failed to run (exit $code)"; exit "$code"; fi
+
+    - if: inputs.sarif == 'true'
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ steps.scan.outputs.sarif }}
+        category: foster
+        token: ${{ inputs.github-token }}
 
     - if: inputs.comment == 'true' && github.event_name == 'pull_request'
       uses: actions/github-script@v8

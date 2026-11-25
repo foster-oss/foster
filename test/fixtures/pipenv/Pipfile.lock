@@ -1,0 +1,1 @@
+{ "_meta": {}, "default": { "flask": { "version": "==2.0.1" }, "gitdep": { "git": "https://x" } }, "develop": { "pytest": { "version": "==7.4.0" } } }

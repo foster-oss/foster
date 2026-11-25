@@ -1,6 +1,18 @@
-export type Ecosystem = "npm" | "pypi";
+import type { AlternativeSet } from "./replacements.js";
 
-export const ECOSYSTEMS: readonly Ecosystem[] = ["npm", "pypi"] as const;
+export type Ecosystem = "npm" | "pypi" | "cargo" | "go" | "rubygems" | "packagist";
+
+export const ECOSYSTEMS: readonly Ecosystem[] = ["npm", "pypi", "cargo", "go", "rubygems", "packagist"] as const;
+
+/** Human-readable names, used in reports and the site. */
+export const ECOSYSTEM_LABEL: Record<Ecosystem, string> = {
+  npm: "npm",
+  pypi: "PyPI",
+  cargo: "Cargo",
+  go: "Go",
+  rubygems: "RubyGems",
+  packagist: "Packagist",
+};
 
 /** A resolved package found in a project's lockfile. */
 export interface Dependency {
@@ -90,6 +102,8 @@ export interface Finding {
   patch?: PatchEntry;
   /** For upgrade-available: the lowest version that fixes all listed advisories, if known. */
   fixedIn?: string;
+  /** Maintained replacements worth moving to (npm only, from e18e module-replacements). */
+  alternatives?: AlternativeSet;
   message: string;
 }
 

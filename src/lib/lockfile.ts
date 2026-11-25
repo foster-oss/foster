@@ -2,23 +2,43 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import YAML from "yaml";
 import { normalizePyName } from "./osv.js";
-import type { Dependency } from "./types.js";
+import type { Dependency, Ecosystem } from "./types.js";
 
 export type NodeManager = "npm" | "pnpm" | "yarn";
 
+export type LockfileKind =
+  | "package-lock"
+  | "pnpm-lock"
+  | "yarn-lock"
+  | "requirements"
+  | "uv-lock"
+  | "poetry-lock"
+  | "pipfile-lock"
+  | "cargo-lock"
+  | "go-mod"
+  | "gemfile-lock"
+  | "composer-lock";
+
 export interface LockfileInfo {
   file: string;
-  kind: "package-lock" | "pnpm-lock" | "yarn-lock" | "requirements" | "uv-lock";
+  kind: LockfileKind;
+  ecosystem: Ecosystem;
   manager?: NodeManager;
 }
 
 const CANDIDATES: LockfileInfo[] = [
-  { file: "package-lock.json", kind: "package-lock", manager: "npm" },
-  { file: "npm-shrinkwrap.json", kind: "package-lock", manager: "npm" },
-  { file: "pnpm-lock.yaml", kind: "pnpm-lock", manager: "pnpm" },
-  { file: "yarn.lock", kind: "yarn-lock", manager: "yarn" },
-  { file: "uv.lock", kind: "uv-lock" },
-  { file: "requirements.txt", kind: "requirements" },
+  { file: "package-lock.json", kind: "package-lock", ecosystem: "npm", manager: "npm" },
+  { file: "npm-shrinkwrap.json", kind: "package-lock", ecosystem: "npm", manager: "npm" },
+  { file: "pnpm-lock.yaml", kind: "pnpm-lock", ecosystem: "npm", manager: "pnpm" },
+  { file: "yarn.lock", kind: "yarn-lock", ecosystem: "npm", manager: "yarn" },
+  { file: "uv.lock", kind: "uv-lock", ecosystem: "pypi" },
+  { file: "poetry.lock", kind: "poetry-lock", ecosystem: "pypi" },
+  { file: "Pipfile.lock", kind: "pipfile-lock", ecosystem: "pypi" },
+  { file: "requirements.txt", kind: "requirements", ecosystem: "pypi" },
+  { file: "Cargo.lock", kind: "cargo-lock", ecosystem: "cargo" },
+  { file: "go.mod", kind: "go-mod", ecosystem: "go" },
+  { file: "Gemfile.lock", kind: "gemfile-lock", ecosystem: "rubygems" },
+  { file: "composer.lock", kind: "composer-lock", ecosystem: "packagist" },
 ];
 
 export function detectLockfiles(dir: string): LockfileInfo[] {
@@ -43,17 +63,21 @@ export function directNpmNames(dir: string): Set<string> {
 
 export function readDependencies(dir: string, lock: LockfileInfo): Dependency[] {
   const text = readFileSync(join(dir, lock.file), "utf8");
-  const direct = lock.manager ? directNpmNames(dir) : new Set<string>();
+  // null = the lockfile format does not tell direct from transitive; report all as direct.
+  let direct: Set<string> | null = null;
   let pairs: [string, string][];
   switch (lock.kind) {
     case "package-lock":
       pairs = parsePackageLock(text);
+      direct = directNpmNames(dir);
       break;
     case "pnpm-lock":
       pairs = parsePnpmLock(text);
+      direct = directNpmNames(dir);
       break;
     case "yarn-lock":
       pairs = parseYarnLock(text);
+      direct = directNpmNames(dir);
       break;
     case "requirements":
       pairs = parseRequirements(text);
@@ -61,17 +85,232 @@ export function readDependencies(dir: string, lock: LockfileInfo): Dependency[] 
     case "uv-lock":
       pairs = parseUvLock(text);
       break;
+    case "poetry-lock":
+      pairs = parsePoetryLock(text);
+      break;
+    case "pipfile-lock":
+      pairs = parsePipfileLock(text);
+      break;
+    case "cargo-lock":
+      pairs = parseCargoLock(text);
+      direct = directCargoNames(dir);
+      break;
+    case "go-mod": {
+      const mod = parseGoMod(text);
+      pairs = mod.pairs;
+      direct = mod.direct;
+      break;
+    }
+    case "gemfile-lock": {
+      const gems = parseGemfileLock(text);
+      pairs = gems.pairs;
+      direct = gems.direct;
+      break;
+    }
+    case "composer-lock":
+      pairs = parseComposerLock(text);
+      direct = directComposerNames(dir);
+      break;
   }
-  const ecosystem = lock.manager ? "npm" : "pypi";
+  const ecosystem = lock.ecosystem;
   return dedupe(
     pairs.map(([name, version]) => ({
       ecosystem,
       name: ecosystem === "pypi" ? normalizePyName(name) : name,
       version,
-      direct: ecosystem === "npm" ? direct.has(name) : true,
+      direct: direct === null || direct.size === 0 ? true : direct.has(name),
       source: lock.file,
     })),
   );
+}
+
+/** Poetry's poetry.lock (TOML): [[package]] tables with name and version. */
+export function parsePoetryLock(text: string): [string, string][] {
+  return tomlPackages(text);
+}
+
+/** Pipenv's Pipfile.lock (JSON): "default" and "develop" maps of name → { version: "==1.2.3" }. */
+export function parsePipfileLock(text: string): [string, string][] {
+  const lock = JSON.parse(text) as Record<string, Record<string, { version?: string }> | undefined>;
+  const out: [string, string][] = [];
+  for (const section of ["default", "develop"]) {
+    for (const [name, spec] of Object.entries(lock[section] ?? {})) {
+      const v = spec?.version?.replace(/^===?/, "");
+      if (v) out.push([name, v]);
+    }
+  }
+  return out;
+}
+
+/** Cargo.lock: registry packages only (workspace members and git/path deps have no registry source). */
+export function parseCargoLock(text: string): [string, string][] {
+  const out: [string, string][] = [];
+  for (const block of text.split(/^\[\[package\]\]\s*$/m).slice(1)) {
+    const name = block.match(/^name\s*=\s*"([^"]+)"/m)?.[1];
+    const version = block.match(/^version\s*=\s*"([^"]+)"/m)?.[1];
+    const source = block.match(/^source\s*=\s*"([^"]+)"/m)?.[1];
+    if (name && version && source?.startsWith("registry+")) out.push([name, version]);
+  }
+  return out;
+}
+
+/** Dependency names declared in Cargo.toml ([dependencies], [dev-dependencies], [build-dependencies], target tables). */
+export function directCargoNames(dir: string): Set<string> {
+  const path = join(dir, "Cargo.toml");
+  const names = new Set<string>();
+  if (!existsSync(path)) return names;
+  let inDeps = false;
+  for (const raw of readFileSync(path, "utf8").split(/\r?\n/)) {
+    const line = raw.trim();
+    const header = line.match(/^\[(.+)\]$/);
+    if (header?.[1]) {
+      const h = header[1];
+      const sub = h.match(/(?:^|\.)(?:dependencies|dev-dependencies|build-dependencies)\.([A-Za-z0-9_-]+)$/);
+      if (sub?.[1]) {
+        names.add(sub[1]);
+        inDeps = false;
+      } else {
+        inDeps = /(?:^|\.)(?:dependencies|dev-dependencies|build-dependencies)$/.test(h);
+      }
+      continue;
+    }
+    if (!inDeps) continue;
+    const m = line.match(/^([A-Za-z0-9_-]+)\s*=/);
+    if (!m?.[1]) continue;
+    const pkg = line.match(/package\s*=\s*"([^"]+)"/)?.[1];
+    names.add(pkg ?? m[1]);
+  }
+  return names;
+}
+
+/**
+ * go.mod: the require directives list the full module graph needed for the build since Go 1.17;
+ * `// indirect` marks transitive ones. `replace` directives are honoured for module path and version.
+ */
+export function parseGoMod(text: string): { pairs: [string, string][]; direct: Set<string> } {
+  const pairs: [string, string][] = [];
+  const direct = new Set<string>();
+  const replaces = new Map<string, [string, string] | null>();
+  let block: "require" | "replace" | null = null;
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || line.startsWith("//")) continue;
+    if (/^(require|replace)\s*\($/.test(line)) {
+      block = line.startsWith("require") ? "require" : "replace";
+      continue;
+    }
+    if (line === ")") {
+      block = null;
+      continue;
+    }
+    let body: string | null = null;
+    let kind: "require" | "replace" | null = null;
+    const single = line.match(/^(require|replace)\s+(.+)$/);
+    if (single?.[1] && single[2] && !single[2].startsWith("(")) {
+      kind = single[1] as "require" | "replace";
+      body = single[2];
+    } else if (block) {
+      kind = block;
+      body = line;
+    }
+    if (!kind || !body) continue;
+    const indirect = /\/\/\s*indirect/.test(body);
+    const clean = body.replace(/\/\/.*$/, "").trim();
+    if (kind === "require") {
+      const [mod, ver] = clean.split(/\s+/);
+      if (mod && ver) {
+        pairs.push([mod, ver]);
+        if (!indirect) direct.add(mod);
+      }
+    } else {
+      const [left, right] = clean.split("=>").map((s) => s.trim());
+      const from = left?.split(/\s+/)[0];
+      const [to, toVer] = (right ?? "").split(/\s+/);
+      if (!from) continue;
+      // Local path replacements (./x, ../x, /abs) are not registry packages.
+      replaces.set(from, to && toVer && !/^[./]/.test(to) ? [to, toVer] : null);
+    }
+  }
+  const out: [string, string][] = [];
+  for (const [mod, ver] of pairs) {
+    if (!replaces.has(mod)) {
+      out.push([mod, ver]);
+      continue;
+    }
+    const r = replaces.get(mod);
+    if (r) {
+      out.push(r);
+      if (direct.has(mod)) direct.add(r[0]);
+    }
+  }
+  return { pairs: out, direct };
+}
+
+/** Gemfile.lock: gems under the GEM specs section; DEPENDENCIES lists the direct ones. */
+export function parseGemfileLock(text: string): { pairs: [string, string][]; direct: Set<string> } {
+  const pairs: [string, string][] = [];
+  const direct = new Set<string>();
+  let section = "";
+  let inSpecs = false;
+  for (const raw of text.split(/\r?\n/)) {
+    if (/^[A-Z][A-Z ]*$/.test(raw)) {
+      section = raw.trim();
+      inSpecs = false;
+      continue;
+    }
+    if (section === "GEM" && raw.trim() === "specs:") {
+      inSpecs = true;
+      continue;
+    }
+    if (section === "GEM" && inSpecs) {
+      const m = raw.match(/^ {4}([^\s(]+) \(([^)]+)\)$/);
+      if (m?.[1] && m[2]) {
+        // strip platform suffixes like "1.15.4-x86_64-linux" or "-java"
+        const version = m[2].replace(/-(x86|x64|arm|aarch|universal|java|mingw|mswin|darwin|linux|ruby)[\w.-]*$/i, "");
+        pairs.push([m[1], version]);
+      }
+    }
+    if (section === "DEPENDENCIES") {
+      const m = raw.match(/^ {2}([^\s!(]+)/);
+      if (m?.[1]) direct.add(m[1]);
+    }
+  }
+  return { pairs, direct };
+}
+
+/** composer.lock: "packages" and "packages-dev"; versions may carry a leading "v". */
+export function parseComposerLock(text: string): [string, string][] {
+  const lock = JSON.parse(text) as Record<string, { name?: string; version?: string }[] | undefined>;
+  const out: [string, string][] = [];
+  for (const section of ["packages", "packages-dev"]) {
+    for (const p of lock[section] ?? []) {
+      if (!p.name || !p.version || p.version.startsWith("dev-")) continue;
+      out.push([p.name, p.version.replace(/^v(?=\d)/, "")]);
+    }
+  }
+  return out;
+}
+
+export function directComposerNames(dir: string): Set<string> {
+  const path = join(dir, "composer.json");
+  if (!existsSync(path)) return new Set();
+  try {
+    const pkg = JSON.parse(readFileSync(path, "utf8")) as Record<string, Record<string, string> | undefined>;
+    return new Set([...Object.keys(pkg.require ?? {}), ...Object.keys(pkg["require-dev"] ?? {})]);
+  } catch {
+    return new Set();
+  }
+}
+
+/** Shared reader for TOML lockfiles made of [[package]] tables (poetry.lock). */
+function tomlPackages(text: string): [string, string][] {
+  const out: [string, string][] = [];
+  for (const block of text.split(/^\[\[package\]\]\s*$/m).slice(1)) {
+    const name = block.match(/^name\s*=\s*"([^"]+)"/m)?.[1];
+    const version = block.match(/^version\s*=\s*"([^"]+)"/m)?.[1];
+    if (name && version) out.push([name, version]);
+  }
+  return out;
 }
 
 function dedupe(deps: Dependency[]): Dependency[] {

@@ -6,6 +6,7 @@ import { loadRegistry } from "./lib/data.js";
 import { fosterVersion } from "./lib/http.js";
 import { formatMarkdown, formatRecord } from "./lib/report.js";
 import { scanProject } from "./lib/scan.js";
+import { describeAlternatives } from "./lib/replacements.js";
 
 function text(s: string) {
   return { content: [{ type: "text" as const, text: s }] };
@@ -19,12 +20,12 @@ export function createMcpServer(): McpServer {
     {
       title: "Check a package before depending on it",
       description:
-        "Check whether an npm or PyPI package is still maintained, whether it has vulnerabilities with no fix, " +
+        "Check whether a package (npm, PyPI, Cargo, Go, RubyGems or Packagist) is still maintained, whether it has vulnerabilities with no fix, " +
         "and whether a published drop-in security patch exists (from Foster or providers like Keep LTS). Call this before adding a new dependency.",
       inputSchema: {
         name: z.string().describe("Package name, e.g. 'ip' or '@scope/name'"),
         version: z.string().optional().describe("Exact version to check, e.g. '2.0.1'"),
-        ecosystem: z.enum(["npm", "pypi"]).default("npm"),
+        ecosystem: z.enum(["npm", "pypi", "cargo", "go", "rubygems", "packagist"]).default("npm"),
       },
       annotations: { readOnlyHint: true, openWorldHint: true },
     },
@@ -35,6 +36,7 @@ export function createMcpServer(): McpServer {
       if (r.record) parts.push(formatRecord(r.record));
       for (const f of r.findings) parts.push(f.message);
       if (version && r.findings.length === 0) parts.push(`${name}@${version}: no known vulnerabilities.`);
+      if (r.alternatives) parts.push(`Maintained alternatives: ${describeAlternatives(r.alternatives)}`);
       if (r.record && (r.record.status === "dead" || r.record.status === "dormant"))
         parts.push("Advice: prefer a maintained alternative for new code; if you must use it, pin the version and watch for advisories.");
       return text(parts.join("\n\n"));
@@ -46,7 +48,7 @@ export function createMcpServer(): McpServer {
     {
       title: "Scan a project for orphaned dependencies",
       description:
-        "Scan the lockfiles in a directory (package-lock.json, pnpm-lock.yaml, yarn.lock, uv.lock, requirements.txt) " +
+        "Scan the lockfiles in a directory (npm, pnpm, yarn, uv, poetry, pipenv, requirements.txt, Cargo.lock, go.mod, Gemfile.lock, composer.lock) " +
         "and report dependencies that are unmaintained, vulnerable with no fix, or have a drop-in security patch.",
       inputSchema: {
         path: z.string().describe("Absolute path of the project directory"),

@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join, relative } from "node:path";
+import { describeAlternatives } from "./replacements.js";
 import type { FixResult } from "./fix.js";
 import type { Finding, FindingKind, OrphanRecord, ScanResult } from "./types.js";
 
@@ -44,6 +47,7 @@ export function formatText(result: ScanResult, color = false, showAll = false): 
     lines.push(`               ${f.message.replace(/^[^:]+: /, "")}`);
     for (const a of f.advisories.slice(0, 3)) lines.push(c(90, `               - ${a.id}: ${a.title}`));
     if (f.advisories.length > 3) lines.push(c(90, `               - ...and ${f.advisories.length - 3} more`));
+    if (f.alternatives) lines.push(c(32, `               consider: ${describeAlternatives(f.alternatives)}`));
   }
   if (!showAll && quiet.length > 0) {
     const names = quiet.slice(0, 6).map((f) => f.dependency.name).join(", ");
@@ -85,9 +89,11 @@ export function formatMarkdown(result: ScanResult): string {
             ? `\`npx foster-oss fix\` → \`${f.patch!.replacement.name}@${f.patch!.replacement.version}\``
             : f.kind === "upgrade-available"
               ? `upgrade${f.fixedIn ? ` to ${f.fixedIn}` : ""}`
-              : f.kind === "orphaned-vulnerable"
-                ? "[nominate for adoption](https://github.com/rekalnx/foster/issues/new?template=adopt.yml)"
-                : "watch";
+              : f.alternatives
+                ? `replace with ${f.alternatives.options.slice(0, 3).map((o) => (o.kind === "snippet" ? "a snippet" : `\`${o.name}\``)).join(", ")}${f.alternatives.docs ? ` ([guide](${f.alternatives.docs}))` : ""}`
+                : f.kind === "orphaned-vulnerable"
+                  ? "[nominate for adoption](https://github.com/rekalnx/foster/issues/new?template=adopt.yml)"
+                  : "watch";
         out.push(`| \`${f.dependency.name}@${f.dependency.version}\`${f.dependency.direct ? "" : " (transitive)"} | ${f.severity} | ${f.status} | ${adv} | ${action} |`);
       }
       out.push("");
@@ -130,4 +136,95 @@ export function formatRecord(r: OrphanRecord): string {
 function fmt(n: number | null): string {
   if (n === null) return "?";
   return Intl.NumberFormat("en", { notation: "compact" }).format(n);
+}
+
+const SARIF_LEVEL: Record<FindingKind, "error" | "warning" | "note"> = {
+  "orphaned-vulnerable": "error",
+  "patch-available": "warning",
+  "unpatched-vulnerable": "warning",
+  "upgrade-available": "warning",
+  orphaned: "note",
+};
+
+const SECURITY_SEVERITY: Record<string, string | undefined> = { CRITICAL: "9.5", HIGH: "7.5", MODERATE: "5.5", LOW: "3.0" };
+
+const RULE_HELP: Record<FindingKind, string> = {
+  "patch-available": "A published drop-in security patch exists for this exact version. Run `npx foster-oss fix` to switch to it through an npm alias; your imports do not change.",
+  "orphaned-vulnerable": "This dependency has a known vulnerability that no release fixes, and nobody appears to maintain it. Replace it, or nominate it for adoption.",
+  "unpatched-vulnerable": "This dependency has a known vulnerability with no fixed release yet. The package still looks maintained; watch for a release.",
+  "upgrade-available": "This dependency has a known vulnerability that a newer upstream release fixes. Upgrade it.",
+  orphaned: "This widely used dependency is no longer maintained. There is no known vulnerability today, but nobody will fix one. Prefer a maintained alternative for new code.",
+};
+
+/**
+ * SARIF 2.1.0 for GitHub code scanning and other security dashboards.
+ * Locations point at the lockfile line that declares the package, relative to `baseDir`.
+ */
+export function formatSarif(result: ScanResult, version: string, baseDir: string = process.cwd()): string {
+  const lockText = new Map<string, string[]>();
+  const lineOf = (source: string, name: string): number => {
+    let lines = lockText.get(source);
+    if (!lines) {
+      try {
+        lines = readFileSync(join(result.dir, source), "utf8").split(/\r?\n/);
+      } catch {
+        lines = [];
+      }
+      lockText.set(source, lines);
+    }
+    const needles = [`node_modules/${name}"`, `"${name}"`, `/${name}@`, `${name}@`, ` ${name} `, name];
+    for (const n of needles) {
+      const i = lines.findIndex((l) => l.includes(n));
+      if (i >= 0) return i + 1;
+    }
+    return 1;
+  };
+  const kinds = Object.keys(KIND_TITLE) as FindingKind[];
+  const sarif = {
+    $schema: "https://json.schemastore.org/sarif-2.1.0.json",
+    version: "2.1.0",
+    runs: [
+      {
+        tool: {
+          driver: {
+            name: "Foster",
+            informationUri: "https://github.com/rekalnx/foster",
+            version,
+            rules: kinds.map((k) => ({
+              id: `foster/${k}`,
+              name: KIND_TITLE[k].replace(/[^A-Za-z]+/g, ""),
+              shortDescription: { text: KIND_TITLE[k] },
+              fullDescription: { text: RULE_HELP[k] },
+              help: { text: RULE_HELP[k], markdown: RULE_HELP[k] },
+              helpUri: "https://github.com/rekalnx/foster#what-the-findings-mean",
+              defaultConfiguration: { level: SARIF_LEVEL[k] },
+              properties: { tags: ["security", "supply-chain", "dependencies"] },
+            })),
+          },
+        },
+        results: result.findings.map((f) => {
+          const rel = relative(baseDir, join(result.dir, f.dependency.source)).replace(/\\/g, "/");
+          // Another drive (Windows) or outside the checkout: fall back to an absolute file URI.
+          const uri = /^[A-Za-z]:\//.test(rel) || rel.startsWith("/") ? `file:///${rel.replace(/^\//, "")}` : rel;
+          const extra = f.alternatives ? ` Consider: ${describeAlternatives(f.alternatives)}.` : "";
+          return {
+            ruleId: `foster/${f.kind}`,
+            level: SARIF_LEVEL[f.kind],
+            message: { text: `${f.message}${extra}` },
+            locations: [{ physicalLocation: { artifactLocation: { uri }, region: { startLine: lineOf(f.dependency.source, f.dependency.name) } } }],
+            partialFingerprints: { "fosterDependency/v1": `${f.dependency.ecosystem}:${f.dependency.name}@${f.dependency.version}:${f.kind}` },
+            properties: {
+              ...(SECURITY_SEVERITY[f.severity] ? { "security-severity": SECURITY_SEVERITY[f.severity] } : {}),
+              ecosystem: f.dependency.ecosystem,
+              package: f.dependency.name,
+              version: f.dependency.version,
+              maintenance: f.status,
+              advisories: f.advisories.map((a) => a.id),
+            },
+          };
+        }),
+      },
+    ],
+  };
+  return JSON.stringify(sarif, null, 2);
 }

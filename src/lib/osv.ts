@@ -1,10 +1,16 @@
-import semver from "semver";
 import { normalizeSeverity } from "./classify.js";
 import { fetchJson, mapLimit } from "./http.js";
 import type { AdvisorySummary, Dependency, Ecosystem, Severity } from "./types.js";
 
 const OSV = "https://api.osv.dev/v1";
-const OSV_ECOSYSTEM: Record<Ecosystem, string> = { npm: "npm", pypi: "PyPI" };
+const OSV_ECOSYSTEM: Record<Ecosystem, string> = {
+  npm: "npm",
+  pypi: "PyPI",
+  cargo: "crates.io",
+  go: "Go",
+  rubygems: "RubyGems",
+  packagist: "Packagist",
+};
 
 interface OsvBatchResponse {
   results: { vulns?: { id: string }[]; next_page_token?: string }[];
@@ -135,14 +141,14 @@ export function normalizePyName(name: string): string {
 }
 
 /**
- * The lowest fixed version that is greater than the installed version, for npm (semver).
- * For PyPI or unparsable versions, returns the first listed fix.
+ * The lowest fixed version above the installed one. OSV lists one "fixed" event per release line
+ * (e.g. 8.5.52 and 9.6.33), so the nearest fix above the installed version is the relevant one.
  */
 export function lowestFixAbove(dep: Dependency, fixedVersions: string[]): string | undefined {
   if (fixedVersions.length === 0) return undefined;
-  if (dep.ecosystem === "npm" && semver.valid(dep.version)) {
-    const candidates = fixedVersions.filter((f) => semver.valid(f) && semver.gt(f, dep.version)).sort(semver.compare);
-    return candidates[0] ?? fixedVersions[0];
-  }
-  return fixedVersions[0];
+  const installed = dep.version.replace(/^v(?=\d)/, "");
+  const above = fixedVersions
+    .filter((f) => compareVersions(f.replace(/^v(?=\d)/, ""), installed) > 0)
+    .sort((a, b) => compareVersions(a.replace(/^v(?=\d)/, ""), b.replace(/^v(?=\d)/, "")));
+  return above[0] ?? [...fixedVersions].sort(compareVersions).at(-1);
 }
