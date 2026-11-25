@@ -6,13 +6,14 @@ import { applyFixes, installCommand } from "./lib/fix.js";
 import { fosterVersion } from "./lib/http.js";
 import { formatFix, formatMarkdown, formatRecord, formatSarif, formatText } from "./lib/report.js";
 import { describeAlternatives } from "./lib/replacements.js";
-import { scanProject, shouldFail, type FailOn } from "./lib/scan.js";
+import { scanProject, scanSbom, shouldFail, type FailOn } from "./lib/scan.js";
 import { ECOSYSTEMS, type Ecosystem } from "./lib/types.js";
 
 const HELP = `foster-oss ${fosterVersion()}: find dependencies nobody maintains, swap in reviewed patches.
 
 Usage:
   foster-oss scan [dir]            Check a project's lockfiles
+  foster-oss scan --sbom <file>    Check a CycloneDX or SPDX JSON SBOM instead
   foster-oss fix [dir]             Point dependencies at released drop-in patches (edits package.json)
   foster-oss check <name[@ver]>    Look up one package
   foster-oss mcp                   Start the MCP server (stdio) for AI agents
@@ -48,6 +49,7 @@ async function main(argv: string[]): Promise<number> {
       markdown: { type: "boolean", default: false },
       "summary-file": { type: "string" },
       sarif: { type: "string" },
+      sbom: { type: "string" },
       "fail-on": { type: "string", default: "none" },
       offline: { type: "boolean", default: false },
       "include-staged": { type: "boolean", default: false },
@@ -73,7 +75,8 @@ async function main(argv: string[]): Promise<number> {
     case "scan": {
       const failOn = values["fail-on"] as FailOn;
       if (!FAIL_LEVELS.includes(failOn)) throw new UsageError(`--fail-on must be one of ${FAIL_LEVELS.join(", ")}`);
-      const result = await scanProject(arg ?? ".", { offline: values.offline, includeStaged: values["include-staged"] });
+      const scanOpts = { offline: values.offline, includeStaged: values["include-staged"] };
+      const result = values.sbom ? await scanSbom(values.sbom, scanOpts) : await scanProject(arg ?? ".", scanOpts);
       if (values.json) console.log(JSON.stringify(result, null, 2));
       else if (values.markdown) console.log(formatMarkdown(result));
       else console.log(formatText(result, process.stdout.isTTY ?? false, values.all));

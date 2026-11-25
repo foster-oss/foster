@@ -37,7 +37,8 @@
     "dist",
     "data/orphans.min.json",
     "registry/patches.json",
-    "skills"
+    "skills",
+    "registry/alternatives.json"
   ],
   "engines": {
     "node": ">=20"

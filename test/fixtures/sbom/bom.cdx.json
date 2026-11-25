@@ -1,0 +1,15 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "components": [
+    { "type": "library", "name": "ip", "version": "2.0.1", "purl": "pkg:npm/ip@2.0.1" },
+    { "type": "library", "name": "core", "version": "7.24.0", "purl": "pkg:npm/%40babel/core@7.24.0" },
+    { "type": "library", "name": "Requests", "purl": "pkg:pypi/Requests@2.31.0" },
+    { "type": "library", "name": "jwt-go", "purl": "pkg:golang/github.com/dgrijalva/jwt-go@v3.2.0%2Bincompatible" },
+    { "type": "library", "name": "log4j-core", "purl": "pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1" },
+    { "type": "library", "name": "nested-parent", "purl": "pkg:gem/rack@2.2.8", "components": [
+      { "type": "library", "name": "child", "purl": "pkg:cargo/time@0.1.43" }
+    ] },
+    { "type": "library", "name": "no-version", "purl": "pkg:npm/left-pad" }
+  ]
+}

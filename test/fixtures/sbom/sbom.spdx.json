@@ -1,0 +1,8 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "packages": [
+    { "name": "symfony/http-kernel", "externalRefs": [ { "referenceCategory": "PACKAGE-MANAGER", "referenceType": "purl", "referenceLocator": "pkg:composer/symfony/http-kernel@4.4.0" } ] },
+    { "name": "ip", "externalRefs": [ { "referenceType": "purl", "referenceLocator": "pkg:npm/ip@2.0.1" }, { "referenceType": "cpe23Type", "referenceLocator": "cpe:2.3:a:x" } ] },
+    { "name": "Newtonsoft.Json", "externalRefs": [ { "referenceType": "purl", "referenceLocator": "pkg:nuget/Newtonsoft.Json@12.0.1" } ] }
+  ]
+}

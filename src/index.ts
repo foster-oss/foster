@@ -12,7 +12,10 @@ export {
   parseUvLock,
 } from "./lib/lockfile.js";
 export { loadRegistry, loadOrphanIndex, findPatch, indexByName, type PatchRegistry, type OrphanIndexFile } from "./lib/data.js";
-export { scanProject, analyzeDependencies, shouldFail, type ScanOptions, type FailOn } from "./lib/scan.js";
+export { scanProject, scanSbom, analyzeDependencies, shouldFail, type ScanOptions, type FailOn } from "./lib/scan.js";
+export { readSbom, parsePurl } from "./lib/sbom.js";
+export { alternativesFor } from "./lib/replacements.js";
+export { formatSarif } from "./lib/report.js";
 export { applyFixes, detectManager, type FixResult, type FixChange } from "./lib/fix.js";
 export { checkPackage, parseSpec, type CheckResult } from "./lib/check.js";
 export { formatText, formatMarkdown, formatFix, formatRecord } from "./lib/report.js";

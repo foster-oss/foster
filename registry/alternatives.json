@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "note": "Maintained replacements for unmaintained packages outside npm (npm uses e18e module-replacements). Add entries by pull request: only official successors or replacements the original project itself recommends.",
+  "alternatives": [
+    {
+      "ecosystem": "go",
+      "name": "github.com/dgrijalva/jwt-go",
+      "options": [{ "name": "github.com/golang-jwt/jwt/v5", "kind": "package", "description": "Community-maintained successor of jwt-go." }],
+      "docs": "https://github.com/golang-jwt/jwt/blob/main/MIGRATION_GUIDE.md"
+    },
+    {
+      "ecosystem": "go",
+      "name": "gopkg.in/square/go-jose.v2",
+      "options": [{ "name": "github.com/go-jose/go-jose/v4", "kind": "package", "description": "Maintained continuation of go-jose." }],
+      "docs": "https://github.com/go-jose/go-jose"
+    },
+    {
+      "ecosystem": "go",
+      "name": "github.com/jackc/pgproto3/v2",
+      "options": [{ "name": "github.com/jackc/pgx/v5/pgproto3", "kind": "package", "description": "pgproto3 now lives inside pgx v5." }],
+      "docs": "https://github.com/jackc/pgx"
+    },
+    {
+      "ecosystem": "go",
+      "name": "github.com/golang/protobuf",
+      "options": [{ "name": "google.golang.org/protobuf", "kind": "package", "description": "The supported Go protobuf API (APIv2)." }],
+      "docs": "https://go.dev/blog/protobuf-apiv2"
+    },
+    {
+      "ecosystem": "go",
+      "name": "github.com/pkg/errors",
+      "options": [{ "name": "errors / fmt.Errorf(\"%w\")", "kind": "native", "description": "Error wrapping is built into the standard library since Go 1.13." }],
+      "docs": "https://go.dev/blog/go1.13-errors"
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "failure",
+      "options": [
+        { "name": "anyhow", "kind": "package", "description": "For application error handling." },
+        { "name": "thiserror", "kind": "package", "description": "For library error types." }
+      ],
+      "docs": "https://github.com/rust-lang-deprecated/failure"
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "atty",
+      "options": [{ "name": "std::io::IsTerminal", "kind": "native", "description": "In the standard library since Rust 1.70." }],
+      "docs": "https://doc.rust-lang.org/std/io/trait.IsTerminal.html"
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "lazy_static",
+      "options": [
+        { "name": "std::sync::LazyLock", "kind": "native", "description": "In the standard library since Rust 1.80." },
+        { "name": "once_cell", "kind": "package" }
+      ],
+      "docs": "https://doc.rust-lang.org/std/sync/struct.LazyLock.html"
+    },
+    {
+      "ecosystem": "packagist",
+      "name": "phpoffice/phpexcel",
+      "options": [{ "name": "phpoffice/phpspreadsheet", "kind": "package", "description": "The official successor of PHPExcel." }],
+      "docs": "https://phpspreadsheet.readthedocs.io/en/latest/topics/migration-from-PHPExcel/"
+    },
+    {
+      "ecosystem": "packagist",
+      "name": "swiftmailer/swiftmailer",
+      "options": [{ "name": "symfony/mailer", "kind": "package", "description": "Swift Mailer's maintainers recommend Symfony Mailer." }],
+      "docs": "https://symfony.com/doc/current/mailer.html"
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "nose",
+      "options": [{ "name": "pytest", "kind": "package", "description": "nose is unmaintained and does not run on recent Python versions." }],
+      "docs": "https://docs.pytest.org/en/stable/how-to/nose.html"
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pycrypto",
+      "options": [{ "name": "pycryptodome", "kind": "package", "description": "Maintained, mostly API-compatible fork." }],
+      "docs": "https://www.pycryptodome.org/src/introduction"
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "mock",
+      "options": [{ "name": "unittest.mock", "kind": "native", "description": "In the standard library since Python 3.3." }],
+      "docs": "https://docs.python.org/3/library/unittest.mock.html"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
-import { resolve } from "node:path";
+import { basename, dirname, resolve } from "node:path";
+import { readSbom } from "./sbom.js";
 import { maxSeverity, toOrphanRecord } from "./classify.js";
 import { findPatch, indexByName, indexKey, loadOrphanIndex, loadRegistry, type PatchRegistry } from "./data.js";
 import { getPackage } from "./ecosystems.js";
@@ -40,6 +41,25 @@ export async function scanProject(dirInput: string, opts: ScanOptions = {}): Pro
     scannedAt: new Date().toISOString(),
     lockfiles: locks.map((l) => l.file),
     dependencyCount: deps.length,
+    findings,
+    warnings,
+  };
+}
+
+/** Scan an SBOM (CycloneDX or SPDX JSON) instead of lockfiles. */
+export async function scanSbom(file: string, opts: ScanOptions = {}): Promise<ScanResult> {
+  const path = resolve(file);
+  const warnings: string[] = [];
+  const sbom = readSbom(path);
+  const skipped = Object.entries(sbom.skipped);
+  if (skipped.length) warnings.push(`not covered yet: ${skipped.map(([t, n]) => `${n} ${t}`).join(", ")} package(s)`);
+  if (sbom.dependencies.length === 0) warnings.push(`no supported packages with versions found in this ${sbom.format} SBOM`);
+  const findings = await analyzeDependencies(sbom.dependencies, opts, warnings);
+  return {
+    dir: dirname(path),
+    scannedAt: new Date().toISOString(),
+    lockfiles: [basename(path)],
+    dependencyCount: sbom.dependencies.length,
     findings,
     warnings,
   };
