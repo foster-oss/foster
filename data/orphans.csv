@@ -356,10 +356,10 @@ npm,html-escaper,dormant,12.7,498035059,1783603,1087,3.0.3,2021-02-18T08:35:19.5
 npm,colorette,dormant,12.7,484791594,1727690,2155,2.0.20,2023-04-16T15:34:09.905000Z,2025-10-03T11:20:56.000Z,false,1,,no release for 3.6 years; no push for 14 months,https://github.com/jorgebucaran/colorette
 npm,@bcoe/v8-coverage,dormant,12.7,476319378,1666305,17,1.0.2,2025-01-15T17:30:44.306000Z,2025-01-15T17:29:07.000Z,false,1,,no release for 23 months; no push for 23 months,https://github.com/bcoe/v8-coverage
 npm,internal-slot,dormant,12.7,533170891,1631550,867,1.1.0,2024-12-13T16:02:29.590000Z,2024-12-13T16:01:56.000Z,false,1,,no release for 24 months; no push for 24 months,https://github.com/ljharb/internal-slot
-npm,json-stable-stringify-without-jsonify,dormant,12.7,750713529,1575335,1166,1.0.1,2016-12-15T22:00:35.805000Z,2021-04-11T19:15:36.000Z,false,1,,no release for 9.9 years; no push for 5.6 years,https://github.com/samn/json-stable-stringify
+npm,json-stable-stringify-without-jsonify,dormant,12.7,750713529,1575335,1166,1.0.1,2016-12-15T22:00:35.805000Z,2021-04-11T19:15:36.000Z,false,1,,no release for 10.0 years; no push for 5.6 years,https://github.com/samn/json-stable-stringify
 npm,deep-is,dormant,12.7,773810680,1547348,1421,0.1.4,2021-09-04T16:55:20.731000Z,2021-09-04T16:55:12.000Z,false,1,,no release for 5.2 years; no push for 5.2 years,https://github.com/thlorenz/deep-is
 npm,optionator,dormant,12.7,838876336,1488780,1535,0.9.4,2024-04-26T22:17:51.408000Z,2024-04-26T22:18:10.000Z,false,1,,no release for 2.6 years; no push for 2.6 years,https://github.com/gkz/optionator
-npm,braces,dormant,12.7,921459367,1237028,2619,3.0.3,2024-05-21T08:59:11.390000Z,2025-01-19T20:06:12.000Z,false,2,,no release for 2.5 years; no push for 22 months,https://github.com/micromatch/braces
+npm,braces,dormant,12.7,921459367,1237028,2619,3.0.3,2024-05-21T08:59:11.390000Z,2025-01-19T20:06:12.000Z,false,2,,no release for 2.5 years; no push for 23 months,https://github.com/micromatch/braces
 npm,ts-node,dormant,12.7,260751405,883542,120593,10.9.2,2023-12-08T12:04:46.154000Z,2024-07-18T18:14:16.000Z,false,2,,no release for 3.0 years; no push for 2.4 years,https://github.com/TypeStrong/ts-node
 pypi,pydata-google-auth,dead,12.7,16109748,829,16,1.9.1,2025-01-23T21:04:38.000000Z,2025-01-29T18:42:13.000Z,false,4,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 22 months ago",https://github.com/pydata/pydata-google-auth
 npm,browser-process-hrtime,dormant,12.6,41262392,2037289,601,1.0.0,2018-09-23T07:19:44.502000Z,2022-01-06T15:04:22.000Z,false,1,,no release for 8.2 years; no push for 4.9 years,https://github.com/kumavis/browser-process-hrtime
@@ -368,7 +368,7 @@ npm,case-sensitive-paths-webpack-plugin,dormant,12.6,44739349,1869888,16271,2.4.
 npm,find-cache-dir,dormant,12.6,163316368,1812888,1793,6.0.0,2025-04-08T15:30:14.851000Z,2025-04-08T15:25:25.000Z,false,1,,no release for 20 months; no push for 20 months,https://github.com/sindresorhus/find-cache-directory
 npm,@sinonjs/commons,dormant,12.6,296092736,1806144,18,4.0.0-alpha.0,2024-01-20T15:20:51.832000Z,2024-06-16T09:53:15.000Z,false,6,,no release for 2.8 years; no push for 2.4 years,https://github.com/sinonjs/commons
 npm,@types/json5,dormant,12.6,287067086,1794713,609,2.2.0,2021-02-01T20:00:41.991000Z,,false,1,,no linked source repository; no release for 5.8 years,
-npm,@types/parse-json,dormant,12.6,132772546,1793430,78,7.0.0,2025-02-21T17:33:12.018000Z,2025-02-18T18:23:17.000Z,false,1,,no release for 21 months; no push for 21 months,https://github.com/DefinitelyTyped/DefinitelyTyped
+npm,@types/parse-json,dormant,12.6,132772546,1793430,78,7.0.0,2025-02-21T17:33:12.018000Z,2025-02-18T18:23:17.000Z,false,1,,no release for 21 months; no push for 22 months,https://github.com/DefinitelyTyped/DefinitelyTyped
 npm,requires-port,dormant,12.6,284416400,1725022,549,1.0.0,2015-10-30T14:42:33.794000Z,2023-07-14T21:05:22.000Z,false,2,,no release for 11.1 years; no push for 3.4 years,https://github.com/unshiftio/requires-port
 npm,co,dormant,12.6,249629621,1566701,10884,4.6.0,2015-07-09T22:30:44.562000Z,2020-12-15T07:22:26.000Z,false,3,,no release for 11.4 years; no push for 5.9 years,https://github.com/tj/co
 npm,json-schema,dormant,12.6,382107197,1556405,2341,0.4.0,2021-11-09T02:04:08.632000Z,2022-08-23T16:09:40.000Z,false,1,,no release for 5.0 years; no push for 4.3 years,https://github.com/kriszyp/json-schema
@@ -444,7 +444,7 @@ npm,immediate,dormant,12.2,338603757,888684,125,3.3.0,2020-06-09T14:46:51.597000
 npm,mz,dormant,12.2,300747515,864353,2349,2.7.0,2017-09-13T17:57:36.315000Z,2020-12-11T13:09:34.000Z,false,9,,no release for 9.2 years; no push for 6.0 years,https://github.com/normalize/mz
 npm,es-errors,dormant,12.2,1202609369,0,0,1.3.0,2024-02-05T08:05:51.479000Z,2024-03-09T00:38:43.000Z,false,1,,no release for 2.8 years; no push for 2.7 years,https://github.com/ljharb/es-errors
 npm,ignore-by-default,dormant,12.1,69622445,1050681,139,2.1.0,2022-05-02T09:51:55.369000Z,2022-05-02T09:51:56.000Z,false,1,,no release for 4.6 years; no push for 4.6 years,https://github.com/novemberborn/ignore-by-default
-npm,fs-monkey,dormant,12.1,138936549,1036154,329,1.1.0,2025-07-18T19:02:32.313000Z,2025-09-16T21:52:09.000Z,false,1,,no release for 16 months; no push for 14 months,https://github.com/streamich/fs-monkey
+npm,fs-monkey,dormant,12.1,138936549,1036154,329,1.1.0,2025-07-18T19:02:32.313000Z,2025-09-16T21:52:09.000Z,false,1,,no release for 17 months; no push for 15 months,https://github.com/streamich/fs-monkey
 npm,arr-flatten,dormant,12.1,41816760,1034261,1185,1.1.0,2017-07-05T18:50:31.592000Z,2021-12-30T06:45:35.000Z,false,1,,no release for 9.4 years; no push for 4.9 years,https://github.com/jonschlinkert/arr-flatten
 npm,arr-diff,dormant,12.1,65010587,1034112,1141,4.0.0,2017-04-14T04:11:29.824000Z,2022-01-04T11:06:12.000Z,false,2,,no release for 9.6 years; no push for 4.9 years,https://github.com/jonschlinkert/arr-diff
 npm,pstree.remy,dormant,12.1,65511594,999930,104,1.1.8,2020-05-16T14:58:43.262000Z,2020-06-17T12:35:57.000Z,false,1,,no release for 6.5 years; no push for 6.4 years,https://github.com/remy/pstree
@@ -640,7 +640,7 @@ npm,asn1,dormant,11.4,144412936,325120,742,0.2.6,2021-11-04T00:46:28.017000Z,202
 pypi,itsdangerous,dormant,11.4,241059456,259870,579,2.2.0,2024-04-16T21:28:14.000000Z,2025-06-14T20:35:46.000Z,false,1,,no release for 2.6 years; no push for 18 months,https://github.com/pallets/itsdangerous
 npm,client-only,dormant,11.4,259811680,249350,81,0.0.1,2022-09-03T01:07:11.981000Z,,false,1,,no release for 4.2 years,
 npm,crc-32,dormant,11.4,320213515,157349,656,1.2.2,2022-04-04T23:05:52.784000Z,2022-08-20T21:32:00.000Z,false,1,,no release for 4.6 years; no push for 4.3 years,https://github.com/SheetJS/js-crc32
-npm,@types/uuid,dormant,11.4,198121340,137530,15745,11.0.0,2025-09-16T21:33:15.821000Z,2024-04-13T19:41:31.000Z,false,1,,no release for 14 months; no push for 2.6 years,https://github.com/DefinitelyTyped/DefinitelyTyped
+npm,@types/uuid,dormant,11.4,198121340,137530,15745,11.0.0,2025-09-16T21:33:15.821000Z,2024-04-13T19:41:31.000Z,false,1,,no release for 15 months; no push for 2.6 years,https://github.com/DefinitelyTyped/DefinitelyTyped
 npm,use-sidecar,dormant,11.4,389859820,90147,27,1.1.3,2024-12-15T01:49:19.375000Z,2024-12-15T01:49:31.000Z,false,1,,no release for 24 months; no push for 24 months,https://github.com/theKashey/use-sidecar
 npm,aria-hidden,dormant,11.4,397643428,83458,188,1.2.6,2025-05-19T00:03:50.887000Z,2025-05-19T00:04:00.000Z,false,1,,no release for 19 months; no push for 19 months,https://github.com/theKashey/aria-hidden
 npm,@pkgjs/parseargs,dormant,11.4,448172239,65894,14,0.11.0,2022-10-10T14:18:44.810000Z,2025-07-27T00:25:38.000Z,false,1,,no release for 4.1 years; no push for 16 months,https://github.com/pkgjs/parseargs

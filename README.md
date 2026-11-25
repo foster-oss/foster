@@ -1,4 +1,6 @@
-# Foster
+<p align="center"><img src="brand/logo-512.png" alt="Foster" width="120"></p>
+
+<h1 align="center">Foster</h1>
 
 **Find the dependencies nobody maintains anymore, and the fixes that exist for them.**
 

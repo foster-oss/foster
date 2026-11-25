@@ -106,6 +106,7 @@ writeFileSync(join(dataDir, "orphans.csv"), toCsv(unique));
 writeFileSync(join(dataDir, "stats.json"), JSON.stringify({ generatedAt: meta.generatedAt, ...stats }, null, 2));
 
 for (const f of ["orphans.json", "orphans.csv", "stats.json"]) copyFileSync(join(dataDir, f), join(siteDir, "data", f));
+copyFileSync(join(root, "brand", "logo.svg"), join(siteDir, "logo.svg"));
 const template = readFileSync(join(root, "index", "template.html"), "utf8");
 writeFileSync(
   join(siteDir, "index.html"),

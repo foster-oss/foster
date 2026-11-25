@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Foster</title>
+  <rect width="512" height="512" fill="#171513"/>
+  <!-- house: a home for packages -->
+  <path d="M256 84 L440 232 Q450 240 438 248 L404 248 L404 404 Q404 428 380 428 L132 428 Q108 428 108 404 L108 248 L74 248 Q62 240 72 232 Z" fill="#F6F1E7"/>
+  <!-- the package it shelters -->
+  <g transform="translate(0 6)">
+    <path d="M256 214 L334 259 L256 304 L178 259 Z" fill="#FF8A4C"/>
+    <path d="M178 259 L256 304 L256 394 L178 349 Z" fill="#E0622A"/>
+    <path d="M334 259 L256 304 L256 394 L334 349 Z" fill="#B9461A"/>
+  </g>
+</svg>

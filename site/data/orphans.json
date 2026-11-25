@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-25T18:15:27.169Z",
+ "generatedAt": "2026-11-25T22:02:45.300Z",
  "source": "ecosyste.ms critical package set (packages.ecosyste.ms), classified by Foster; see METHODOLOGY.md",
  "records": [
   {
@@ -7095,7 +7095,7 @@
    "name": "json-stable-stringify-without-jsonify",
    "status": "dormant",
    "reasons": [
-    "no release for 9.9 years",
+    "no release for 10.0 years",
     "no push for 5.6 years"
    ],
    "downloadsLastMonth": 750713529,
@@ -7156,7 +7156,7 @@
    "status": "dormant",
    "reasons": [
     "no release for 2.5 years",
-    "no push for 22 months"
+    "no push for 23 months"
    ],
    "downloadsLastMonth": 921459367,
    "dependentRepos": 1237028,
@@ -7336,7 +7336,7 @@
    "status": "dormant",
    "reasons": [
     "no release for 21 months",
-    "no push for 21 months"
+    "no push for 22 months"
    ],
    "downloadsLastMonth": 132772546,
    "dependentRepos": 1793430,
@@ -8854,8 +8854,8 @@
    "name": "fs-monkey",
    "status": "dormant",
    "reasons": [
-    "no release for 16 months",
-    "no push for 14 months"
+    "no release for 17 months",
+    "no push for 15 months"
    ],
    "downloadsLastMonth": 138936549,
    "dependentRepos": 1036154,
@@ -12780,7 +12780,7 @@
    "name": "@types/uuid",
    "status": "dormant",
    "reasons": [
-    "no release for 14 months",
+    "no release for 15 months",
     "no push for 2.6 years"
    ],
    "downloadsLastMonth": 198121340,
