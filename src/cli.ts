@@ -22,6 +22,7 @@ Options:
   --json                 Machine-readable output (scan, check)
   --markdown             Markdown report (scan)
   --all                  List every unmaintained dependency, not only the vulnerable ones (scan)
+  -r, --recursive        Also scan lockfiles in subfolders (monorepos)
   --summary-file <path>  Also append the markdown report to this file (e.g. $GITHUB_STEP_SUMMARY)
   --sarif <path>         Also write a SARIF 2.1.0 report (GitHub code scanning, other dashboards)
   --fail-on <level>      Exit 1 when findings reach a level:
@@ -50,6 +51,7 @@ async function main(argv: string[]): Promise<number> {
       "summary-file": { type: "string" },
       sarif: { type: "string" },
       sbom: { type: "string" },
+      recursive: { type: "boolean", short: "r", default: false },
       "fail-on": { type: "string", default: "none" },
       offline: { type: "boolean", default: false },
       "include-staged": { type: "boolean", default: false },
@@ -75,7 +77,7 @@ async function main(argv: string[]): Promise<number> {
     case "scan": {
       const failOn = values["fail-on"] as FailOn;
       if (!FAIL_LEVELS.includes(failOn)) throw new UsageError(`--fail-on must be one of ${FAIL_LEVELS.join(", ")}`);
-      const scanOpts = { offline: values.offline, includeStaged: values["include-staged"] };
+      const scanOpts = { offline: values.offline, includeStaged: values["include-staged"], recursive: values.recursive };
       const result = values.sbom ? await scanSbom(values.sbom, scanOpts) : await scanProject(arg ?? ".", scanOpts);
       if (values.json) console.log(JSON.stringify(result, null, 2));
       else if (values.markdown) console.log(formatMarkdown(result));

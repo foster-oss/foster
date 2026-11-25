@@ -9,6 +9,9 @@ inputs:
   path:
     description: Directory containing the lockfile(s) to scan.
     default: "."
+  recursive:
+    description: Also scan lockfiles in subfolders (monorepos).
+    default: "true"
   fail-on:
     description: "Fail the job at this level: none | patch-available | orphaned-vulnerable | unpatched | any"
     default: orphaned-vulnerable
@@ -53,13 +56,15 @@ runs:
         FOSTER_FAIL_ON: ${{ inputs.fail-on }}
         FOSTER_STAGED: ${{ inputs.include-staged }}
         FOSTER_VERSION: ${{ inputs.version }}
+        FOSTER_RECURSIVE: ${{ inputs.recursive }}
       run: |
         report="$RUNNER_TEMP/foster-report.md"
         sarif="$RUNNER_TEMP/foster.sarif"
-        staged=""
-        if [ "$FOSTER_STAGED" = "true" ]; then staged="--include-staged"; fi
+        flags=""
+        if [ "$FOSTER_STAGED" = "true" ]; then flags="--include-staged"; fi
+        if [ "$FOSTER_RECURSIVE" = "true" ]; then flags="$flags --recursive"; fi
         set +e
-        npx --yes "foster-oss@${FOSTER_VERSION}" scan "$FOSTER_PATH" --markdown $staged --fail-on "$FOSTER_FAIL_ON" --sarif "$sarif" > "$report"
+        npx --yes "foster-oss@${FOSTER_VERSION}" scan "$FOSTER_PATH" --markdown $flags --fail-on "$FOSTER_FAIL_ON" --sarif "$sarif" > "$report"
         code=$?
         set -e
         cat "$report" >> "$GITHUB_STEP_SUMMARY"

@@ -8,6 +8,7 @@
   per-ecosystem breakdown on the site.
 - Replacement suggestions (`consider: …`): e18e module-replacements for npm, plus Foster's reviewed
   `registry/alternatives.json` for all ecosystems.
+- `scan --recursive`: monorepos with lockfiles in subfolders (the GitHub Action does this by default).
 - `scan --sbom <file>`: scan CycloneDX or SPDX JSON SBOMs (purls for all six ecosystems).
 - SARIF 2.1.0 output (`--sarif`) and an Action option to upload findings to GitHub code scanning.
 - Fix suggestions pick the nearest fixed release on the installed release line.

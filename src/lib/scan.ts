@@ -1,4 +1,5 @@
-import { basename, dirname, resolve } from "node:path";
+import { readdirSync, type Dirent } from "node:fs";
+import { basename, dirname, join, relative, resolve } from "node:path";
 import { readSbom } from "./sbom.js";
 import { maxSeverity, toOrphanRecord } from "./classify.js";
 import { findPatch, indexByName, indexKey, loadOrphanIndex, loadRegistry, type PatchRegistry } from "./data.js";
@@ -22,24 +23,63 @@ export interface ScanOptions {
   indexFile?: string;
   /** Maintenance records already known to the caller (key: "ecosystem:name"); they take precedence over the index. */
   records?: Map<string, OrphanRecord>;
+  /** Also scan lockfiles in subfolders (monorepos), skipping node_modules, vendor, target, etc. */
+  recursive?: boolean;
 }
 
 const KIND_ORDER: Finding["kind"][] = ["patch-available", "orphaned-vulnerable", "unpatched-vulnerable", "upgrade-available", "orphaned"];
 const SEVERITY_ORDER: Severity[] = ["CRITICAL", "HIGH", "MODERATE", "LOW", "UNKNOWN"];
 
+/** Folders never worth descending into when looking for lockfiles. */
+const SKIP_DIRS = new Set(["node_modules", ".git", "vendor", "target", "dist", "build", ".venv", "venv", "__pycache__", ".next", ".nuxt", ".cache", "coverage", ".tox", "bower_components"]);
+
+/** Directories under `root` (including root) that contain at least one supported lockfile. */
+export function findProjectDirs(root: string, maxDepth = 6): string[] {
+  const out: string[] = [];
+  const walk = (dir: string, depth: number) => {
+    if (detectLockfiles(dir).length) out.push(dir);
+    if (depth >= maxDepth) return;
+    let entries: Dirent[];
+    try {
+      entries = readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      if (!e.isDirectory() || SKIP_DIRS.has(e.name) || (e.name.startsWith(".") && e.name !== ".")) continue;
+      walk(join(dir, e.name), depth + 1);
+    }
+  };
+  walk(root, 0);
+  return out;
+}
+
 export async function scanProject(dirInput: string, opts: ScanOptions = {}): Promise<ScanResult> {
   const dir = resolve(dirInput);
   const warnings: string[] = [];
-  const locks = detectLockfiles(dir);
-  if (locks.length === 0) {
-    warnings.push("no supported lockfile found (package-lock.json, pnpm-lock.yaml, yarn.lock, uv.lock, poetry.lock, Pipfile.lock, requirements.txt, Cargo.lock, go.mod, Gemfile.lock, composer.lock)");
+  const projectDirs = opts.recursive ? findProjectDirs(dir) : [dir];
+  const lockfiles: string[] = [];
+  const all: Dependency[] = [];
+  for (const pd of projectDirs) {
+    for (const lock of detectLockfiles(pd)) {
+      const prefix = relative(dir, pd).replace(/\\/g, "/");
+      const source = prefix ? `${prefix}/${lock.file}` : lock.file;
+      lockfiles.push(source);
+      for (const d of readDependencies(pd, lock)) all.push({ ...d, source });
+    }
   }
-  const deps = locks.flatMap((l) => readDependencies(dir, l));
+  if (lockfiles.length === 0) {
+    warnings.push(
+      `no supported lockfile found${opts.recursive ? " in this folder or its subfolders" : " (use --recursive for monorepos)"}: package-lock.json, pnpm-lock.yaml, yarn.lock, uv.lock, poetry.lock, Pipfile.lock, requirements.txt, Cargo.lock, go.mod, Gemfile.lock, composer.lock`,
+    );
+  }
+  // The same package version used by several sub-projects is reported once (first lockfile wins).
+  const deps = [...new Map(all.map((d) => [`${d.ecosystem}:${d.name}@${d.version}`, d])).values()];
   const findings = await analyzeDependencies(deps, opts, warnings);
   return {
     dir,
     scannedAt: new Date().toISOString(),
-    lockfiles: locks.map((l) => l.file),
+    lockfiles,
     dependencyCount: deps.length,
     findings,
     warnings,
