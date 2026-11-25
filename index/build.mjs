@@ -81,6 +81,13 @@ for (const eco of ecosystems) {
 const unique = [...new Map(records.map((r) => [`${r.ecosystem}:${r.name}`, r])).values()];
 unique.sort((a, b) => b.priority - a.priority || (b.dependentRepos ?? 0) - (a.dependentRepos ?? 0));
 
+// Never overwrite good data with a partial pull (rate limit, outage, blocked user agent).
+const minRecords = Number(process.env.FOSTER_MIN_RECORDS ?? 1000);
+if (unique.length < minRecords && !values["max-pages"].startsWith("0") && Number(values["max-pages"]) >= 50) {
+  console.error(`only ${unique.length} records fetched (expected at least ${minRecords}); refusing to write the index`);
+  process.exit(1);
+}
+
 const stats = buildStats(unique);
 const dataDir = join(root, "data");
 const siteDir = join(root, "site");

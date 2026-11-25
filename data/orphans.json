@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-25T17:56:44.844Z",
+ "generatedAt": "2026-11-25T18:09:40.303Z",
  "source": "ecosyste.ms critical package set (packages.ecosyste.ms), classified by Foster; see METHODOLOGY.md",
  "records": [
   {
@@ -10742,7 +10742,7 @@
    "name": "unist-util-is",
    "status": "dormant",
    "reasons": [
-    "no release for 13 months",
+    "no release for 14 months",
     "no push for 13 months"
    ],
    "downloadsLastMonth": 444963665,
