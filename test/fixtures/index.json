@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-26T00:00:00.000Z",
+  "source": "test",
+  "records": [
+    { "ecosystem": "npm", "name": "ip", "status": "dormant", "reasons": ["no release for 2.8 years"], "downloadsLastMonth": 38000000, "dependentRepos": 2900000, "dependentPackages": 4200, "latestVersion": "2.0.1", "latestReleaseAt": "2024-02-19T00:00:00Z", "repoUrl": "https://github.com/indutny/node-ip", "archived": false, "lastPushAt": null, "publishers": 1, "unpatchedAdvisories": [{ "id": "GHSA-2p57-rm9w-gvfp", "url": "https://github.com/advisories/GHSA-2p57-rm9w-gvfp", "severity": "HIGH", "title": "ip SSRF improper categorization in isPublic", "range": "<= 2.0.1" }], "priority": 100 },
+    { "ecosystem": "npm", "name": "left-pad", "status": "dead", "reasons": ["source repository is archived"], "downloadsLastMonth": 1000, "dependentRepos": 10, "dependentPackages": 1, "latestVersion": "1.3.0", "latestReleaseAt": null, "repoUrl": null, "archived": true, "lastPushAt": null, "publishers": 1, "unpatchedAdvisories": [], "priority": 5 },
+    { "ecosystem": "npm", "name": "utils-merge", "status": "dormant", "reasons": ["no release for 9 years"], "downloadsLastMonth": 1000, "dependentRepos": 10, "dependentPackages": 1, "latestVersion": "1.0.1", "latestReleaseAt": null, "repoUrl": null, "archived": false, "lastPushAt": null, "publishers": 1, "unpatchedAdvisories": [], "priority": 5 },
+    { "ecosystem": "npm", "name": "oldlib", "status": "dead", "reasons": ["source repository is archived"], "downloadsLastMonth": 1000, "dependentRepos": 10, "dependentPackages": 1, "latestVersion": "3.0.0", "latestReleaseAt": null, "repoUrl": null, "archived": true, "lastPushAt": null, "publishers": 1, "unpatchedAdvisories": [{ "id": "GHSA-test-test-test", "url": "https://github.com/advisories/GHSA-test-test-test", "severity": "LOW", "title": "old", "range": "< 2.0.0" }], "priority": 5 }
+  ]
+}

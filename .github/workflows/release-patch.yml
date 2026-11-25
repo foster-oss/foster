@@ -1,0 +1,56 @@
+name: Release a Foster patch
+
+# Publishes one patched package (e.g. @foster-oss/ip) with npm provenance.
+#
+# Safeguards:
+# - only runs from main, after the patch PR was merged with two approvals (branch protection);
+# - the `patch-release` environment requires approval from two maintainers before this job starts;
+# - the package is rebuilt from the upstream registry tarball + fix.patch and re-verified here,
+#   so what is published is exactly what the public diff and tests describe;
+# - registry/patches.json must already mark the patch "released" (set in the reviewed PR).
+
+on:
+  workflow_dispatch:
+    inputs:
+      patch:
+        description: "Patch folder under patches/, e.g. npm/ip"
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: patch-release
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: https://registry.npmjs.org
+      - run: npm install -g npm@latest
+      - name: Patch must be marked released in the registry
+        env:
+          PATCH: ${{ inputs.patch }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            const dir = "patches/" + process.env.PATCH;
+            const meta = JSON.parse(fs.readFileSync(dir + "/foster.json", "utf8"));
+            const reg = JSON.parse(fs.readFileSync("registry/patches.json", "utf8"));
+            const entry = reg.patches.find((p) => p.patchDir === dir);
+            if (!entry || entry.status !== "released" || meta.status !== "released") {
+              console.error("Set status to \"released\" in foster.json and registry/patches.json through a reviewed PR first.");
+              process.exit(1);
+            }'
+      - name: Rebuild and verify from upstream
+        env:
+          PATCH: ${{ inputs.patch }}
+        run: node scripts/build-patch.mjs "$PATCH" --pack
+      - name: Publish
+        env:
+          PATCH: ${{ inputs.patch }}
+        run: npm publish patches/$PATCH/dist/*.tgz --provenance --access public

@@ -1,0 +1,51 @@
+name: Nominate a package for adoption
+description: A widely used package has a security problem and nobody is maintaining it.
+title: "Adopt: <ecosystem>/<package>"
+labels: ["adoption-candidate"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks! Foster adopts packages that are **widely used**, **unmaintained**, and have a **real, unfixed problem**
+        (usually a security advisory with no patched version). See GOVERNANCE.md for the full criteria.
+  - type: dropdown
+    id: ecosystem
+    attributes:
+      label: Ecosystem
+      options: [npm, PyPI]
+    validations:
+      required: true
+  - type: input
+    id: package
+    attributes:
+      label: Package name and affected version
+      placeholder: ip@2.0.1
+    validations:
+      required: true
+  - type: input
+    id: advisory
+    attributes:
+      label: Advisory or bug link
+      description: GHSA / CVE / OSV id, or an issue showing the breakage.
+      placeholder: https://github.com/advisories/GHSA-xxxx-xxxx-xxxx
+    validations:
+      required: true
+  - type: textarea
+    id: maintenance
+    attributes:
+      label: Evidence it is unmaintained
+      description: Output of `npx foster-oss check <name>`, links to unanswered issues or PRs, archived repo, etc.
+    validations:
+      required: true
+  - type: textarea
+    id: contact
+    attributes:
+      label: Have you tried contacting the maintainer?
+      description: Links to issues, PRs or emails. It is fine if you have not; Foster does this before any release.
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Can you help?
+      options:
+        - label: I can write or review the patch
+        - label: My project depends on this package

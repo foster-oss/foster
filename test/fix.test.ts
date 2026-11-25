@@ -1,0 +1,128 @@
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, describe, expect, it } from "vitest";
+import { applyFixes, stringifyLike } from "../src/lib/fix.js";
+import type { Dependency, Finding, PatchEntry } from "../src/lib/types.js";
+
+const patch: PatchEntry = {
+  ecosystem: "npm",
+  name: "ip",
+  affected: "<=2.0.1",
+  replacement: { name: "@foster-oss/ip", version: "2.0.1-foster.1" },
+  advisories: ["GHSA-2p57-rm9w-gvfp"],
+  status: "released",
+  patchDir: "patches/npm/ip",
+  summary: "",
+};
+
+function finding(over: Partial<Dependency> = {}): Finding {
+  return {
+    kind: "patch-available",
+    dependency: { ecosystem: "npm", name: "ip", version: "2.0.1", direct: false, source: "package-lock.json", ...over },
+    status: "dormant",
+    severity: "HIGH",
+    advisories: [],
+    patch,
+    message: "",
+  };
+}
+
+const dirs: string[] = [];
+function project(pkg: object, lockfile = "package-lock.json"): string {
+  const dir = mkdtempSync(join(tmpdir(), "foster-fix-"));
+  dirs.push(dir);
+  writeFileSync(join(dir, "package.json"), JSON.stringify(pkg, null, 4) + "\n");
+  writeFileSync(join(dir, lockfile), lockfile.endsWith(".json") ? "{}" : "");
+  return dir;
+}
+const read = (dir: string) => JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
+
+afterEach(() => {
+  for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true });
+});
+
+describe("applyFixes", () => {
+  it("adds an npm override for a transitive dependency", () => {
+    const dir = project({ name: "x", dependencies: { socks: "^2.7.1" } });
+    const res = applyFixes(dir, [finding()]);
+    expect(res.written).toBe(true);
+    expect(read(dir).overrides).toEqual({ ip: "npm:@foster-oss/ip@2.0.1-foster.1" });
+  });
+
+  it("rewrites a direct dependency in place instead of overriding it", () => {
+    const dir = project({ name: "x", dependencies: { ip: "^2.0.0" } });
+    applyFixes(dir, [finding({ direct: true })]);
+    const pkg = read(dir);
+    expect(pkg.dependencies.ip).toBe("npm:@foster-oss/ip@2.0.1-foster.1");
+    expect(pkg.overrides).toBeUndefined();
+  });
+
+  it("uses pnpm.overrides for pnpm projects and resolutions for yarn", () => {
+    const pnpm = project({ name: "x" }, "pnpm-lock.yaml");
+    applyFixes(pnpm, [finding()]);
+    expect(read(pnpm).pnpm.overrides.ip).toBe("npm:@foster-oss/ip@2.0.1-foster.1");
+
+    const yarn = project({ name: "x" }, "yarn.lock");
+    applyFixes(yarn, [finding()]);
+    expect(read(yarn).resolutions.ip).toBe("npm:@foster-oss/ip@2.0.1-foster.1");
+  });
+
+  it("keeps an existing different override unless forced", () => {
+    const dir = project({ name: "x", overrides: { ip: "1.1.9" } });
+    const res = applyFixes(dir, [finding()]);
+    expect(res.written).toBe(false);
+    expect(res.changes[0]).toMatchObject({ applied: false });
+    expect(read(dir).overrides.ip).toBe("1.1.9");
+
+    applyFixes(dir, [finding()], { force: true });
+    expect(read(dir).overrides.ip).toBe("npm:@foster-oss/ip@2.0.1-foster.1");
+  });
+
+  it("scopes overrides per version when several versions are installed", () => {
+    const dir = project({ name: "x" });
+    applyFixes(dir, [finding({ version: "2.0.0" }), finding({ version: "2.0.1" })]);
+    expect(Object.keys(read(dir).overrides).sort()).toEqual(["ip@2.0.0", "ip@2.0.1"]);
+  });
+
+  it("does nothing on dry run and is idempotent", () => {
+    const dir = project({ name: "x" });
+    const before = readFileSync(join(dir, "package.json"), "utf8");
+    const dry = applyFixes(dir, [finding()], { dryRun: true });
+    expect(dry.changes).toHaveLength(1);
+    expect(readFileSync(join(dir, "package.json"), "utf8")).toBe(before);
+
+    applyFixes(dir, [finding()]);
+    const second = applyFixes(dir, [finding()]);
+    expect(second.changes).toHaveLength(0);
+  });
+
+  it("skips PyPI findings with an explanation", () => {
+    const dir = project({ name: "x" });
+    const res = applyFixes(dir, [finding({ ecosystem: "pypi", name: "foo" })]);
+    expect(res.skipped[0]?.reason).toMatch(/npm-only/);
+  });
+
+  it("ignores findings that are not patch-available", () => {
+    const dir = project({ name: "x" });
+    const res = applyFixes(dir, [{ ...finding(), kind: "orphaned-vulnerable", patch: undefined }]);
+    expect(res.changes).toHaveLength(0);
+    expect(res.written).toBe(false);
+  });
+
+  it("works on a copy of a real fixture project", () => {
+    const dir = mkdtempSync(join(tmpdir(), "foster-fix-"));
+    dirs.push(dir);
+    cpSync(join(__dirname, "fixtures", "npm-v3"), dir, { recursive: true });
+    applyFixes(dir, [finding({ direct: true })]);
+    expect(read(dir).dependencies.ip).toBe("npm:@foster-oss/ip@2.0.1-foster.1");
+  });
+});
+
+describe("stringifyLike", () => {
+  it("keeps indentation, CRLF and the trailing newline", () => {
+    const original = '{\r\n    "a": 1\r\n}\r\n';
+    expect(stringifyLike(original, { a: 2 })).toBe('{\r\n    "a": 2\r\n}\r\n');
+    expect(stringifyLike('{\n\t"a": 1\n}', { a: 1 })).toBe('{\n\t"a": 1\n}');
+  });
+});
