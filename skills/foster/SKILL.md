@@ -6,7 +6,7 @@ description: Check whether a dependency is still maintained and whether it has s
 # Foster: orphaned dependency check
 
 Foster finds dependencies that nobody maintains anymore, tells apart "just upgrade" from
-"no fix exists anywhere", and can switch a project to reviewed Foster security patches
+"no fix exists anywhere", and can switch a project to published drop-in security patches (from Foster or providers such as Keep LTS)
 without changing any import.
 
 ## When to use it
@@ -29,7 +29,7 @@ npx -y foster-oss scan <dir>
 npx -y foster-oss scan <dir> --json        # for further processing
 npx -y foster-oss scan <dir> --all         # also list quiet orphans
 
-# Switch to released Foster patches (edits package.json, then reinstall)
+# Switch to published drop-in patches (edits package.json, then reinstall)
 npx -y foster-oss fix <dir> --dry-run      # show first
 npx -y foster-oss fix <dir>
 ```
@@ -41,7 +41,7 @@ If the MCP server is configured (`npx -y foster-oss mcp`), prefer its tools:
 
 | Finding | Meaning | What to do |
 |---|---|---|
-| `FOSTER PATCH` | A reviewed Foster patch exists for this exact version | Show the user, then `foster-oss fix` (ask before editing package.json) |
+| `PATCH READY` | A published drop-in patch exists for this exact version | Show the user, then `foster-oss fix` (ask before editing package.json) |
 | `ORPHANED+VULN` | Known vulnerability, no fix anywhere, package dead or dormant | Prefer a maintained alternative; otherwise tell the user it can be nominated for adoption |
 | `NO FIX YET` | Known vulnerability, no fix released, but the package seems maintained | Watch for a release; consider mitigations |
 | `UPGRADE` | Fixed upstream | Upgrade normally; Foster is not needed |

@@ -160,7 +160,7 @@ function toFinding(
       severity: maxSeverity(advisories),
       advisories,
       patch,
-      message: `${label}: Foster patch ${patch.replacement.name}@${patch.replacement.version}${patch.status === "staged" ? " (staged, not yet released)" : ""} fixes ${patch.advisories.join(", ")}. Run \`foster-oss fix\`.`,
+      message: `${label}: drop-in patch ${patch.replacement.name}@${patch.replacement.version} by ${patch.provider?.name ?? "Foster"}${patch.status === "staged" ? " (staged, not yet released)" : ""} fixes ${patch.advisories.join(", ")}. Run \`foster-oss fix\`.`,
     };
   }
   if (unpatched.length > 0) {

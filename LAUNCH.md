@@ -1,113 +1,105 @@
 # Panduan peluncuran Foster
 
-Kode, data, dan tambalan pertama sudah selesai dan teruji di laptop. Langkah di bawah ini butuh
-**akun dan keputusan kamu sendiri**: membuat organisasi, menerbitkan package, dan menghubungi
-orang. Aku sengaja tidak melakukannya atas nama kamu. Urutannya sudah disusun supaya kamu bisa
-mengikuti dari atas ke bawah.
+## Status (26 Nov 2026)
 
-## Minggu 1: buka ke publik
+Sudah selesai:
 
-1. **Buat organisasi GitHub `foster-oss`** di github.com/organizations/new (gratis), lalu buat
-   repo `foster` yang publik.
-2. **Push kode:**
+- Repo publik: <https://github.com/rekalnx/foster>. CI lulus.
+- Situs Orphan Index: <https://rekalnx.github.io/foster/>, dibangun ulang setiap Senin lewat GitHub Actions.
+- Tag `v0` untuk GitHub Action.
+- Registry berisi 12 tambalan drop-in yang sudah dirilis (dari Keep LTS). `foster-oss fix` sudah
+  teruji end-to-end: setelah fix dan `npm install`, `socks` langsung memuat `@keep-lts/ip`, dan
+  celah SSRF-nya tertutup.
+
+**Perubahan arah.** Saat menyiapkan kontak ke upstream `ip`, ternyata
+[Keep LTS](https://keep-lts.com) sudah menerbitkan tambalan drop-in untuk 12 package terlantar,
+termasuk `ip` dan `extract-zip`, dengan model yang sama persis seperti Patch Lab Foster. Jadi Foster
+sekarang tidak menerbitkan tambalan duplikat. Peran Foster adalah index dan scanner yang netral:
+menunjukkan dependency mana yang terlantar, lalu menghubungkannya ke tambalan dari penyedia mana pun.
+Tambalan `ip` buatan Foster dipensiunkan, dan foldernya tetap disimpan sebagai verifikasi independen.
+Aku tidak mengirim pesan apa pun ke upstream, karena issue `ip` sudah punya tiga solusi (Keep LTS,
+`@bybrave/ip2`, dan PR #166).
+
+## Langkah yang butuh akun kamu
+
+1. **Terbitkan CLI ke npm.** Ini langkah terpenting, karena `npx foster-oss` dan GitHub Action
+   baru jalan setelah ini.
    ```powershell
    cd D:\DEV\SOCIETY-PROJECT\foster
-   git remote add origin https://github.com/rekalnx/foster.git
-   git push -u origin main
+   npm login
+   npm publish --access public
    ```
-3. **Pengaturan repo** di GitHub, Settings:
-   - Pages, Source = "GitHub Actions". Situs Orphan Index terbit setelah workflow `Orphan Index`
-     dijalankan sekali (Actions → Orphan Index → Run workflow).
-   - Code security: aktifkan *Private vulnerability reporting*.
-   - Branches: lindungi `main` dengan "require pull request" dan "require status checks: CI".
-   - Environments: buat `npm-release` dan `patch-release`. Isi *required reviewers* di `patch-release`
-     setelah ada maintainer kedua.
-4. **Buat organisasi npm `foster-oss`** di npmjs.com (gratis untuk package publik). Ini memberi
-   scope `@foster-oss/*`.
-5. **Terbitkan CLI-nya.** Untuk rilis pertama, cara paling mudah adalah `npm login` lalu
-   `npm publish --access public` dari laptop. Setelah itu, aktifkan *Trusted publishing* di
-   npmjs.com → foster-oss → Settings (GitHub Actions, repo `rekalnx/foster`, workflow `release.yml`,
-   environment `npm-release`). Rilis berikutnya cukup: naikkan versi di package.json, commit, lalu
-   `git tag v0.1.1 && git push --tags`.
-6. **Buat tag `v0` untuk GitHub Action** supaya `uses: rekalnx/foster@v0` di README bisa dipakai:
-   `git tag v0 && git push origin v0`. Setiap rilis baru, pindahkan tag ini dengan `git tag -f v0 && git push -f origin v0`.
-7. **Isi `MAINTAINERS.md`** dengan akun GitHub kamu.
+   Nama `foster-oss` masih kosong di npm (dicek 26 Nov). Setelah rilis pertama, aktifkan
+   *Trusted publishing* di npmjs.com → package foster-oss → Settings (GitHub Actions, repo
+   `rekalnx/foster`, workflow `release.yml`, environment `npm-release`). Rilis berikutnya cukup:
+   naikkan versi, commit, lalu `git tag v0.1.1 && git push --tags`.
+2. **Pengaturan repo** (opsional, tapi disarankan):
+   - Settings → Code security → aktifkan *Private vulnerability reporting*.
+   - Settings → Branches → lindungi `main` (require status checks: CI).
+3. **Hapus kalimat "Not on npm yet"** di README setelah langkah 1 selesai.
 
-## Minggu 1–2: validasi dan kontak
+## Kontak (draf, kirim sendiri kalau setuju)
 
-8. **Hubungi Andrew Nesbitt / ecosyste.ms** (hello@ecosyste.ms, atau lewat Mastodon atau blognya).
-   Tujuannya dua: memastikan belum ada yang membangun hal serupa, dan minta masukan soal metodologi.
-   Draf pesan:
+4. **Keep LTS** (hello@keep-lts.com). Kabari bahwa Foster menautkan tambalan mereka, lalu tawarkan
+   dua hal: Orphan Index sebagai sumber kandidat package berikutnya, dan agar mereka menambah entri
+   registry sendiri lewat PR.
 
-   > Hi Andrew, your "Weekend at Bernie's" post ended with registries needing "an actual process" for
-   > unowned packages with valid CVEs. I've built an open prototype of one: Foster
-   > (github.com/rekalnx/foster). It classifies the ecosyste.ms critical set weekly, and for dead
-   > packages with unfixed advisories it publishes minimal, reproducible patches under its own scope
-   > (never taking names). Projects switch to them through npm aliases. The first patch fixes the `ip`
-   > SSRF (GHSA-2p57-rm9w-gvfp). I'd value your view on the methodology, and whether anyone else is
-   > already doing this. Thanks for ecosyste.ms: Foster wouldn't exist without it.
+   > Hi! I maintain Foster (github.com/rekalnx/foster), an open, vendor-neutral scanner and weekly
+   > index of abandoned npm/PyPI packages (rekalnx.github.io/foster). `foster-oss fix` now points
+   > projects at your drop-in releases (all 12 are in our registry, credited to Keep LTS). Two ideas:
+   > the Orphan Index lists orphaned packages with unfixed advisories that might be useful for your
+   > roadmap (e.g. elliptic), and you're very welcome to add new releases to registry/patches.json by
+   > PR. Happy to adjust how we describe Keep LTS. Thanks for doing this work.
 
-9. **Mulai jendela 6 minggu untuk `ip`.** Buka issue atau PR di `indutny/node-ip` berisi
-   `patches/npm/ip/fix.patch` dan tautan ke tesnya, lalu catat tanggalnya di `patches/npm/ip/ADOPTION.md`.
-   Draf pesan:
+5. **Andrew Nesbitt / ecosyste.ms** (hello@ecosyste.ms). Minta masukan soal metodologi index.
 
-   > Hi! GHSA-2p57-rm9w-gvfp is still open for `ip` 2.0.1 and many projects still depend on it
-   > (~38M downloads/month). Here is a minimal patch (lib/ip.js only) that parses addresses numerically
-   > before the range checks, with regression tests; your existing test suite still passes. We'd much
-   > prefer you merge and release it here. If we don't hear back in six weeks, Foster will publish it as
-   > `@foster-oss/ip` so affected users have an option, and will point everyone back here as soon as you
-   > release a fix. Thank you for maintaining `ip` all these years.
+   > Hi Andrew, your "Weekend at Bernie's" post was the starting point for Foster
+   > (github.com/rekalnx/foster): a weekly, public classification of the ecosyste.ms critical set
+   > (rekalnx.github.io/foster), plus a scanner that tells projects which of their dependencies are
+   > orphaned and links them to published drop-in patches when they exist. I approximated your "no
+   > write-access response" rule with closes/merges (METHODOLOGY.md) and would value your view on it.
+   > Thanks for ecosyste.ms: Foster wouldn't exist without it.
 
-10. **Cari 2 reviewer awal** dari organisasi lain. Tempat yang cocok: komunitas OpenSSF (Slack
-   openssf.slack.com, channel #securing-critical-projects), forum Python Packaging, dan teman
-   developer yang paham security.
+## Peluncuran (setelah npm siap)
 
-## Bulan 1–3: peluncuran
+6. **Show HN.** Waktu terbaik: Selasa–Kamis pagi waktu AS. Lonjakan HN cepat habis (half-life
+   sekitar 24 jam), jadi pastikan pengunjung bisa langsung mencoba.
 
-11. **Show HN.** Luncurkan setelah situs Orphan Index aktif dan `npx foster-oss scan` sudah bisa
-    dipakai. Waktu terbaik menurut riset kita: Selasa–Kamis pagi waktu AS. Ingat, lonjakan HN cepat
-    habis (half-life sekitar 24 jam), jadi pastikan pengunjung bisa langsung mencoba. Draf judul:
+   > **Show HN: Foster – 28% of the most depended-on npm/PyPI packages are unmaintained**
+   >
+   > I classified the 2,817 most depended-on npm and PyPI packages (the ecosyste.ms critical set):
+   > 790 are dead or dormant, together ~190B downloads/month. A few have security advisories that no
+   > upstream release fixes, e.g. ip (SSRF) and extract-zip (path traversal). `npm audit` just says
+   > "no fix available", but often someone *has* published a drop-in fix. Foster connects the two:
+   > `npx foster-oss scan` tells you which of your dependencies are orphaned and which have a published
+   > patch, and `foster-oss fix` switches to it via an npm alias, no code changes. The index is public
+   > and rebuilt weekly; there's also a GitHub Action and an MCP server so AI agents check packages
+   > before adding them. Feedback on the methodology is very welcome.
 
-    > Show HN: Foster – 28% of the most-used npm/PyPI packages are unmaintained; patching the dangerous ones
-
-    Draf isi:
-
-    > I classified the 2,817 most depended-on npm and PyPI packages (ecosyste.ms critical set). 790
-    > are dead or dormant, together ~190B downloads/month. Four have security advisories that no
-    > release fixes, e.g. `ip` (SSRF, 38M downloads/month) and `extract-zip` (path traversal, 113M).
-    > Upgrade bots can't help when no fixed version exists, and registries only have processes for
-    > taking over names. Foster is an open attempt at the missing piece: minimal, reviewed,
-    > reproducible patches under its own scope, offered upstream first, delivered via npm aliases
-    > (`npx foster-oss fix`). Index, method and patches are all public. Feedback on the governance
-    > model is especially welcome: this is exactly what a supply-chain attack looks like if done wrong.
-
-12. **Tambalan kedua: `extract-zip`** (113 juta download/bulan, 2 HIGH). Ini kandidat paling
-    berdampak. Buka issue "Adopt: npm/extract-zip" dan ajak kontributor.
-13. **Hacktoberfest 2027** (Oktober): beri label `hacktoberfest` dan `good first issue` pada tugas
-    seperti dukungan Cargo/Go lockfile, koreksi index, atau tes tambahan. Ini mesin untuk target
-    20+ kontributor luar.
+7. **Hacktoberfest 2027** (Oktober): beri label `hacktoberfest` dan `good first issue` pada tugas
+   seperti dukungan lockfile Cargo/Go/Maven, `fix` untuk Python, koreksi index, dan entri registry.
+   Ini mesin untuk target 20+ kontributor luar.
 
 ## Pendaftaran program (setelah ada bukti pemakaian)
 
-**Anthropic Claude for Open Source** (claude.com/contact-sales/claude-for-oss). Jalur yang paling
-realistis untuk Foster: *20+ kontributor eksternal dalam 12 bulan*, *100+ PR yang di-merge ke repo
-orang lain* (PR tambalan ke upstream ikut dihitung), atau "apply anyway" karena ekosistem bergantung padanya.
+**Anthropic Claude for Open Source** (claude.com/contact-sales/claude-for-oss). Jalur paling
+realistis: *20+ kontributor eksternal dalam 12 bulan*, atau *100+ PR yang di-merge ke repo orang
+lain*. Jalur kedua ini paling bisa kamu kendalikan: perbaikan kecil di library populer, sekitar 2 per minggu.
 
-**OpenAI Codex for Open Source** (openai.com/form/codex-for-oss). Draf jawaban untuk "Why does this
-repository qualify?" (maks 500 karakter):
+**OpenAI Codex for Open Source** (openai.com/form/codex-for-oss). Draf jawaban (maks 500 karakter):
 
-> Foster keeps critical but abandoned npm/PyPI packages safe. Its weekly Orphan Index shows 790 of the
-> 2,817 most depended-on packages are dead or dormant (~190B downloads/month), and 4 have security
-> advisories no release fixes. Foster ships minimal, reviewed, reproducible patches (first: `ip` SSRF,
-> 38M downloads/month) without taking names, and a CLI/GitHub Action/MCP server so projects and AI
-> agents avoid orphaned dependencies.
+> Foster helps projects find dependencies nobody maintains. Its weekly public Orphan Index shows 790
+> of the 2,817 most depended-on npm/PyPI packages are dead or dormant (~190B downloads/month). The
+> foster-oss CLI, GitHub Action and MCP server flag orphaned and unfixable dependencies and switch
+> projects to published drop-in security patches via npm aliases, so developers and AI agents stop
+> shipping abandoned, vulnerable code.
 
 Perbarui angka-angkanya dengan data terbaru sebelum mengirim.
 
 ## Metrik yang dipantau setiap bulan
 
-- kontributor eksternal unik dengan PR di-merge (target 20 dalam 12 bulan);
-- PR kamu yang di-merge di repo orang lain (target 100 dalam 12 bulan);
 - download `foster-oss` per bulan (npmjs.com/package/foster-oss);
 - repo yang memakai Action (`uses: rekalnx/foster`, cari lewat GitHub code search);
-- jumlah tambalan yang sudah `released`.
+- kontributor eksternal unik dengan PR di-merge (target 20 dalam 12 bulan);
+- PR kamu yang di-merge di repo orang lain (target 100 dalam 12 bulan);
+- jumlah entri di registry tambalan.

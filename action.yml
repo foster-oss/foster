@@ -1,5 +1,5 @@
 name: Foster dependency check
-description: Find orphaned dependencies and security holes with no fix, and point to reviewed Foster patches.
+description: Find orphaned dependencies and security holes with no fix, and point to published drop-in patches.
 author: Foster contributors
 branding:
   icon: home

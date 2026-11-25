@@ -1,16 +1,23 @@
 # Foster
 
-**A foster home for open source packages nobody maintains anymore.**
+**Find the dependencies nobody maintains anymore, and the fixes that exist for them.**
 
-Foster finds the dependencies in your project that have been abandoned, tells you which of them
-have security holes that *no release fixes*, and lets you swap in a reviewed, minimal Foster patch
-with one command, without changing a single import and without taking anyone's package name.
+Foster scans your lockfile, tells you which dependencies have been abandoned, separates
+"just upgrade" from "no release fixes this", and when someone has published a drop-in security
+patch for an abandoned package, switches your project to it with one command, without changing a
+single import.
 
 ```bash
 npx foster-oss scan        # what in my lockfile is orphaned, or vulnerable with no fix?
-npx foster-oss fix         # switch to reviewed Foster patches (edits package.json)
+npx foster-oss fix         # switch to published drop-in patches (edits package.json)
 npx foster-oss check ip@2.0.1
 ```
+
+> **Not on npm yet.** Until the first release, run it from source:
+> `git clone https://github.com/rekalnx/foster && cd foster && npm ci && npm run build && node dist/cli.js scan <your-project>`
+
+**The Orphan Index**, a public dataset of which critical packages are unmaintained, is live at
+**<https://rekalnx.github.io/foster/>** and rebuilt every week.
 
 ## Why
 
@@ -21,44 +28,42 @@ We classified the **2,817 most depended-on packages** on npm and PyPI (the
 - Those unmaintained packages are downloaded **~190 billion times a month** and back
   **~885 million** dependent repositories.
 - **497** of them can only be published by a single account.
-- **4 of them have security advisories that no release fixes**, together downloaded ~270 million times a month:
+- **4 of them have security advisories that no upstream release fixes**:
 
-| Package | Downloads / month | Advisory with no fix | Status |
+| Package | Downloads / month | Advisory with no upstream fix | Drop-in patch |
 |---|---|---|---|
-| `extract-zip` | 113M | 2 × HIGH: symlink path traversal / arbitrary file write | dormant |
-| `elliptic` | 74M | LOW: risky cryptographic primitive | dormant |
-| `aws-sdk` (v2) | 48M | LOW: region parameter validation | dead (end of life) |
-| `ip` | 38M | HIGH: SSRF, `isPublic()` misclassifies `127.1`, `::fFFf:127.0.0.1`, … | dormant, **Foster patch ready** |
+| `extract-zip` | 113M | 2 × HIGH: symlink path traversal / arbitrary file write | [`@keep-lts/extract-zip`](https://keep-lts.com) |
+| `elliptic` | 74M | LOW: risky cryptographic primitive | none yet |
+| `aws-sdk` (v2) | 48M | LOW: region parameter validation | none: end of life, migrate to v3 |
+| `ip` | 38M | HIGH: SSRF, `isPublic()` misclassifies `127.1`, `::fFFf:127.0.0.1`, … | [`@keep-lts/ip`](https://keep-lts.com) |
 
-Detection tools already exist. Upgrade bots (Dependabot, Renovate) can't help when no fixed version
-exists. Registries' abandonment policies are about *taking over names*, when what people need is
-*one fixed release*. And Jazzband, the best-known cooperative for adopting orphaned Python
-projects, wound down in 2026. Foster is the missing piece: **a public, auditable way to patch →
-review → release → deliver fixes for critical packages nobody maintains.**
-
-The full numbers are in the [Orphan Index](site/index.html) ([JSON](data/orphans.json),
-[CSV](data/orphans.csv)), rebuilt weekly.
+Upgrade bots (Dependabot, Renovate) can't help when no fixed version exists, and `npm audit`
+just says "no fix available". Meanwhile, people *are* fixing abandoned packages: maintained forks,
+community patches and services like [Keep LTS](https://keep-lts.com) publish drop-in releases. But
+nothing connects "this dependency of yours is orphaned and vulnerable" to "here is the fix someone
+already published". **Foster is that connection: an open, vendor-neutral index and scanner.**
 
 ## How it works
 
 ```
-Orphan Index ──► Patch Lab ──► upstream PR first ──► @foster-oss/<name> ──► foster-oss fix
-(public data)    (minimal fix,   (6-week window;        (provenance,           (npm alias override,
-                  2 reviewers)    released only if       reproducible from      imports unchanged)
-                                  nobody answers)        upstream + patch)
+Orphan Index ─────► foster-oss scan ─────► patch registry ─────► foster-oss fix
+(weekly, public:     (your lockfile +        (drop-in patches      (npm alias override,
+ who is dead,         OSV, live)              from any provider:    imports unchanged)
+ dormant, unfixed)                            Keep LTS, Foster, …)
 ```
 
 1. **Orphan Index.** Every week, Foster classifies the critical package set as active / dormant /
-   dead from public signals, and lists advisories that no release fixes.
-2. **Patch Lab.** A patch is the smallest diff that fixes the advisory, nothing else. Its tests must
-   *fail on the original release* and pass on the patch, and the upstream test suite must still pass.
-   AI may draft it; two human reviewers from different organisations approve it.
-3. **Upstream first.** The patch is offered to the original repository. Foster only releases its
-   own package if upstream has not responded after six weeks, and steps back the moment upstream ships a fix.
-4. **Release.** `@foster-oss/<name>` is rebuilt in CI from the upstream registry tarball plus the
-   public `fix.patch`, and published with npm provenance. No upstream install scripts are kept.
-5. **Delivery.** `foster-oss fix` points your project at the patch through an npm alias
-   (`"ip": "npm:@foster-oss/ip@2.0.1-foster.1"`), so `require("ip")` keeps working.
+   dead from public signals and lists advisories that no release fixes ([methodology](METHODOLOGY.md)).
+2. **Scan.** `foster-oss scan` reads your lockfile, checks every package against OSV, and tells
+   apart *upgrade*, *no fix yet*, *orphaned and vulnerable*, and *a drop-in patch exists*.
+3. **Patch registry.** [`registry/patches.json`](registry/patches.json) lists published drop-in
+   patches for abandoned packages, whoever publishes them, with the versions they replace and the
+   advisories they fix. Today: 12 packages from Keep LTS. Anyone can add an entry by PR.
+4. **Fix.** `foster-oss fix` points your project at the patch through an npm alias
+   (`"ip": "npm:@keep-lts/ip@2.0.2"`), so `require("ip")` keeps working.
+5. **Patch Lab, as a last resort.** When an orphaned, vulnerable package has no patch anywhere,
+   Foster can build one in the open under the rules in [GOVERNANCE.md](GOVERNANCE.md). Foster
+   does not duplicate patches that already exist.
 
 ## Usage
 
@@ -70,7 +75,7 @@ Node 20+. Reads `package-lock.json`, `npm-shrinkwrap.json`, `pnpm-lock.yaml`, `y
 | Command | What it does |
 |---|---|
 | `foster-oss scan [dir]` | Report orphaned and unpatched dependencies. `--json`, `--markdown`, `--all`, `--fail-on <level>`, `--offline` |
-| `foster-oss fix [dir]` | Point dependencies at released Foster patches. `--dry-run`, `--force` |
+| `foster-oss fix [dir]` | Point dependencies at published drop-in patches. `--dry-run`, `--force` |
 | `foster-oss check <name[@version]>` | Maintenance status, reach, unfixed advisories and patches for one package. `--ecosystem pypi` |
 | `foster-oss mcp` | Start the MCP server for AI agents |
 
@@ -78,13 +83,16 @@ What the findings mean:
 
 | Finding | Meaning |
 |---|---|
-| `FOSTER PATCH` | A reviewed Foster patch exists for this exact version. Run `foster-oss fix`. |
+| `PATCH READY` | A published drop-in patch exists for this exact version. Run `foster-oss fix`. |
 | `ORPHANED+VULN` | Known vulnerability, no fix anywhere, package dead or dormant. Prefer an alternative, or [nominate it](https://github.com/rekalnx/foster/issues/new?template=adopt.yml). |
 | `NO FIX YET` | Known vulnerability with no release yet, but the package looks maintained. |
-| `UPGRADE` | Fixed upstream. Just upgrade; Foster is not needed. |
+| `UPGRADE` | Fixed upstream. Just upgrade. |
 | `ORPHANED` | Widely used and unmaintained, no known vulnerability. Shown with `--all`. |
 
-`fix` is npm-ecosystem only for now (npm, pnpm, yarn). Python projects get findings and manual instructions.
+`fix` is npm-ecosystem only for now (npm, pnpm, yarn). Python projects get findings only.
+
+A patch from a third-party provider is that provider's code and responsibility. Foster lists it so
+you can find it; read the provider's source and advisory before adopting it.
 
 ### GitHub Action
 
@@ -95,7 +103,8 @@ What the findings mean:
     comment: true                  # optional PR comment; needs pull-requests: write
 ```
 
-The report is also written to the job summary.
+The report is also written to the job summary. (The Action runs `npx foster-oss`, so it works once
+the package is on npm.)
 
 ### AI agents
 
@@ -118,19 +127,17 @@ import { scanProject, checkPackage } from "foster-oss";
 const result = await scanProject("./my-app");
 ```
 
-## Patches
+## Adding a patch to the registry
 
-| Package | Replaces | Fixes | Status |
-|---|---|---|---|
-| [`@foster-oss/ip`](patches/npm/ip/ADOPTION.md) | `ip` ≤ 2.0.1 | GHSA-2p57-rm9w-gvfp (HIGH, SSRF) | staged: verified, waiting for upstream window and reviewers |
-
-Next in the queue: `extract-zip` (2 × HIGH). See [patches/README.md](patches/README.md).
+If you publish (or know of) a drop-in security release of an abandoned package, open a PR adding
+it to [`registry/patches.json`](registry/patches.json): the original package and affected versions,
+the replacement package and version, the advisories it fixes, and who maintains it. Requirements:
+public source, the original license kept, and a regression test for each advisory.
 
 ## Contributing
 
-Foster needs reviewers more than anything: people who can read a small security diff and say
-"yes, this is correct and minimal". Also wanted: patch authors, adapters for more ecosystems,
-and corrections to the index. Start with [CONTRIBUTING.md](CONTRIBUTING.md).
+Wanted: registry entries, adapters for more ecosystems (Cargo, Go, Maven, RubyGems), `fix` for
+Python, corrections to the index, and reviewers. Start with [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Foster's rules are in [GOVERNANCE.md](GOVERNANCE.md), its stance on AI-written code in
 [AI_POLICY.md](AI_POLICY.md), and how to report a problem in Foster itself in [SECURITY.md](SECURITY.md).
@@ -138,7 +145,8 @@ Foster's rules are in [GOVERNANCE.md](GOVERNANCE.md), its stance on AI-written c
 ## Data and credits
 
 Maintenance and reach data: [ecosyste.ms](https://ecosyste.ms) (CC BY-SA 4.0). Vulnerabilities:
-[OSV.dev](https://osv.dev) and the GitHub Advisory Database. The dead/dormant buckets follow
-Andrew Nesbitt's [“Weekend at Bernie's”](https://nesbitt.io/2026/05/08/weekend-at-bernies) analysis.
+[OSV.dev](https://osv.dev) and the GitHub Advisory Database. Drop-in patches currently listed:
+[Keep LTS](https://keep-lts.com). The dead/dormant buckets follow Andrew Nesbitt's
+[“Weekend at Bernie's”](https://nesbitt.io/2026/05/08/weekend-at-bernies) analysis.
 
-Code: [Apache-2.0](LICENSE). Each patched package keeps its original license.
+Code: [Apache-2.0](LICENSE).
