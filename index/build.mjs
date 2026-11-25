@@ -99,13 +99,31 @@ const meta = {
   generatedAt: now.toISOString(),
   source: "ecosyste.ms critical package set (packages.ecosyste.ms), classified by Foster; see METHODOLOGY.md",
 };
+
+// What changed since the previous build: the weekly report and the Atom feed.
+const previousPath = join(dataDir, "orphans.json");
+const previous = existsSync(previousPath) ? JSON.parse(readFileSync(previousPath, "utf8")) : null;
+// Same-day rebuilds (e.g. --from-cache) are not a new week: only compare across days.
+const changes = previous && previous.generatedAt.slice(0, 10) !== meta.generatedAt.slice(0, 10) ? diffIndex(previous, unique, meta.generatedAt) : null;
+const historyPath = join(dataDir, "history.json");
+const history = existsSync(historyPath) ? JSON.parse(readFileSync(historyPath, "utf8")) : [];
+if (changes) {
+  const day = changes.date.slice(0, 10);
+  const kept = history.filter((h) => h.date.slice(0, 10) !== day);
+  kept.unshift(changes);
+  history.length = 0;
+  history.push(...kept.slice(0, 52));
+}
+writeFileSync(historyPath, JSON.stringify(history, null, 1));
+writeFileSync(join(siteDir, "feed.xml"), atomFeed(history));
+
 writeFileSync(join(dataDir, "orphans.json"), JSON.stringify({ ...meta, records: unique }, null, 1));
 const min = unique.filter((r) => r.status !== "active" || r.unpatchedAdvisories.length > 0);
 writeFileSync(join(dataDir, "orphans.min.json"), JSON.stringify({ ...meta, records: min }));
 writeFileSync(join(dataDir, "orphans.csv"), toCsv(unique));
 writeFileSync(join(dataDir, "stats.json"), JSON.stringify({ generatedAt: meta.generatedAt, ...stats }, null, 2));
 
-for (const f of ["orphans.json", "orphans.csv", "stats.json"]) copyFileSync(join(dataDir, f), join(siteDir, "data", f));
+for (const f of ["orphans.json", "orphans.csv", "stats.json", "history.json"]) copyFileSync(join(dataDir, f), join(siteDir, "data", f));
 copyFileSync(join(root, "brand", "logo.svg"), join(siteDir, "logo.svg"));
 const template = readFileSync(join(root, "index", "template.html"), "utf8");
 writeFileSync(
@@ -164,4 +182,73 @@ function toCsv(rows) {
     );
   }
   return lines.join("\n") + "\n";
+}
+
+function diffIndex(prev, rows, date) {
+  const key = (r) => `${r.ecosystem}:${r.name}`;
+  const before = new Map(prev.records.map((r) => [key(r), r]));
+  const unmaintained = (s) => s === "dead" || s === "dormant";
+  const brief = (r, extra = {}) => ({ ecosystem: r.ecosystem, name: r.name, status: r.status, dependentRepos: r.dependentRepos, downloadsLastMonth: r.downloadsLastMonth, ...extra });
+  const byReach = (a, b) => (b.dependentRepos ?? 0) - (a.dependentRepos ?? 0);
+  const newlyUnmaintained = [];
+  const recovered = [];
+  const newUnfixed = [];
+  const resolvedUnfixed = [];
+  for (const r of rows) {
+    const p = before.get(key(r));
+    if (!p) continue; // new to the critical set: not a change in maintenance
+    if (unmaintained(r.status) && !unmaintained(p.status)) newlyUnmaintained.push(brief(r, { from: p.status, reasons: r.reasons }));
+    if (!unmaintained(r.status) && unmaintained(p.status)) recovered.push(brief(r, { from: p.status }));
+    const prevIds = new Set(p.unpatchedAdvisories.map((a) => a.id));
+    const nowIds = new Set(r.unpatchedAdvisories.map((a) => a.id));
+    const added = r.unpatchedAdvisories.filter((a) => !prevIds.has(a.id));
+    const gone = p.unpatchedAdvisories.filter((a) => !nowIds.has(a.id));
+    if (added.length) newUnfixed.push(brief(r, { advisories: added.map((a) => ({ id: a.id, severity: a.severity, title: a.title })) }));
+    if (gone.length) resolvedUnfixed.push(brief(r, { advisories: gone.map((a) => a.id) }));
+  }
+  return {
+    date,
+    since: prev.generatedAt,
+    newlyUnmaintained: newlyUnmaintained.sort(byReach).slice(0, 100),
+    recovered: recovered.sort(byReach).slice(0, 100),
+    newUnfixed: newUnfixed.sort(byReach),
+    resolvedUnfixed: resolvedUnfixed.sort(byReach),
+    counts: { newlyUnmaintained: newlyUnmaintained.length, recovered: recovered.length, newUnfixed: newUnfixed.length, resolvedUnfixed: resolvedUnfixed.length },
+  };
+}
+
+function atomFeed(entries) {
+  const site = "https://rekalnx.github.io/foster/";
+  const x = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const fmt = (n) => (n == null ? "?" : Intl.NumberFormat("en", { notation: "compact" }).format(n));
+  const li = (r, tail = "") => `<li>${x(r.ecosystem)} <b>${x(r.name)}</b> (${fmt(r.dependentRepos)} dependent repos)${tail}</li>`;
+  const items = entries.map((e) => {
+    const c = e.counts;
+    const title = `Orphan Index ${e.date.slice(0, 10)}: ${c.newlyUnmaintained} newly unmaintained, ${c.newUnfixed} with new unfixed advisories, ${c.recovered} maintained again`;
+    const body = [
+      e.newUnfixed.length ? `<h3>New advisories that no release fixes</h3><ul>${e.newUnfixed.map((r) => li(r, `: ${r.advisories.map((a) => `${x(a.id)} (${x(a.severity)})`).join(", ")}`)).join("")}</ul>` : "",
+      e.newlyUnmaintained.length ? `<h3>Newly unmaintained</h3><ul>${e.newlyUnmaintained.slice(0, 30).map((r) => li(r, ` → ${x(r.status)}`)).join("")}</ul>` : "",
+      e.recovered.length ? `<h3>Maintained again</h3><ul>${e.recovered.slice(0, 30).map((r) => li(r)).join("")}</ul>` : "",
+      e.resolvedUnfixed.length ? `<h3>Advisories now fixed</h3><ul>${e.resolvedUnfixed.map((r) => li(r, `: ${r.advisories.map(x).join(", ")}`)).join("")}</ul>` : "",
+    ].join("") || "<p>No changes this week.</p>";
+    return `  <entry>
+    <id>${site}#${e.date.slice(0, 10)}</id>
+    <title>${x(title)}</title>
+    <updated>${e.date}</updated>
+    <link href="${site}"/>
+    <content type="html">${x(body)}</content>
+  </entry>`;
+  });
+  return `<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>${site}</id>
+  <title>Foster Orphan Index: weekly changes</title>
+  <subtitle>Critical open source packages that became unmaintained, or gained security advisories no release fixes.</subtitle>
+  <link href="${site}"/>
+  <link rel="self" href="${site}feed.xml"/>
+  <updated>${entries[0]?.date ?? new Date().toISOString()}</updated>
+  <author><name>Foster</name></author>
+${items.join("\n")}
+</feed>
+`;
 }

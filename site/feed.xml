@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>https://rekalnx.github.io/foster/</id>
+  <title>Foster Orphan Index: weekly changes</title>
+  <subtitle>Critical open source packages that became unmaintained, or gained security advisories no release fixes.</subtitle>
+  <link href="https://rekalnx.github.io/foster/"/>
+  <link rel="self" href="https://rekalnx.github.io/foster/feed.xml"/>
+  <updated>2026-11-25T22:14:46.905Z</updated>
+  <author><name>Foster</name></author>
+
+</feed>
