@@ -52,11 +52,12 @@ export function createMcpServer(): McpServer {
         "and report dependencies that are unmaintained, vulnerable with no fix, or have a drop-in security patch.",
       inputSchema: {
         path: z.string().describe("Absolute path of the project directory"),
+        recursive: z.boolean().default(false).describe("Also scan lockfiles in subfolders (monorepos)"),
       },
       annotations: { readOnlyHint: true, openWorldHint: true },
     },
-    async ({ path }) => {
-      const result = await scanProject(path);
+    async ({ path, recursive }) => {
+      const result = await scanProject(path, { recursive });
       return text(formatMarkdown(result));
     },
   );

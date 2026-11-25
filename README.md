@@ -98,7 +98,7 @@ Node 20+. Reads lockfiles from six ecosystems:
 | Command | What it does |
 |---|---|
 | `foster-oss scan --sbom <file>` | Same, from a CycloneDX or SPDX JSON SBOM (any tool that emits one) |
-| `foster-oss scan [dir]` | Report orphaned and unpatched dependencies. `--json`, `--markdown`, `--sarif <file>`, `--all`, `--fail-on <level>`, `--offline` |
+| `foster-oss scan [dir]` | Report orphaned and unpatched dependencies. `--recursive` (monorepos), `--json`, `--markdown`, `--sarif <file>`, `--all`, `--fail-on <level>`, `--offline` |
 | `foster-oss fix [dir]` | Point dependencies at published drop-in patches. `--dry-run`, `--force` |
 | `foster-oss check <name[@version]>` | Maintenance status, reach, unfixed advisories, patches and replacements for one package. `--ecosystem pypi\|cargo\|go\|rubygems\|packagist` |
 | `foster-oss mcp` | Start the MCP server for AI agents |

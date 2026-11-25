@@ -92,3 +92,20 @@ describe("versions", () => {
     expect(rangeIncludes(undefined, "1.0.0")).toBe(true);
   });
 });
+
+describe("recursive (monorepo) scan", () => {
+  it("finds lockfiles in subfolders, prefixes their paths and dedupes packages", async () => {
+    const result = await scanProject(fixtures, { offline: true, registryFile, indexFile, recursive: true });
+    expect(result.lockfiles).toContain("npm-v3/package-lock.json");
+    expect(result.lockfiles).toContain("cargo/Cargo.lock");
+    expect(result.lockfiles.some((l) => l.startsWith("sbom/"))).toBe(false); // SBOMs are not lockfiles
+    const ips = result.findings.filter((f) => f.dependency.name === "ip" && f.dependency.version === "2.0.1");
+    expect(ips).toHaveLength(1);
+    expect(ips[0]?.dependency.source).toMatch(/\/(package-lock\.json|pnpm-lock\.yaml|yarn\.lock)$/);
+  });
+
+  it("without --recursive, a monorepo root with no lockfile suggests the flag", async () => {
+    const result = await scanProject(fixtures, { offline: true, registryFile, indexFile });
+    expect(result.warnings[0]).toMatch(/--recursive/);
+  });
+});
