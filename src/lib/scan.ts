@@ -6,6 +6,7 @@ import { mapLimit } from "./http.js";
 import { detectLockfiles, readDependencies } from "./lockfile.js";
 import { describeForDependency, getVulns, lowestFixAbove, newerReleaseEscapes, queryBatch, type OsvVuln, type VulnForDependency } from "./osv.js";
 import { compareVersions, rangeIncludes } from "./versions.js";
+import { alternativesFor } from "./replacements.js";
 import type { AdvisorySummary, Dependency, Finding, MaintenanceStatus, OrphanRecord, ScanResult, Severity } from "./types.js";
 
 export interface ScanOptions {
@@ -30,7 +31,7 @@ export async function scanProject(dirInput: string, opts: ScanOptions = {}): Pro
   const warnings: string[] = [];
   const locks = detectLockfiles(dir);
   if (locks.length === 0) {
-    warnings.push("no supported lockfile found (package-lock.json, pnpm-lock.yaml, yarn.lock, uv.lock, requirements.txt)");
+    warnings.push("no supported lockfile found (package-lock.json, pnpm-lock.yaml, yarn.lock, uv.lock, poetry.lock, Pipfile.lock, requirements.txt, Cargo.lock, go.mod, Gemfile.lock, composer.lock)");
   }
   const deps = locks.flatMap((l) => readDependencies(dir, l));
   const findings = await analyzeDependencies(deps, opts, warnings);
@@ -129,7 +130,11 @@ export async function analyzeDependencies(deps: Dependency[], opts: ScanOptions 
       }
     }
     const f = toFinding(p.dep, dedupeAdvisories(unpatched), dedupeAdvisories(fixable), highestVersion(fixes), p.record, registry, opts.includeStaged ?? false);
-    if (f) findings.push(f);
+    if (f) {
+      // Where to go next: a maintained replacement, for anything that is not a plain upgrade.
+      if (f.kind !== "upgrade-available") f.alternatives = alternativesFor(f.dependency.ecosystem, f.dependency.name);
+      findings.push(f);
+    }
   }
   return sortFindings(findings);
 }

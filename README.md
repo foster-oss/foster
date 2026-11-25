@@ -23,21 +23,34 @@ npx foster-oss check ip@2.0.1
 
 ## Why
 
-We classified the **2,817 most depended-on packages** on npm and PyPI (the
-[ecosyste.ms](https://ecosyste.ms) critical set) in November 2026:
+We classified the **5,797 most depended-on packages** across six ecosystems (npm, PyPI, Cargo,
+Go, RubyGems, Packagist: the [ecosyste.ms](https://ecosyste.ms) critical set) in November 2026:
 
-- **28% are unmaintained**: 229 dead and 561 dormant ([methodology](METHODOLOGY.md)).
-- Those unmaintained packages are downloaded **~190 billion times a month** and back
-  **~885 million** dependent repositories.
-- **497** of them can only be published by a single account.
-- **4 of them have security advisories that no upstream release fixes**:
+| Ecosystem | Critical packages | Dead | Dormant | Unmaintained |
+|---|---:|---:|---:|---:|
+| npm | 2,295 | 195 | 512 | **31%** |
+| RubyGems | 974 | 78 | 169 | **25%** |
+| Cargo (Rust) | 813 | 70 | 115 | **23%** |
+| Go | 645 | 120 | 168 | **45%** |
+| Packagist (PHP) | 548 | 59 | 56 | **21%** |
+| PyPI | 522 | 34 | 49 | **16%** |
+| **All** | **5,797** | **556** | **1,069** | **28%** |
 
-| Package | Downloads / month | Advisory with no upstream fix | Drop-in patch |
-|---|---|---|---|
-| `extract-zip` | 113M | 2 × HIGH: symlink path traversal / arbitrary file write | [`@keep-lts/extract-zip`](https://keep-lts.com) |
-| `elliptic` | 74M | LOW: risky cryptographic primitive | none yet |
-| `aws-sdk` (v2) | 48M | LOW: region parameter validation | none: end of life, migrate to v3 |
-| `ip` | 38M | HIGH: SSRF, `isPublic()` misclassifies `127.1`, `::fFFf:127.0.0.1`, … | [`@keep-lts/ip`](https://keep-lts.com) |
+- The unmaintained npm and PyPI packages alone are downloaded **~191 billion times a month**;
+  all unmaintained packages together back **~936 million** dependent repositories.
+- **825** unmaintained packages can only be published by a single account.
+- **10 unmaintained packages have security advisories that no upstream release fixes**, for example:
+
+| Package | Advisory with no upstream fix | Drop-in patch |
+|---|---|---|
+| npm `extract-zip` (113M downloads/month) | 2 × HIGH: symlink path traversal / arbitrary file write | [`@keep-lts/extract-zip`](https://keep-lts.com) |
+| npm `ip` (38M downloads/month) | HIGH: SSRF, `isPublic()` misclassifies `127.1`, `::fFFf:127.0.0.1`, … | [`@keep-lts/ip`](https://keep-lts.com) |
+| Go `github.com/dgrijalva/jwt-go` (99K dependent repos) | HIGH: audience check bypass | none: move to `github.com/golang-jwt/jwt/v5` |
+| Cargo `failure` | 2 × CRITICAL | none: deprecated, use `anyhow` / `thiserror` |
+| Packagist `phpoffice/phpexcel` | 20 advisories, 10 HIGH | none: move to `phpoffice/phpspreadsheet` |
+| npm `elliptic` (74M downloads/month) | LOW: risky cryptographic primitive | none yet |
+
+The full list is in the [Orphan Index](https://rekalnx.github.io/foster/).
 
 Upgrade bots (Dependabot, Renovate) can't help when no fixed version exists, and `npm audit`
 just says "no fix available". Meanwhile, people *are* fixing abandoned packages: maintained forks,
@@ -71,14 +84,22 @@ Orphan Index ─────► foster-oss scan ─────► patch registr
 
 ### CLI
 
-Node 20+. Reads `package-lock.json`, `npm-shrinkwrap.json`, `pnpm-lock.yaml`, `yarn.lock`
-(classic and berry), `uv.lock` and pinned `requirements.txt`.
+Node 20+. Reads lockfiles from six ecosystems:
+
+| Ecosystem | Files |
+|---|---|
+| npm | `package-lock.json`, `npm-shrinkwrap.json`, `pnpm-lock.yaml`, `yarn.lock` (classic and berry) |
+| PyPI | `uv.lock`, `poetry.lock`, `Pipfile.lock`, pinned `requirements.txt` |
+| Cargo | `Cargo.lock` |
+| Go | `go.mod` (including `replace` directives) |
+| RubyGems | `Gemfile.lock` |
+| Packagist | `composer.lock` |
 
 | Command | What it does |
 |---|---|
-| `foster-oss scan [dir]` | Report orphaned and unpatched dependencies. `--json`, `--markdown`, `--all`, `--fail-on <level>`, `--offline` |
+| `foster-oss scan [dir]` | Report orphaned and unpatched dependencies. `--json`, `--markdown`, `--sarif <file>`, `--all`, `--fail-on <level>`, `--offline` |
 | `foster-oss fix [dir]` | Point dependencies at published drop-in patches. `--dry-run`, `--force` |
-| `foster-oss check <name[@version]>` | Maintenance status, reach, unfixed advisories and patches for one package. `--ecosystem pypi` |
+| `foster-oss check <name[@version]>` | Maintenance status, reach, unfixed advisories, patches and replacements for one package. `--ecosystem pypi\|cargo\|go\|rubygems\|packagist` |
 | `foster-oss mcp` | Start the MCP server for AI agents |
 
 What the findings mean:
@@ -91,7 +112,10 @@ What the findings mean:
 | `UPGRADE` | Fixed upstream. Just upgrade. |
 | `ORPHANED` | Widely used and unmaintained, no known vulnerability. Shown with `--all`. |
 
-`fix` is npm-ecosystem only for now (npm, pnpm, yarn). Python projects get findings only.
+For npm packages, findings also name **maintained replacements** (`consider: fetch (built in), ofetch, ky`)
+from the e18e community's [module-replacements](https://github.com/e18e/module-replacements) dataset.
+
+`fix` is npm-ecosystem only for now (npm, pnpm, yarn). Other ecosystems get findings only.
 
 A patch from a third-party provider is that provider's code and responsibility. Foster lists it so
 you can find it; read the provider's source and advisory before adopting it.
@@ -103,9 +127,11 @@ you can find it; read the provider's source and advisory before adopting it.
   with:
     fail-on: orphaned-vulnerable   # none | patch-available | orphaned-vulnerable | unpatched | any
     comment: true                  # optional PR comment; needs pull-requests: write
+    sarif: true                    # optional: findings in the Security tab; needs security-events: write
 ```
 
-The report is also written to the job summary. (The Action runs `npx foster-oss`, so it works once
+The report is also written to the job summary. With `sarif: true`, findings appear in GitHub code
+scanning next to your other security alerts. (The Action runs `npx foster-oss`, so it works once
 the package is on npm.)
 
 ### AI agents
@@ -150,5 +176,7 @@ Maintenance and reach data: [ecosyste.ms](https://ecosyste.ms) (CC BY-SA 4.0). V
 [OSV.dev](https://osv.dev) and the GitHub Advisory Database. Drop-in patches currently listed:
 [Keep LTS](https://keep-lts.com). The dead/dormant buckets follow Andrew Nesbitt's
 [“Weekend at Bernie's”](https://nesbitt.io/2026/05/08/weekend-at-bernies) analysis.
+
+Replacement suggestions: [e18e module-replacements](https://github.com/e18e/module-replacements) (MIT).
 
 Code: [Apache-2.0](LICENSE).

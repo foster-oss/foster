@@ -5,7 +5,7 @@
 //   data/stats.json        headline numbers
 //   site/                  static website (index.html + data copy)
 //
-// Usage: npm run build && node index/build.mjs [--ecosystems npm,pypi] [--max-pages N] [--from-cache]
+// Usage: npm run build && node index/build.mjs [--ecosystems npm,pypi,cargo,go,rubygems,packagist] [--max-pages N] [--from-cache]
 import { existsSync, mkdirSync, readFileSync, writeFileSync, copyFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,7 +15,7 @@ import { listCriticalPage, toOrphanRecord } from "../dist/index.js";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const { values } = parseArgs({
   options: {
-    ecosystems: { type: "string", default: "npm,pypi" },
+    ecosystems: { type: "string", default: "npm,pypi,cargo,go,rubygems,packagist" },
     "max-pages": { type: "string", default: "500" },
     "from-cache": { type: "boolean", default: false },
     "per-page": { type: "string", default: "100" },

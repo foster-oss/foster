@@ -6,7 +6,7 @@ this document must change whenever that code does.
 
 ## Which packages
 
-The index covers the **ecosyste.ms critical set** for npm and PyPI: the top packages per registry
+The index covers the **ecosyste.ms critical set** for npm, PyPI, crates.io (Cargo), the Go module proxy, RubyGems and Packagist: the top packages per registry
 by a blend of downloads and dependent repositories (2,295 npm + 522 PyPI packages in November 2026).
 `foster-oss scan` also looks up, live, any package in your lockfile that has a vulnerability with no
 fixed version, even if it is not in the critical set.
@@ -76,8 +76,15 @@ overlap between packages (one repository depending on 50 orphaned packages count
 
 ## Known limitations
 
-- Only npm and PyPI.
+- Six ecosystems so far (npm, PyPI, Cargo, Go, RubyGems, Packagist); Maven, NuGet and others are not covered yet.
 - Only the critical set is classified in bulk; long-tail packages are looked up on demand.
 - Issue activity is a proxy; a maintainer who reads everything but closes nothing looks "dead".
 - Advisory ranges that cannot be parsed are kept (counted as unfixed) to err on the side of caution.
 - PyPI version comparison is numeric, not full PEP 440.
+
+## Replacement suggestions
+
+For npm packages, `scan` and `check` suggest maintained replacements (built-in APIs such as `fetch`
+or `structuredClone`, smaller maintained packages, or a one-line snippet) using the e18e community's
+[module-replacements](https://github.com/e18e/module-replacements) dataset (MIT). Suggestions are
+shown for every finding except plain upgrades, and link to the e18e migration guide when one exists.

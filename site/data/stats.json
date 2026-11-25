@@ -1,26 +1,54 @@
 {
-  "generatedAt": "2026-11-25T22:02:45.300Z",
+  "generatedAt": "2026-11-25T22:10:02.673Z",
   "totals": {
-    "packages": 2817,
-    "active": 2027,
-    "dormant": 561,
-    "dead": 229,
+    "packages": 5797,
+    "active": 4172,
+    "dormant": 1069,
+    "dead": 556,
     "unknown": 0,
-    "unmaintainedDownloadsPerMonth": 190316642814,
-    "deadDownloadsPerMonth": 58585938420,
-    "unmaintainedDependentRepos": 884768121,
-    "deadDependentRepos": 278017801,
-    "unpatchedAdvisories": 5,
-    "packagesWithUnpatchedAdvisories": 4,
-    "orphanedWithUnpatchedAdvisories": 4,
-    "singlePublisherUnmaintained": 497
+    "unmaintainedDownloadsPerMonth": 191118080227,
+    "deadDownloadsPerMonth": 58967942549,
+    "unmaintainedDependentRepos": 935695960,
+    "deadDependentRepos": 300346764,
+    "unpatchedAdvisories": 40,
+    "packagesWithUnpatchedAdvisories": 15,
+    "orphanedWithUnpatchedAdvisories": 10,
+    "singlePublisherUnmaintained": 825
   },
   "byEcosystem": {
+    "cargo": {
+      "packages": 813,
+      "active": 628,
+      "dormant": 115,
+      "dead": 70,
+      "unknown": 0
+    },
+    "go": {
+      "packages": 645,
+      "active": 357,
+      "dormant": 168,
+      "dead": 120,
+      "unknown": 0
+    },
+    "packagist": {
+      "packages": 548,
+      "active": 433,
+      "dormant": 56,
+      "dead": 59,
+      "unknown": 0
+    },
     "npm": {
       "packages": 2295,
       "active": 1588,
       "dormant": 512,
       "dead": 195,
+      "unknown": 0
+    },
+    "rubygems": {
+      "packages": 974,
+      "active": 727,
+      "dormant": 169,
+      "dead": 78,
       "unknown": 0
     },
     "pypi": {
@@ -32,6 +60,70 @@
     }
   },
   "top": [
+    {
+      "ecosystem": "cargo",
+      "name": "failure",
+      "status": "dead",
+      "priority": 149.9,
+      "downloadsLastMonth": null,
+      "dependentRepos": 14385,
+      "unpatched": [
+        "GHSA-jq66-xh47-j9f3",
+        "GHSA-r98r-j25q-rmpr"
+      ]
+    },
+    {
+      "ecosystem": "go",
+      "name": "github.com/dgrijalva/jwt-go",
+      "status": "dead",
+      "priority": 115.1,
+      "downloadsLastMonth": null,
+      "dependentRepos": 98905,
+      "unpatched": [
+        "GHSA-w73w-5m7g-f7qc"
+      ]
+    },
+    {
+      "ecosystem": "go",
+      "name": "github.com/jackc/pgproto3/v2",
+      "status": "dead",
+      "priority": 103.6,
+      "downloadsLastMonth": null,
+      "dependentRepos": 18200,
+      "unpatched": [
+        "GHSA-jqcq-xjh3-6g23"
+      ]
+    },
+    {
+      "ecosystem": "packagist",
+      "name": "phpoffice/phpexcel",
+      "status": "dead",
+      "priority": 102.2,
+      "downloadsLastMonth": null,
+      "dependentRepos": 7228,
+      "unpatched": [
+        "GHSA-r57h-547h-w24f",
+        "GHSA-79xx-vf93-p7cx",
+        "GHSA-q9jv-mm3r-j47r",
+        "GHSA-hwcp-2h35-p66w",
+        "GHSA-wv23-996v-q229",
+        "GHSA-j2xg-cjcx-4677",
+        "GHSA-c6fv-7vh8-2rhr",
+        "GHSA-jmpx-686v-c3wx",
+        "GHSA-x88g-h956-m5xg",
+        "GHSA-7cc9-j4mv-vcjp",
+        "GHSA-jw4x-v69f-hh5w",
+        "GHSA-6hwr-6v2f-3m88",
+        "GHSA-r8w8-74ww-j4wh",
+        "GHSA-w9xv-qf98-ccq4",
+        "GHSA-5gpr-w2p5-6m37",
+        "GHSA-v66g-p9x6-v98p",
+        "GHSA-ghg6-32f9-2jp7",
+        "GHSA-wgmf-q9vr-vww6",
+        "GHSA-4mqv-gcr3-pff9",
+        "GHSA-vvwv-h69m-wg6f"
+      ]
+    },
     {
       "ecosystem": "npm",
       "name": "ip",
@@ -53,6 +145,17 @@
       "unpatched": [
         "GHSA-7pqw-9j4j-h8q3",
         "GHSA-jmr9-qjv8-65gv"
+      ]
+    },
+    {
+      "ecosystem": "go",
+      "name": "gopkg.in/square/go-jose.v2",
+      "status": "dead",
+      "priority": 61.2,
+      "downloadsLastMonth": null,
+      "dependentRepos": 40168,
+      "unpatched": [
+        "GHSA-c5q2-7r4c-mv6g"
       ]
     },
     {
@@ -150,7 +253,7 @@
       "name": "cssesc",
       "status": "dead",
       "priority": 19.7,
-      "downloadsLastMonth": 467670528,
+      "downloadsLastMonth": 478413284,
       "dependentRepos": 3326249,
       "unpatched": []
     },
@@ -186,7 +289,7 @@
       "name": "code-point-at",
       "status": "dead",
       "priority": 19.6,
-      "downloadsLastMonth": 42009478,
+      "downloadsLastMonth": 44055853,
       "dependentRepos": 3327025,
       "unpatched": []
     },
@@ -195,7 +298,7 @@
       "name": "minizlib",
       "status": "dead",
       "priority": 19.6,
-      "downloadsLastMonth": 423829922,
+      "downloadsLastMonth": 475480042,
       "dependentRepos": 2883623,
       "unpatched": []
     },
@@ -215,51 +318,6 @@
       "priority": 19.6,
       "downloadsLastMonth": 98816690,
       "dependentRepos": 2565362,
-      "unpatched": []
-    },
-    {
-      "ecosystem": "npm",
-      "name": "escape-html",
-      "status": "dead",
-      "priority": 19.6,
-      "downloadsLastMonth": 784049479,
-      "dependentRepos": 2500873,
-      "unpatched": []
-    },
-    {
-      "ecosystem": "npm",
-      "name": "prop-types",
-      "status": "dead",
-      "priority": 19.6,
-      "downloadsLastMonth": 556693974,
-      "dependentRepos": 2311807,
-      "unpatched": []
-    },
-    {
-      "ecosystem": "npm",
-      "name": "signal-exit",
-      "status": "dead",
-      "priority": 19.6,
-      "downloadsLastMonth": 1726935519,
-      "dependentRepos": 1770605,
-      "unpatched": []
-    },
-    {
-      "ecosystem": "npm",
-      "name": "connect-history-api-fallback",
-      "status": "dead",
-      "priority": 19.5,
-      "downloadsLastMonth": 84269249,
-      "dependentRepos": 3115839,
-      "unpatched": []
-    },
-    {
-      "ecosystem": "npm",
-      "name": "loglevel",
-      "status": "dead",
-      "priority": 19.5,
-      "downloadsLastMonth": 137260910,
-      "dependentRepos": 2916090,
       "unpatched": []
     }
   ]

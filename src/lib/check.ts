@@ -1,3 +1,4 @@
+import { alternativesFor, type AlternativeSet } from "./replacements.js";
 import { toOrphanRecord } from "./classify.js";
 import { findPatch, indexKey, loadRegistry } from "./data.js";
 import { getPackage } from "./ecosystems.js";
@@ -14,6 +15,8 @@ export interface CheckResult {
   findings: Finding[];
   patch?: PatchEntry;
   notFound: boolean;
+  /** Maintained replacements (npm only). */
+  alternatives?: AlternativeSet;
 }
 
 /** Parse "name", "name@1.2.3" or "@scope/name@1.2.3". */
@@ -41,5 +44,5 @@ export async function checkPackage(ecosystem: Ecosystem, name: string, version?:
     findings = await analyzeDependencies([dep], { includeStaged: opts.includeStaged, deep: false, records });
     patch = findPatch(await loadRegistry(), dep, opts.includeStaged);
   }
-  return { ecosystem, name, version, record, findings, patch, notFound };
+  return { ecosystem, name, version, record, findings, patch, notFound, alternatives: alternativesFor(ecosystem, name) };
 }

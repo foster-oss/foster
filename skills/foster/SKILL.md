@@ -1,6 +1,6 @@
 ---
 name: foster
-description: Check whether a dependency is still maintained and whether it has security holes nobody can fix, before adding it or when auditing a project. Use when adding, upgrading or reviewing npm or PyPI dependencies, when a user asks "is this package safe / maintained / abandoned", when a security scan reports a vulnerability with no fixed version, or when auditing a lockfile for supply-chain risk.
+description: Check whether a dependency is still maintained and whether it has security holes nobody can fix, before adding it or when auditing a project. Use when adding, upgrading or reviewing dependencies (npm, PyPI, Cargo, Go, RubyGems, Packagist), when a user asks "is this package safe / maintained / abandoned", when a security scan reports a vulnerability with no fixed version, or when auditing a lockfile for supply-chain risk.
 ---
 
 # Foster: orphaned dependency check
@@ -24,7 +24,8 @@ Run them with `npx` (no install needed). Node 20+.
 npx -y foster-oss check <name>[@<version>]            # npm
 npx -y foster-oss check <name>@<version> --ecosystem pypi
 
-# A whole project (package-lock.json, pnpm-lock.yaml, yarn.lock, uv.lock, requirements.txt)
+# A whole project: package-lock.json, pnpm-lock.yaml, yarn.lock, uv.lock, poetry.lock,
+# Pipfile.lock, requirements.txt, Cargo.lock, go.mod, Gemfile.lock, composer.lock
 npx -y foster-oss scan <dir>
 npx -y foster-oss scan <dir> --json        # for further processing
 npx -y foster-oss scan <dir> --all         # also list quiet orphans
@@ -45,7 +46,7 @@ If the MCP server is configured (`npx -y foster-oss mcp`), prefer its tools:
 | `ORPHANED+VULN` | Known vulnerability, no fix anywhere, package dead or dormant | Prefer a maintained alternative; otherwise tell the user it can be nominated for adoption |
 | `NO FIX YET` | Known vulnerability, no fix released, but the package seems maintained | Watch for a release; consider mitigations |
 | `UPGRADE` | Fixed upstream | Upgrade normally; Foster is not needed |
-| `ORPHANED` | Widely used, unmaintained, no known vulnerability | Informational. Avoid for *new* code if a maintained alternative exists |
+| `ORPHANED` | Widely used, unmaintained, no known vulnerability | Informational. Avoid for *new* code; a `consider:` line names maintained replacements when known |
 | "not found" | The name does not exist on the registry | Likely a typo or hallucinated package: do **not** install it |
 
 ## Rules

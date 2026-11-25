@@ -71,8 +71,11 @@ jobs:
             process.exit(bad ? 1 : 0);'
 
   dogfood:
-    # Foster scans itself.
+    # Foster scans itself, and its findings show up in this repository's Security tab.
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -80,4 +83,9 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci && npm run build
-      - run: node dist/cli.js scan . --markdown --summary-file "$GITHUB_STEP_SUMMARY" --fail-on orphaned-vulnerable
+      - run: node dist/cli.js scan . --markdown --summary-file "$GITHUB_STEP_SUMMARY" --sarif foster.sarif --fail-on orphaned-vulnerable
+      - if: always() && github.event_name == 'push'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: foster.sarif
+          category: foster

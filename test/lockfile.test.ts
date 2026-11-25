@@ -51,6 +51,44 @@ describe("lockfile parsing", () => {
     expect(pairs(fx("python-uv"))).toEqual(["requests@2.31.0", "typing-extensions@4.9.0"]);
   });
 
+  it("reads poetry.lock and Pipfile.lock", () => {
+    expect(pairs(fx("poetry"))).toEqual(["requests@2.31.0", "urllib3@2.1.0"]);
+    expect(pairs(fx("pipenv"))).toEqual(["flask@2.0.1", "pytest@7.4.0"]);
+  });
+
+  it("reads Cargo.lock registry packages and marks Cargo.toml deps as direct", () => {
+    const dir = fx("cargo");
+    expect(pairs(dir)).toEqual(["itoa@1.0.10", "serde@1.0.195", "time@0.1.43"]);
+    const deps = readDependencies(dir, detectLockfiles(dir)[0]!);
+    expect(deps.every((d) => d.ecosystem === "cargo")).toBe(true);
+    expect(deps.find((d) => d.name === "serde")?.direct).toBe(true);
+    expect(deps.find((d) => d.name === "itoa")?.direct).toBe(false);
+  });
+
+  it("reads go.mod requires, honours replace directives and // indirect", () => {
+    const dir = fx("go");
+    expect(pairs(dir)).toEqual(["github.com/gin-gonic/gin@v1.9.1", "github.com/new/lib@v1.1.0", "github.com/single/dep@v0.2.0", "golang.org/x/text@v0.3.0"]);
+    const deps = readDependencies(dir, detectLockfiles(dir)[0]!);
+    expect(deps.find((d) => d.name === "golang.org/x/text")?.direct).toBe(false);
+    expect(deps.find((d) => d.name === "github.com/new/lib")?.direct).toBe(true);
+  });
+
+  it("reads Gemfile.lock, strips platform suffixes and finds direct gems", () => {
+    const dir = fx("ruby");
+    expect(pairs(dir)).toEqual(["actionpack@7.0.8", "nokogiri@1.15.4", "racc@1.7.3", "rack@2.2.8"]);
+    const deps = readDependencies(dir, detectLockfiles(dir)[0]!);
+    expect(deps.find((d) => d.name === "nokogiri")?.direct).toBe(true);
+    expect(deps.find((d) => d.name === "rack")?.direct).toBe(false);
+  });
+
+  it("reads composer.lock, drops the v prefix and dev branches", () => {
+    const dir = fx("php");
+    expect(pairs(dir)).toEqual(["phpunit/phpunit@9.6.13", "psr/log@1.1.4", "symfony/http-kernel@4.4.0"]);
+    const deps = readDependencies(dir, detectLockfiles(dir)[0]!);
+    expect(deps.find((d) => d.name === "psr/log")?.direct).toBe(false);
+    expect(deps.find((d) => d.name === "symfony/http-kernel")?.direct).toBe(true);
+  });
+
   it("finds nothing in a directory without lockfiles", () => {
     expect(detectLockfiles(join(__dirname))).toEqual([]);
   });

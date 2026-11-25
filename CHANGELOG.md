@@ -1,6 +1,17 @@
 # Changelog
 
-## 0.1.0 (unreleased)
+## 0.2.0 (unreleased)
+
+- Six ecosystems: Cargo (`Cargo.lock`), Go (`go.mod`), RubyGems (`Gemfile.lock`) and Packagist
+  (`composer.lock`) join npm and PyPI; Python also gains `poetry.lock` and `Pipfile.lock`.
+- The Orphan Index now covers 5,797 critical packages across all six ecosystems, with a
+  per-ecosystem breakdown on the site.
+- Replacement suggestions for npm packages from e18e module-replacements (`consider: …`).
+- SARIF 2.1.0 output (`--sarif`) and an Action option to upload findings to GitHub code scanning.
+- Fix suggestions pick the nearest fixed release on the installed release line.
+- Registry lists drop-in patches from any provider (12 from Keep LTS).
+
+## 0.1.0
 
 First version.
 
