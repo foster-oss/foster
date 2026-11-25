@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
   - name: Report a security problem in Foster itself
-    url: https://github.com/foster-oss/foster/security/advisories/new
+    url: https://github.com/rekalnx/foster/security/advisories/new
     about: Please report vulnerabilities in Foster's code or patches privately.

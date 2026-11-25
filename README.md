@@ -79,7 +79,7 @@ What the findings mean:
 | Finding | Meaning |
 |---|---|
 | `FOSTER PATCH` | A reviewed Foster patch exists for this exact version. Run `foster-oss fix`. |
-| `ORPHANED+VULN` | Known vulnerability, no fix anywhere, package dead or dormant. Prefer an alternative, or [nominate it](https://github.com/foster-oss/foster/issues/new?template=adopt.yml). |
+| `ORPHANED+VULN` | Known vulnerability, no fix anywhere, package dead or dormant. Prefer an alternative, or [nominate it](https://github.com/rekalnx/foster/issues/new?template=adopt.yml). |
 | `NO FIX YET` | Known vulnerability with no release yet, but the package looks maintained. |
 | `UPGRADE` | Fixed upstream. Just upgrade; Foster is not needed. |
 | `ORPHANED` | Widely used and unmaintained, no known vulnerability. Shown with `--all`. |
@@ -89,7 +89,7 @@ What the findings mean:
 ### GitHub Action
 
 ```yaml
-- uses: foster-oss/foster@v0
+- uses: rekalnx/foster@v0
   with:
     fail-on: orphaned-vulnerable   # none | patch-available | orphaned-vulnerable | unpatched | any
     comment: true                  # optional PR comment; needs pull-requests: write

@@ -7,9 +7,9 @@ import type { Dependency, Ecosystem, OrphanRecord, PatchEntry } from "./types.js
 
 /** Where the public copies live once the repository is published. Overridable for forks and tests. */
 export const REMOTE_REGISTRY_URL =
-  process.env.FOSTER_REGISTRY_URL ?? "https://raw.githubusercontent.com/foster-oss/foster/main/registry/patches.json";
+  process.env.FOSTER_REGISTRY_URL ?? "https://raw.githubusercontent.com/rekalnx/foster/main/registry/patches.json";
 export const REMOTE_INDEX_URL =
-  process.env.FOSTER_INDEX_URL ?? "https://raw.githubusercontent.com/foster-oss/foster/main/data/orphans.min.json";
+  process.env.FOSTER_INDEX_URL ?? "https://raw.githubusercontent.com/rekalnx/foster/main/data/orphans.min.json";
 
 function packageFile(rel: string): string {
   // dist/lib/data.js and src/lib/data.ts are both two levels below the package root
