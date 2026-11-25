@@ -19,8 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
           cache: npm
@@ -36,9 +36,13 @@ jobs:
             echo "No changes."
           else
             git commit -m "Orphan Index: weekly refresh $(date -u +%Y-%m-%d)"
-            git push
+            # main may have moved while the index was building
+            for attempt in 1 2 3; do
+              git pull --rebase origin main && git push && break
+              sleep 5
+            done
           fi
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: site
 

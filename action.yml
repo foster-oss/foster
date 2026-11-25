@@ -36,7 +36,7 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v5
       with:
         node-version: "22"
 
@@ -61,7 +61,7 @@ runs:
         if [ "$code" -gt 1 ]; then echo "::error::foster-oss failed to run (exit $code)"; exit "$code"; fi
 
     - if: inputs.comment == 'true' && github.event_name == 'pull_request'
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       env:
         FOSTER_REPORT: ${{ steps.scan.outputs.report }}
       with:
