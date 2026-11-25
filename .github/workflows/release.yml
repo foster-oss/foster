@@ -6,7 +6,7 @@ name: Release foster-oss
 
 on:
   push:
-    tags: ["v*"]
+    tags: ["v*.*.*"] # full versions only; the moving v0 tag is for the GitHub Action
 
 permissions:
   contents: read
