@@ -24,3 +24,13 @@ works on publicly disclosed issues.
 - Publishing uses npm trusted publishing (OIDC) with provenance; no long-lived npm tokens exist.
 - Upstream install scripts are removed from patched packages.
 - Releases require two human approvals (see GOVERNANCE.md).
+
+## Trust model of the CLI
+
+- `foster-oss` downloads the patch registry and the Orphan Index from this repository's `main`
+  branch (falling back to the copy bundled in the npm release). Changes to `registry/` only land
+  through reviewed pull requests, and CI validates every entry.
+- `foster-oss fix` only rewrites `package.json`; it never installs anything. Run it with
+  `--dry-run` first, read the provider's source for each patch it proposes, then install yourself.
+- Set `FOSTER_REGISTRY_URL` / `FOSTER_INDEX_URL` to pin your own reviewed copies, or use
+  `--offline` to rely only on the data bundled in the release you installed.
