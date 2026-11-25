@@ -38,6 +38,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: "22"
+          cache: npm
+      - run: npm ci
       - name: Verify all patches
         run: |
           set -e
@@ -48,13 +50,20 @@ jobs:
             node scripts/build-patch.mjs "$target"
             echo "::endgroup::"
           done
-      - name: Registry entries match patch folders
+      - name: Registry entries are well-formed and match patch folders
         run: |
           node -e '
             const fs = require("fs");
+            const semver = require("semver");
             const reg = JSON.parse(fs.readFileSync("registry/patches.json", "utf8"));
             let bad = 0;
             for (const p of reg.patches) {
+              for (const k of ["ecosystem", "name", "affected", "status", "summary"]) if (!p[k]) { console.error(`${p.name}: missing ${k}`); bad++; }
+              if (!p.replacement?.name || !p.replacement?.version) { console.error(`${p.name}: missing replacement`); bad++; }
+              if (!Array.isArray(p.advisories) || p.advisories.length === 0) { console.error(`${p.name}: no advisories`); bad++; }
+              if (p.ecosystem === "npm" && !semver.validRange(p.affected)) { console.error(`${p.name}: invalid affected range ${p.affected}`); bad++; }
+              if (!p.patchDir && !p.provider) { console.error(`${p.name}: third-party entries need a provider`); bad++; }
+              if (!p.patchDir) continue; // third-party patch: nothing in this repo to compare against
               const meta = JSON.parse(fs.readFileSync(p.patchDir + "/foster.json", "utf8"));
               for (const k of ["ecosystem", "name", "affected", "status"]) if (meta[k] !== p[k]) { console.error(`${p.name}: ${k} differs`); bad++; }
               if (meta.replacement.name !== p.replacement.name || meta.replacement.version !== p.replacement.version) { console.error(`${p.name}: replacement differs`); bad++; }
