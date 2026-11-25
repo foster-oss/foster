@@ -184,7 +184,7 @@ function toFinding(
       severity: maxSeverity(fixable),
       advisories: fixable,
       fixedIn,
-      message: `${label}: fixed upstream${fixedIn ? ` in ${fixedIn}` : ""}. Upgrade normally; no Foster patch needed.`,
+      message: `${label}: fixed upstream${fixedIn ? ` in ${fixedIn}` : ""}. Upgrade normally; no patch needed.`,
     };
   }
   if (record && (record.status === "dead" || record.status === "dormant")) {

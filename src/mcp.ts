@@ -20,7 +20,7 @@ export function createMcpServer(): McpServer {
       title: "Check a package before depending on it",
       description:
         "Check whether an npm or PyPI package is still maintained, whether it has vulnerabilities with no fix, " +
-        "and whether a reviewed Foster patch exists. Call this before adding a new dependency.",
+        "and whether a published drop-in security patch exists (from Foster or providers like Keep LTS). Call this before adding a new dependency.",
       inputSchema: {
         name: z.string().describe("Package name, e.g. 'ip' or '@scope/name'"),
         version: z.string().optional().describe("Exact version to check, e.g. '2.0.1'"),
@@ -47,7 +47,7 @@ export function createMcpServer(): McpServer {
       title: "Scan a project for orphaned dependencies",
       description:
         "Scan the lockfiles in a directory (package-lock.json, pnpm-lock.yaml, yarn.lock, uv.lock, requirements.txt) " +
-        "and report dependencies that are unmaintained, vulnerable with no fix, or have a Foster patch.",
+        "and report dependencies that are unmaintained, vulnerable with no fix, or have a drop-in security patch.",
       inputSchema: {
         path: z.string().describe("Absolute path of the project directory"),
       },
@@ -62,17 +62,18 @@ export function createMcpServer(): McpServer {
   server.registerTool(
     "foster_list_patches",
     {
-      title: "List Foster patches",
-      description: "List the packages Foster has patched, with the versions they replace and the advisories they fix.",
+      title: "List known drop-in patches",
+      description: "List known drop-in security patches for abandoned packages (Foster and other providers), with the versions they replace and the advisories they fix.",
       inputSchema: {},
       annotations: { readOnlyHint: true },
     },
     async () => {
       const reg = await loadRegistry();
-      if (reg.patches.length === 0) return text("No Foster patches yet.");
+      if (reg.patches.length === 0) return text("No patches in the registry yet.");
       return text(
         reg.patches
-          .map((p) => `- ${p.ecosystem}:${p.name}@${p.affected} → ${p.replacement.name}@${p.replacement.version} [${p.status}] fixes ${p.advisories.join(", ")}. ${p.summary}`)
+          .filter((p) => p.status !== "retired")
+          .map((p) => `- ${p.ecosystem}:${p.name}@${p.affected} → ${p.replacement.name}@${p.replacement.version} by ${p.provider?.name ?? "Foster"} [${p.status}] fixes ${p.advisories.join(", ")}. ${p.summary}`)
           .join("\n"),
       );
     },

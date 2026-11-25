@@ -62,13 +62,15 @@ export interface PatchEntry {
   };
   advisories: string[];
   status: PatchStatus;
-  /** Path of the patch folder inside the Foster repo, e.g. patches/npm/ip. */
-  patchDir: string;
+  /** Who publishes and maintains the patched package. Absent means Foster itself. */
+  provider?: { name: string; url: string };
+  /** Path of the patch folder inside the Foster repo (Foster patches only), e.g. patches/npm/ip. */
+  patchDir?: string;
   summary: string;
 }
 
 export type FindingKind =
-  /** A Foster patch exists for this exact version. */
+  /** A published drop-in security patch (from Foster or another provider) exists for this exact version. */
   | "patch-available"
   /** Known vulnerability with no upstream fix, and the package is dead or dormant. */
   | "orphaned-vulnerable"
