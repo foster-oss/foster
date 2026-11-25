@@ -1,0 +1,102 @@
+export type Ecosystem = "npm" | "pypi";
+
+export const ECOSYSTEMS: readonly Ecosystem[] = ["npm", "pypi"] as const;
+
+/** A resolved package found in a project's lockfile. */
+export interface Dependency {
+  ecosystem: Ecosystem;
+  name: string;
+  version: string;
+  /** True when the package is listed directly in the project manifest. */
+  direct: boolean;
+  /** Lockfile the dependency was read from (relative to the scanned dir). */
+  source: string;
+}
+
+export type MaintenanceStatus = "active" | "dormant" | "dead" | "unknown";
+
+export type Severity = "CRITICAL" | "HIGH" | "MODERATE" | "LOW" | "UNKNOWN";
+
+export interface AdvisorySummary {
+  id: string;
+  url: string;
+  severity: Severity;
+  title: string;
+  /** Vulnerable version range as published by the advisory source. */
+  range?: string;
+}
+
+/** One row of the Orphan Index. */
+export interface OrphanRecord {
+  ecosystem: Ecosystem;
+  name: string;
+  status: MaintenanceStatus;
+  reasons: string[];
+  downloadsLastMonth: number | null;
+  dependentRepos: number | null;
+  dependentPackages: number | null;
+  latestVersion: string | null;
+  latestReleaseAt: string | null;
+  repoUrl: string | null;
+  archived: boolean;
+  lastPushAt: string | null;
+  /** Number of accounts able to publish to the registry, when known. */
+  publishers: number | null;
+  unpatchedAdvisories: AdvisorySummary[];
+  /** Priority score: higher means more people are exposed to an unmaintained, vulnerable package. */
+  priority: number;
+}
+
+export type PatchStatus = "staged" | "released" | "retired";
+
+/** An entry in Foster's patch registry (registry/patches.json). */
+export interface PatchEntry {
+  ecosystem: Ecosystem;
+  /** Original package name. */
+  name: string;
+  /** semver range of original versions this patch replaces. */
+  affected: string;
+  replacement: {
+    name: string;
+    version: string;
+  };
+  advisories: string[];
+  status: PatchStatus;
+  /** Path of the patch folder inside the Foster repo, e.g. patches/npm/ip. */
+  patchDir: string;
+  summary: string;
+}
+
+export type FindingKind =
+  /** A Foster patch exists for this exact version. */
+  | "patch-available"
+  /** Known vulnerability with no upstream fix, and the package is dead or dormant. */
+  | "orphaned-vulnerable"
+  /** Known vulnerability with no upstream fix; maintenance status active or unknown. */
+  | "unpatched-vulnerable"
+  /** Known vulnerability that is fixed in a newer upstream version: just upgrade. */
+  | "upgrade-available"
+  /** Critical package that is dead or dormant, no known vulnerability (yet). */
+  | "orphaned";
+
+export interface Finding {
+  kind: FindingKind;
+  dependency: Dependency;
+  status: MaintenanceStatus;
+  severity: Severity;
+  advisories: AdvisorySummary[];
+  patch?: PatchEntry;
+  /** For upgrade-available: the lowest version that fixes all listed advisories, if known. */
+  fixedIn?: string;
+  message: string;
+}
+
+export interface ScanResult {
+  dir: string;
+  scannedAt: string;
+  lockfiles: string[];
+  dependencyCount: number;
+  findings: Finding[];
+  /** Data sources that could not be reached; results may be incomplete. */
+  warnings: string[];
+}

@@ -1,0 +1,13 @@
+lockfileVersion: '6.0'
+dependencies:
+  ip:
+    specifier: ^2.0.0
+    version: 2.0.1
+packages:
+  /ip@2.0.1:
+    resolution: {integrity: sha512-abc}
+    dev: false
+  /@babel/core@7.24.0:
+    resolution: {integrity: sha512-def}
+  /react-dom@18.2.0(react@18.2.0):
+    resolution: {integrity: sha512-ghi}

@@ -1,0 +1,14 @@
+lockfileVersion: '9.0'
+importers:
+  .:
+    dependencies:
+      ip:
+        specifier: ^2.0.0
+        version: 2.0.1
+packages:
+  ip@2.0.1:
+    resolution: {integrity: sha512-abc}
+  '@types/node@20.11.0':
+    resolution: {integrity: sha512-def}
+snapshots:
+  ip@2.0.1: {}

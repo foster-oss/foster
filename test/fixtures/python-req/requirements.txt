@@ -1,0 +1,6 @@
+# pinned
+Django==4.2.7
+requests[security]==2.31.0  # comment
+Pillow>=9.0
+-r other.txt
+zope.interface===6.1 ; python_version >= "3.8"

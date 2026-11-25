@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "patches": [
+    {
+      "ecosystem": "npm",
+      "name": "ip",
+      "affected": "<=2.0.1",
+      "replacement": { "name": "@foster-oss/ip", "version": "2.0.1-foster.1" },
+      "advisories": ["GHSA-2p57-rm9w-gvfp"],
+      "status": "staged",
+      "patchDir": "patches/npm/ip",
+      "summary": "test"
+    }
+  ]
+}

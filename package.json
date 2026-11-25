@@ -1,0 +1,65 @@
+{
+  "name": "foster-oss",
+  "version": "0.1.0",
+  "description": "Find dependencies nobody maintains anymore, and swap in reviewed security patches for them without taking anyone's package name.",
+  "keywords": [
+    "security",
+    "supply-chain",
+    "abandoned",
+    "unmaintained",
+    "orphaned-packages",
+    "vulnerability",
+    "overrides",
+    "mcp",
+    "ai-agents"
+  ],
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "foster-oss": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "data/orphans.min.json",
+    "registry/patches.json",
+    "skills"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/foster-oss/foster.git"
+  },
+  "homepage": "https://github.com/foster-oss/foster#readme",
+  "bugs": {
+    "url": "https://github.com/foster-oss/foster/issues"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "index:build": "npm run build && node index/build.mjs",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "semver": "^7.8.6",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.4",
+    "@types/semver": "^7.8.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.2"
+  }
+}

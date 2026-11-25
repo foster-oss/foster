@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: ["20", "22", "24"]
+        exclude:
+          - os: windows-latest
+            node: "20"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - name: CLI smoke test (offline)
+        run: node dist/cli.js scan test/fixtures/npm-v3 --offline --include-staged
+
+  patches:
+    # Every patch is rebuilt from the upstream release and re-verified on every change.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify all patches
+        run: |
+          set -e
+          for meta in patches/*/*/foster.json; do
+            dir=$(dirname "$meta")
+            target=${dir#patches/}
+            echo "::group::$target"
+            node scripts/build-patch.mjs "$target"
+            echo "::endgroup::"
+          done
+      - name: Registry entries match patch folders
+        run: |
+          node -e '
+            const fs = require("fs");
+            const reg = JSON.parse(fs.readFileSync("registry/patches.json", "utf8"));
+            let bad = 0;
+            for (const p of reg.patches) {
+              const meta = JSON.parse(fs.readFileSync(p.patchDir + "/foster.json", "utf8"));
+              for (const k of ["ecosystem", "name", "affected", "status"]) if (meta[k] !== p[k]) { console.error(`${p.name}: ${k} differs`); bad++; }
+              if (meta.replacement.name !== p.replacement.name || meta.replacement.version !== p.replacement.version) { console.error(`${p.name}: replacement differs`); bad++; }
+            }
+            process.exit(bad ? 1 : 0);'
+
+  dogfood:
+    # Foster scans itself.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci && npm run build
+      - run: node dist/cli.js scan . --markdown --summary-file "$GITHUB_STEP_SUMMARY" --fail-on orphaned-vulnerable
