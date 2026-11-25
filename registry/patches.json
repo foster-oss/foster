@@ -9,10 +9,13 @@
         "name": "@foster-oss/ip",
         "version": "2.0.1-foster.1"
       },
-      "advisories": ["GHSA-2p57-rm9w-gvfp"],
+      "advisories": [
+        "GHSA-2p57-rm9w-gvfp",
+        "CVE-2025-59436"
+      ],
       "status": "staged",
       "patchDir": "patches/npm/ip",
-      "summary": "isPrivate/isPublic/isLoopback parse addresses numerically, so alternative spellings (127.1, 012.1.2.3, ::fFFf:127.0.0.1, 000:0:0000::01) are no longer reported as public."
+      "summary": "isPrivate/isPublic/isLoopback parse addresses numerically, so alternative spellings (127.1, 012.1.2.3, 0254.020.0.1, 017700000001, ::fFFf:127.0.0.1, 000:0:0000::01) are no longer reported as public. Fixes CVE-2024-29415, CVE-2025-59436 and node-ip#170."
     }
   ]
 }

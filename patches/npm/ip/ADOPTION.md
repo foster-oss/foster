@@ -5,7 +5,7 @@
 | Upstream | [`ip`](https://www.npmjs.com/package/ip) · [indutny/node-ip](https://github.com/indutny/node-ip) |
 | Upstream version patched | 2.0.1 (latest, released 2024-02-19) |
 | Replacement | `@foster-oss/ip@2.0.1-foster.1` |
-| Advisory | [GHSA-2p57-rm9w-gvfp](https://github.com/advisories/GHSA-2p57-rm9w-gvfp) / CVE-2024-29415, severity HIGH |
+| Advisories | [GHSA-2p57-rm9w-gvfp](https://github.com/advisories/GHSA-2p57-rm9w-gvfp) / CVE-2024-29415 (HIGH); [CVE-2025-59436](https://osv.dev/vulnerability/CVE-2025-59436) (`017700000001`, [node-ip#160](https://github.com/indutny/node-ip/issues/160)); octal dotted quads such as `0254.020.0.1` ([node-ip#170](https://github.com/indutny/node-ip/issues/170), no CVE yet) |
 | Status | **staged**: patch written and verified, waiting for upstream contact window and two reviewers |
 | Reach (ecosyste.ms, Nov 2026) | ~38M downloads/month · ~2.9M dependent repos · ~4.2K dependent packages |
 | Maintenance (Orphan Index) | dormant: no release for 2.8 years, no push for 2.3 years |
@@ -56,7 +56,7 @@ Unchanged: the same private ranges as before, `isPrivate()` still throws on inva
 
 `node scripts/build-patch.mjs npm/ip` (runs in CI):
 
-- Foster advisory tests: 7/7 pass on the patch, and **fail on the original 2.0.1** (proves they test the bug).
+- Foster advisory tests: 9/9 pass (including CVE-2025-59436 and the node-ip#170 cases) on the patch, and **fail on the original 2.0.1** (proves they test the bug).
 - Upstream test suite (`test/api-test.js` from the repository): 90/91 pass, identical to the
   unpatched release. The one failure, `address('private', 'ipv6')`, depends on the machine's
   network interfaces and fails the same way on 2.0.1 when the host has a public IPv6 address.
