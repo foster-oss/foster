@@ -152,7 +152,7 @@ function toFinding(
   const label = `${dep.name}@${dep.version}`;
 
   if (patch) {
-    const advisories = unpatched.length ? unpatched : patch.advisories.map((id) => ({ id, url: `https://github.com/advisories/${id}`, severity: "UNKNOWN" as Severity, title: id }));
+    const advisories = unpatched.length ? unpatched : patch.advisories.map((id) => ({ id, url: id.startsWith("GHSA-") ? `https://github.com/advisories/${id}` : `https://osv.dev/vulnerability/${id}`, severity: "UNKNOWN" as Severity, title: id }));
     return {
       kind: "patch-available",
       dependency: dep,

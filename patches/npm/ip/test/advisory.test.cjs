@@ -18,6 +18,19 @@ test("advisory examples are no longer reported as public", () => {
   }
 });
 
+// CVE-2025-59436 (indutny/node-ip#160): a bare octal number for 127.0.0.1.
+test("CVE-2025-59436: 017700000001 is loopback, not public", () => {
+  assert.equal(ip.isPublic("017700000001"), false);
+  assert.equal(ip.isLoopback("017700000001"), true);
+});
+
+// indutny/node-ip#170: isV6Format() matched octal dotted quads, skipping IPv4 normalisation.
+test("node-ip#170: octal dotted quads in 10/8 and 172.16/12 are private", () => {
+  for (const addr of ["012.0.0.1", "012.100.200.3", "0254.020.0.1", "0254.021.0.1", "0254.036.0.1", "0254.037.0.1"]) {
+    assert.equal(ip.isPrivate(addr), true, `${addr} must be private`);
+  }
+});
+
 test("other spellings of loopback and private addresses are caught", () => {
   const sneaky = [
     "0x7f.1",
