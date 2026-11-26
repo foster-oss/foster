@@ -63,21 +63,53 @@ Aku tidak mengirim pesan apa pun ke upstream, karena issue `ip` sudah punya tiga
    > write-access response" rule with closes/merges (METHODOLOGY.md) and would value your view on it.
    > Thanks for ecosyste.ms: Foster wouldn't exist without it.
 
-## Peluncuran (setelah npm siap)
+## Peluncuran (npm sudah siap, 9 issue kontributor sudah terbuka)
 
-6. **Show HN.** Waktu terbaik: Selasa–Kamis pagi waktu AS. Lonjakan HN cepat habis (half-life
-   sekitar 24 jam), jadi pastikan pengunjung bisa langsung mencoba.
+6. **Show HN.** Jadwal terbaik: **Selasa 1 Des 2026 sekitar pukul 20.00–21.00 WIB** (= 08.00–09.00
+   waktu New York). Hari Rabu dan Kamis di jam yang sama juga bagus. Posting dari akun HN kamu di
+   <https://news.ycombinator.com/submit>: isi **title** dan **url**, lalu langsung tulis komentar
+   pertama berisi teks di bawah. Lonjakan HN cepat habis (half-life sekitar 24 jam), jadi selama 3–4
+   jam pertama standby untuk membalas komentar.
 
-   > **Show HN: Foster – 28% of the most depended-on npm/PyPI packages are unmaintained**
+   **Title** (maks 80 karakter):
+
+   > Show HN: Foster – 28% of the most depended-on open source packages are unmaintained
+
+   **URL:** `https://github.com/foster-oss/foster`
+
+   **Komentar pertama:**
+
+   > I classified the 5,797 most depended-on packages across npm, PyPI, Cargo, Go, RubyGems and
+   > Packagist (the ecosyste.ms critical set). 28% are dead or dormant; Go is worst at 45%. Ten of
+   > those unmaintained packages have security advisories that no upstream release fixes, e.g. npm
+   > ip (SSRF), extract-zip (path traversal), Go's dgrijalva/jwt-go.
    >
-   > I classified the 2,817 most depended-on npm and PyPI packages (the ecosyste.ms critical set):
-   > 790 are dead or dormant, together ~190B downloads/month. A few have security advisories that no
-   > upstream release fixes, e.g. ip (SSRF) and extract-zip (path traversal). `npm audit` just says
-   > "no fix available", but often someone *has* published a drop-in fix. Foster connects the two:
-   > `npx foster-oss scan` tells you which of your dependencies are orphaned and which have a published
-   > patch, and `foster-oss fix` switches to it via an npm alias, no code changes. The index is public
-   > and rebuilt weekly; there's also a GitHub Action and an MCP server so AI agents check packages
-   > before adding them. Feedback on the methodology is very welcome.
+   > `npm audit` just says "no fix available", but often someone has published a drop-in fix or a
+   > maintained successor exists. Foster connects the two:
+   >
+   > - `npx foster-oss scan` reads your lockfiles (or a CycloneDX/SPDX SBOM, or a whole monorepo with
+   >   --recursive) and separates "just upgrade" from "nothing fixes this";
+   > - `npx foster-oss fix` switches npm projects to published drop-in patches via npm aliases, no
+   >   code changes (today: 12 patches from Keep LTS);
+   > - it suggests maintained replacements (e18e data for npm, a reviewed list for other ecosystems);
+   > - there's a GitHub Action with SARIF output, an MCP server so coding agents check a package
+   >   before adding it, and a public index rebuilt weekly with an Atom feed of what changed:
+   >   https://foster-oss.github.io/foster/
+   >
+   > The classification rules are in METHODOLOGY.md and I'd especially value pushback on them. Issues
+   > labelled "good first issue" are open if you'd like to help (Maven/NuGet support, translations, …).
+
+   **Kalau ditanya:**
+   - *"Bedanya dengan npm audit / Dependabot?"* Mereka melaporkan celah; Foster menjawab dua hal yang
+     mereka tidak jawab: apakah package-nya masih dirawat, dan apa yang bisa dilakukan kalau tidak
+     ada versi perbaikan (tambalan drop-in, atau pengganti yang dirawat).
+   - *"Dormant bukan berarti rusak."* Setuju, dan itu tertulis di METHODOLOGY.md. Foster hanya mendesak
+     bertindak kalau package terlantar **dan** punya celah yang tidak diperbaiki siapa pun.
+   - *"Kenapa percaya tambalan pihak ketiga?"* Foster hanya menautkan; sumber, advisory, dan tes ada di
+     penyedia. `fix --dry-run` menunjukkan perubahan dulu, dan registry bisa dipin (SECURITY.md).
+
+   **Hari yang sama, posting juga di:** r/programming dan r/node (tautkan ke situs Orphan Index,
+   bukan langsung ke repo), serta X/Bluesky/LinkedIn dengan satu grafik dari situs.
 
 7. **Hacktoberfest 2027** (Oktober): beri label `hacktoberfest` dan `good first issue` pada tugas
    seperti dukungan lockfile Cargo/Go/Maven, `fix` untuk Python, koreksi index, dan entri registry.
