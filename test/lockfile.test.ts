@@ -89,6 +89,13 @@ describe("lockfile parsing", () => {
     expect(deps.find((d) => d.name === "symfony/http-kernel")?.direct).toBe(true);
   });
 
+  it("skips git and URL dependencies in all four lockfile formats", () => {
+    expect(pairs(fx("non-registry-yarn"))).toEqual(["ip@2.0.1"]);
+    expect(pairs(fx("non-registry-npm"))).toEqual(["ip@2.0.1"]);
+    expect(pairs(fx("non-registry-poetry"))).toEqual(["requests@2.31.0"]);
+    expect(pairs(fx("non-registry-uv"))).toEqual(["requests@2.31.0"]);
+  });
+
   it("finds nothing in a directory without lockfiles", () => {
     expect(detectLockfiles(join(__dirname))).toEqual([]);
   });

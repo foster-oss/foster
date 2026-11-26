@@ -51,6 +51,11 @@ export function readText(path: string): string {
   return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
 }
 
+/** True for lockfile specs that resolve to VCS or arbitrary URLs rather than a registry package. */
+function isNonRegistrySpec(spec: string): boolean {
+  return /^(?:git(?:\+[^:]+)?|https?|ssh|git\+ssh|file|link):|github:|gitlab:|bitbucket:|\/\//i.test(spec);
+}
+
 /** Names listed directly in package.json, used to mark direct dependencies. */
 export function directNpmNames(dir: string): Set<string> {
   const path = join(dir, "package.json");
@@ -315,7 +320,9 @@ function tomlPackages(text: string): [string, string][] {
   for (const block of text.split(/^\[\[package\]\]\s*$/m).slice(1)) {
     const name = block.match(/^name\s*=\s*"([^"]+)"/m)?.[1];
     const version = block.match(/^version\s*=\s*"([^"]+)"/m)?.[1];
-    if (name && version) out.push([name, version]);
+    const source = block.match(/^source\s*=\s*\{([^}]*)\}/m)?.[1];
+    const nonRegistry = source && /^\s*(?:git|url|path|directory|editable)\s*=/m.test(source);
+    if (name && version && !nonRegistry) out.push([name, version]);
   }
   return out;
 }
@@ -334,7 +341,7 @@ function dedupe(deps: Dependency[]): Dependency[] {
 /** package-lock.json / npm-shrinkwrap.json, lockfileVersion 1, 2 and 3. */
 export function parsePackageLock(text: string): [string, string][] {
   const lock = JSON.parse(text) as {
-    packages?: Record<string, { version?: string; name?: string; link?: boolean }>;
+    packages?: Record<string, { version?: string; name?: string; link?: boolean; resolved?: string }>;
     dependencies?: Record<string, LockV1Dep>;
   };
   const out: [string, string][] = [];
@@ -345,6 +352,7 @@ export function parsePackageLock(text: string): [string, string][] {
       if (idx === -1) continue; // workspace folder, not an installed package
       const name = entry.name ?? path.slice(idx + "node_modules/".length);
       if (entry.version.startsWith("file:") || entry.version.startsWith("link:")) continue;
+      if (entry.resolved && isNonRegistrySpec(entry.resolved)) continue;
       out.push([name, entry.version]);
     }
     return out;
@@ -417,6 +425,8 @@ export function parseYarnLock(text: string): [string, string][] {
         currentName = aliased && !/^[\^~<>=*\d]/.test(target) ? aliased[0] : first.slice(0, npmProto);
       } else {
         const pair = splitNameVersion(first);
+        // classic: "name@https://…" / "name@git+…" are not registry packages
+        if (pair && isNonRegistrySpec(pair[1])) continue;
         currentName = pair ? pair[0] : null;
       }
       continue;
@@ -449,7 +459,8 @@ export function parseUvLock(text: string): [string, string][] {
     const name = block.match(/^name\s*=\s*"([^"]+)"/m)?.[1];
     const version = block.match(/^version\s*=\s*"([^"]+)"/m)?.[1];
     const isLocal = /^source\s*=\s*\{\s*(editable|virtual|directory)\s*=/m.test(block);
-    if (name && version && !isLocal) out.push([name, version]);
+    const isRemote = /^source\s*=\s*\{\s*(git|url)\s*=/m.test(block);
+    if (name && version && !isLocal && !isRemote) out.push([name, version]);
   }
   return out;
 }
