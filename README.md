@@ -176,8 +176,10 @@ public source, the original license kept, and a regression test for each advisor
 
 ## Contributing
 
-Wanted: registry entries, adapters for more ecosystems (Cargo, Go, Maven, RubyGems), `fix` for
-Python, corrections to the index, and reviewers. Start with [CONTRIBUTING.md](CONTRIBUTING.md).
+New here? Pick a [good first issue](https://github.com/foster-oss/foster/labels/good%20first%20issue)
+or something marked [help wanted](https://github.com/foster-oss/foster/labels/help%20wanted): Maven and
+NuGet support, translations of the site, replacement suggestions, an ignore file, and more. Start with
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 Foster's rules are in [GOVERNANCE.md](GOVERNANCE.md), its stance on AI-written code in
 [AI_POLICY.md](AI_POLICY.md), and how to report a problem in Foster itself in [SECURITY.md](SECURITY.md).
