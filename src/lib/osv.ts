@@ -51,13 +51,24 @@ export async function queryBatch(deps: readonly Dependency[]): Promise<string[][
   const out: string[][] = deps.map(() => []);
   for (let start = 0; start < deps.length; start += 1000) {
     const chunk = deps.slice(start, start + 1000);
+    const queries = chunk.map((d) => ({ package: { name: d.name, ecosystem: OSV_ECOSYSTEM[d.ecosystem] }, version: d.version }));
     const body = {
-      queries: chunk.map((d) => ({ package: { name: d.name, ecosystem: OSV_ECOSYSTEM[d.ecosystem] }, version: d.version })),
+      queries,
     };
     const res = await fetchJson<OsvBatchResponse>(`${OSV}/querybatch`, { method: "POST", body, timeoutMs: 60_000 });
-    res.results.forEach((r, i) => {
-      out[start + i] = (r.vulns ?? []).map((v) => v.id);
-    });
+    for (const [i, result] of res.results.entries()) {
+      const ids = new Set((result.vulns ?? []).map((v) => v.id));
+      let pageToken = result.next_page_token;
+      while (pageToken) {
+        const page = await fetchJson<{ vulns?: { id: string }[]; next_page_token?: string }>(`${OSV}/query`, {
+          method: "POST",
+          body: { ...queries[i], page_token: pageToken },
+        });
+        for (const vuln of page.vulns ?? []) ids.add(vuln.id);
+        pageToken = page.next_page_token;
+      }
+      out[start + i] = [...ids];
+    }
   }
   return out;
 }
