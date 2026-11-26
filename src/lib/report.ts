@@ -60,7 +60,7 @@ export function formatText(result: ScanResult, color = false, showAll = false): 
   lines.push(summaryLine(result.findings));
   if (result.findings.some((f) => f.kind === "patch-available")) lines.push(c(36, "Run `npx foster-oss fix` to switch to the patched packages."));
   if (result.findings.some((f) => f.kind === "orphaned-vulnerable"))
-    lines.push("Orphaned + vulnerable packages can be nominated for adoption: https://github.com/rekalnx/foster/issues/new?template=adopt.yml");
+    lines.push("Orphaned + vulnerable packages can be nominated for adoption: https://github.com/foster-oss/foster/issues/new?template=adopt.yml");
   return lines.join("\n");
 }
 
@@ -92,7 +92,7 @@ export function formatMarkdown(result: ScanResult): string {
               : f.alternatives
                 ? `replace with ${f.alternatives.options.slice(0, 3).map((o) => (o.kind === "snippet" ? "a snippet" : `\`${o.name}\``)).join(", ")}${f.alternatives.docs ? ` ([guide](${f.alternatives.docs}))` : ""}`
                 : f.kind === "orphaned-vulnerable"
-                  ? "[nominate for adoption](https://github.com/rekalnx/foster/issues/new?template=adopt.yml)"
+                  ? "[nominate for adoption](https://github.com/foster-oss/foster/issues/new?template=adopt.yml)"
                   : "watch";
         out.push(`| \`${f.dependency.name}@${f.dependency.version}\`${f.dependency.direct ? "" : " (transitive)"} | ${f.severity} | ${f.status} | ${adv} | ${action} |`);
       }
@@ -102,7 +102,7 @@ export function formatMarkdown(result: ScanResult): string {
     out.push(summaryLine(result.findings));
   }
   for (const w of result.warnings) out.push("", `> ⚠️ ${w}`);
-  out.push("", `<sub>Checked ${result.dependencyCount} packages from ${result.lockfiles.join(", ") || "no lockfile"} with [Foster](https://github.com/rekalnx/foster).</sub>`);
+  out.push("", `<sub>Checked ${result.dependencyCount} packages from ${result.lockfiles.join(", ") || "no lockfile"} with [Foster](https://github.com/foster-oss/foster).</sub>`);
   return out.join("\n");
 }
 
@@ -188,7 +188,7 @@ export function formatSarif(result: ScanResult, version: string, baseDir: string
         tool: {
           driver: {
             name: "Foster",
-            informationUri: "https://github.com/rekalnx/foster",
+            informationUri: "https://github.com/foster-oss/foster",
             version,
             rules: kinds.map((k) => ({
               id: `foster/${k}`,
@@ -196,7 +196,7 @@ export function formatSarif(result: ScanResult, version: string, baseDir: string
               shortDescription: { text: KIND_TITLE[k] },
               fullDescription: { text: RULE_HELP[k] },
               help: { text: RULE_HELP[k], markdown: RULE_HELP[k] },
-              helpUri: "https://github.com/rekalnx/foster#what-the-findings-mean",
+              helpUri: "https://github.com/foster-oss/foster#what-the-findings-mean",
               defaultConfiguration: { level: SARIF_LEVEL[k] },
               properties: { tags: ["security", "supply-chain", "dependencies"] },
             })),

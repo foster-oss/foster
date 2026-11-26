@@ -44,6 +44,11 @@ export function classify(pkg: RawPackage, now: Date = new Date()): Classificatio
     return { status: "dead", reasons: ["source repository is archived"] };
   }
 
+  // No push date and no release date: we cannot tell, so do not guess dead or dormant.
+  if (!repo.pushed_at && !pkg.latest_release_published_at) {
+    return { status: "unknown", reasons: ["no activity dates available"] };
+  }
+
   const reasons: string[] = [];
   const pushedRecently = pushAge !== null && pushAge <= 365;
   const releasedRecently = releaseAge !== null && releaseAge <= 365;

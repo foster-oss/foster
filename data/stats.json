@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-11-25T22:14:46.770Z",
+  "generatedAt": "2026-11-26T00:22:31.487Z",
   "totals": {
     "packages": 5797,
-    "active": 4172,
-    "dormant": 1069,
+    "active": 4170,
+    "dormant": 1071,
     "dead": 556,
     "unknown": 0,
-    "unmaintainedDownloadsPerMonth": 191118080227,
+    "unmaintainedDownloadsPerMonth": 191776987418,
     "deadDownloadsPerMonth": 58967942549,
-    "unmaintainedDependentRepos": 935695960,
+    "unmaintainedDependentRepos": 939530425,
     "deadDependentRepos": 300346764,
     "unpatchedAdvisories": 40,
     "packagesWithUnpatchedAdvisories": 15,
     "orphanedWithUnpatchedAdvisories": 10,
-    "singlePublisherUnmaintained": 825
+    "singlePublisherUnmaintained": 827
   },
   "byEcosystem": {
     "cargo": {
       "packages": 813,
-      "active": 628,
-      "dormant": 115,
+      "active": 627,
+      "dormant": 116,
       "dead": 70,
       "unknown": 0
     },
@@ -39,8 +39,8 @@
     },
     "npm": {
       "packages": 2295,
-      "active": 1588,
-      "dormant": 512,
+      "active": 1587,
+      "dormant": 513,
       "dead": 195,
       "unknown": 0
     },

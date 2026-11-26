@@ -218,7 +218,7 @@ function diffIndex(prev, rows, date) {
 }
 
 function atomFeed(entries) {
-  const site = "https://rekalnx.github.io/foster/";
+  const site = "https://foster-oss.github.io/foster/";
   const x = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const fmt = (n) => (n == null ? "?" : Intl.NumberFormat("en", { notation: "compact" }).format(n));
   const li = (r, tail = "") => `<li>${x(r.ecosystem)} <b>${x(r.name)}</b> (${fmt(r.dependentRepos)} dependent repos)${tail}</li>`;

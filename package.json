@@ -45,11 +45,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rekalnx/foster.git"
+    "url": "git+https://github.com/foster-oss/foster.git"
   },
-  "homepage": "https://github.com/rekalnx/foster#readme",
+  "homepage": "https://github.com/foster-oss/foster#readme",
   "bugs": {
-    "url": "https://github.com/rekalnx/foster/issues"
+    "url": "https://github.com/foster-oss/foster/issues"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
