@@ -83,7 +83,7 @@ async function main(argv: string[]): Promise<number> {
       else if (values.markdown) console.log(formatMarkdown(result));
       else console.log(formatText(result, process.stdout.isTTY ?? false, values.all));
       if (values["summary-file"]) appendFileSync(values["summary-file"], formatMarkdown(result) + "\n");
-      if (values.sarif) writeFileSync(values.sarif, formatSarif(result, fosterVersion()));
+      if (values.sarif) writeFileSync(values.sarif, formatSarif(result, fosterVersion(), process.cwd(), values.all));
       return shouldFail(result.findings, failOn) ? 1 : 0;
     }
     case "fix": {

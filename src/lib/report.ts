@@ -160,7 +160,7 @@ const RULE_HELP: Record<FindingKind, string> = {
  * SARIF 2.1.0 for GitHub code scanning and other security dashboards.
  * Locations point at the lockfile line that declares the package, relative to `baseDir`.
  */
-export function formatSarif(result: ScanResult, version: string, baseDir: string = process.cwd()): string {
+export function formatSarif(result: ScanResult, version: string, baseDir: string = process.cwd(), includeQuiet = false): string {
   const lockText = new Map<string, string[]>();
   const lineOf = (source: string, name: string): number => {
     let lines = lockText.get(source);
@@ -202,7 +202,8 @@ export function formatSarif(result: ScanResult, version: string, baseDir: string
             })),
           },
         },
-        results: result.findings.map((f) => {
+        // Quiet orphans (no known vulnerability) only with --all, like the text report: alerts must be actionable.
+        results: result.findings.filter((f) => includeQuiet || f.kind !== "orphaned").map((f) => {
           const rel = relative(baseDir, join(result.dir, f.dependency.source)).replace(/\\/g, "/");
           // Another drive (Windows) or outside the checkout: fall back to an absolute file URI.
           const uri = /^[A-Za-z]:\//.test(rel) || rel.startsWith("/") ? `file:///${rel.replace(/^\//, "")}` : rel;
