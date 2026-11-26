@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Listed in the official MCP Registry as `io.github.foster-oss/foster` (`server.json`, `mcpName`).
+- Releases publish to the MCP Registry automatically after npm.
+
 ## 0.2.0 (2026-11-27)
 
 First release on npm: `npx foster-oss`.
