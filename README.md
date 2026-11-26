@@ -2,6 +2,13 @@
 
 <h1 align="center">Foster</h1>
 
+<p align="center">
+  <a href="https://www.npmjs.com/package/foster-oss"><img alt="npm" src="https://img.shields.io/npm/v/foster-oss"></a>
+  <a href="https://github.com/foster-oss/foster/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/foster-oss/foster/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://foster-oss.github.io/foster/"><img alt="Orphan Index" src="https://img.shields.io/badge/Orphan%20Index-weekly-orange"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-blue"></a>
+</p>
+
 **Find the dependencies nobody maintains anymore, and the fixes that exist for them.**
 
 Foster scans your lockfile, tells you which dependencies have been abandoned, separates
@@ -14,9 +21,6 @@ npx foster-oss scan        # what in my lockfile is orphaned, or vulnerable with
 npx foster-oss fix         # switch to published drop-in patches (edits package.json)
 npx foster-oss check ip@2.0.1
 ```
-
-> **Not on npm yet.** Until the first release, run it from source:
-> `git clone https://github.com/foster-oss/foster && cd foster && npm ci && npm run build && node dist/cli.js scan <your-project>`
 
 **The Orphan Index**, a public dataset of which critical packages are unmaintained, is live at
 **<https://foster-oss.github.io/foster/>** and rebuilt every week.
@@ -134,8 +138,7 @@ you can find it; read the provider's source and advisory before adopting it.
 ```
 
 The report is also written to the job summary. With `sarif: true`, findings appear in GitHub code
-scanning next to your other security alerts. (The Action runs `npx foster-oss`, so it works once
-the package is on npm.)
+scanning next to your other security alerts. 
 
 ### AI agents
 

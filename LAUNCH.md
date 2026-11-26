@@ -4,6 +4,7 @@
 
 Sudah selesai:
 
+- Paket npm **foster-oss@0.2.0** sudah terbit (27 Nov 2026): `npx foster-oss scan` bisa dipakai siapa saja.
 - Organisasi GitHub **foster-oss** (owner: rekalnx) dengan logo Foster sebagai foto profil.
 - Repo publik: <https://github.com/foster-oss/foster>, dipindah dari `rekalnx/foster` (URL lama otomatis diarahkan ke sini). CI lulus.
 - Foster 0.2: 6 ekosistem, SBOM, monorepo (`--recursive`), saran pengganti, SARIF, dan laporan mingguan.
@@ -25,8 +26,8 @@ Aku tidak mengirim pesan apa pun ke upstream, karena issue `ip` sudah punya tiga
 
 ## Langkah yang butuh akun kamu
 
-1. **Terbitkan CLI ke npm.** Ini langkah terpenting, karena `npx foster-oss` dan GitHub Action
-   baru jalan setelah ini.
+1. **~~Terbitkan CLI ke npm~~ (sudah, 0.2.0).** Untuk rilis berikutnya, aktifkan Trusted publishing (di bawah)
+   supaya rilis lewat CI tanpa token. Perintah publish manual, untuk referensi:
    ```powershell
    cd D:\DEV\SOCIETY-PROJECT\foster
    npm login
@@ -39,7 +40,6 @@ Aku tidak mengirim pesan apa pun ke upstream, karena issue `ip` sudah punya tiga
 2. **Pengaturan repo** (opsional, tapi disarankan):
    - Settings → Code security → aktifkan *Private vulnerability reporting*.
    - Settings → Branches → lindungi `main` (require status checks: CI).
-3. **Hapus kalimat "Not on npm yet"** di README setelah langkah 1 selesai.
 
 ## Kontak (draf, kirim sendiri kalau setuju)
 
