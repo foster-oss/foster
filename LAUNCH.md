@@ -4,8 +4,11 @@
 
 Sudah selesai:
 
-- Repo publik: <https://github.com/rekalnx/foster>. CI lulus.
-- Situs Orphan Index: <https://rekalnx.github.io/foster/>, dibangun ulang setiap Senin lewat GitHub Actions.
+- Organisasi GitHub **foster-oss** (owner: rekalnx) dengan logo Foster sebagai foto profil.
+- Repo publik: <https://github.com/foster-oss/foster>, dipindah dari `rekalnx/foster` (URL lama otomatis diarahkan ke sini). CI lulus.
+- Foster 0.2: 6 ekosistem, SBOM, monorepo (`--recursive`), saran pengganti, SARIF, dan laporan mingguan.
+  Kode inti sudah di-review; 12 bug yang ditemukan sudah diperbaiki dan dikunci dengan tes regresi.
+- Situs Orphan Index: <https://foster-oss.github.io/foster/>, dibangun ulang setiap Senin lewat GitHub Actions.
 - Tag `v0` untuk GitHub Action.
 - Registry berisi 12 tambalan drop-in yang sudah dirilis (dari Keep LTS). `foster-oss fix` sudah
   teruji end-to-end: setelah fix dan `npm install`, `socks` langsung memuat `@keep-lts/ip`, dan
@@ -31,7 +34,7 @@ Aku tidak mengirim pesan apa pun ke upstream, karena issue `ip` sudah punya tiga
    ```
    Nama `foster-oss` masih kosong di npm (dicek 26 Nov). Setelah rilis pertama, aktifkan
    *Trusted publishing* di npmjs.com → package foster-oss → Settings (GitHub Actions, repo
-   `rekalnx/foster`, workflow `release.yml`, environment `npm-release`). Rilis berikutnya cukup:
+   `foster-oss/foster`, workflow `release.yml`, environment `npm-release`). Rilis berikutnya cukup:
    naikkan versi, commit, lalu `git tag v0.1.1 && git push --tags`.
 2. **Pengaturan repo** (opsional, tapi disarankan):
    - Settings → Code security → aktifkan *Private vulnerability reporting*.
@@ -44,8 +47,8 @@ Aku tidak mengirim pesan apa pun ke upstream, karena issue `ip` sudah punya tiga
    dua hal: Orphan Index sebagai sumber kandidat package berikutnya, dan agar mereka menambah entri
    registry sendiri lewat PR.
 
-   > Hi! I maintain Foster (github.com/rekalnx/foster), an open, vendor-neutral scanner and weekly
-   > index of abandoned npm/PyPI packages (rekalnx.github.io/foster). `foster-oss fix` now points
+   > Hi! I maintain Foster (github.com/foster-oss/foster), an open, vendor-neutral scanner and weekly
+   > index of abandoned npm/PyPI packages (foster-oss.github.io/foster). `foster-oss fix` now points
    > projects at your drop-in releases (all 12 are in our registry, credited to Keep LTS). Two ideas:
    > the Orphan Index lists orphaned packages with unfixed advisories that might be useful for your
    > roadmap (e.g. elliptic), and you're very welcome to add new releases to registry/patches.json by
@@ -54,8 +57,8 @@ Aku tidak mengirim pesan apa pun ke upstream, karena issue `ip` sudah punya tiga
 5. **Andrew Nesbitt / ecosyste.ms** (hello@ecosyste.ms). Minta masukan soal metodologi index.
 
    > Hi Andrew, your "Weekend at Bernie's" post was the starting point for Foster
-   > (github.com/rekalnx/foster): a weekly, public classification of the ecosyste.ms critical set
-   > (rekalnx.github.io/foster), plus a scanner that tells projects which of their dependencies are
+   > (github.com/foster-oss/foster): a weekly, public classification of the ecosyste.ms critical set
+   > (foster-oss.github.io/foster), plus a scanner that tells projects which of their dependencies are
    > orphaned and links them to published drop-in patches when they exist. I approximated your "no
    > write-access response" rule with closes/merges (METHODOLOGY.md) and would value your view on it.
    > Thanks for ecosyste.ms: Foster wouldn't exist without it.
@@ -99,7 +102,7 @@ Perbarui angka-angkanya dengan data terbaru sebelum mengirim.
 ## Metrik yang dipantau setiap bulan
 
 - download `foster-oss` per bulan (npmjs.com/package/foster-oss);
-- repo yang memakai Action (`uses: rekalnx/foster`, cari lewat GitHub code search);
+- repo yang memakai Action (`uses: foster-oss/foster`, cari lewat GitHub code search);
 - kontributor eksternal unik dengan PR di-merge (target 20 dalam 12 bulan);
 - PR kamu yang di-merge di repo orang lain (target 100 dalam 12 bulan);
 - jumlah entri di registry tambalan.

@@ -47,7 +47,8 @@ describe("applyFixes", () => {
     const dir = project({ name: "x", dependencies: { socks: "^2.7.1" } });
     const res = applyFixes(dir, [finding()]);
     expect(res.written).toBe(true);
-    expect(read(dir).overrides).toEqual({ ip: "npm:@foster-oss/ip@2.0.1-foster.1" });
+    // versioned key: only the affected copy is replaced, never other versions in the tree
+    expect(read(dir).overrides).toEqual({ "ip@2.0.1": "npm:@foster-oss/ip@2.0.1-foster.1" });
   });
 
   it("rewrites a direct dependency in place instead of overriding it", () => {
@@ -61,7 +62,7 @@ describe("applyFixes", () => {
   it("uses pnpm.overrides for pnpm projects and resolutions for yarn", () => {
     const pnpm = project({ name: "x" }, "pnpm-lock.yaml");
     applyFixes(pnpm, [finding()]);
-    expect(read(pnpm).pnpm.overrides.ip).toBe("npm:@foster-oss/ip@2.0.1-foster.1");
+    expect(read(pnpm).pnpm.overrides["ip@2.0.1"]).toBe("npm:@foster-oss/ip@2.0.1-foster.1");
 
     const yarn = project({ name: "x" }, "yarn.lock");
     applyFixes(yarn, [finding()]);
@@ -69,14 +70,57 @@ describe("applyFixes", () => {
   });
 
   it("keeps an existing different override unless forced", () => {
-    const dir = project({ name: "x", overrides: { ip: "1.1.9" } });
+    const dir = project({ name: "x", overrides: { "ip@2.0.1": "1.1.9" } });
     const res = applyFixes(dir, [finding()]);
     expect(res.written).toBe(false);
     expect(res.changes[0]).toMatchObject({ applied: false });
-    expect(read(dir).overrides.ip).toBe("1.1.9");
+    expect(read(dir).overrides["ip@2.0.1"]).toBe("1.1.9");
 
     applyFixes(dir, [finding()], { force: true });
-    expect(read(dir).overrides.ip).toBe("npm:@foster-oss/ip@2.0.1-foster.1");
+    expect(read(dir).overrides["ip@2.0.1"]).toBe("npm:@foster-oss/ip@2.0.1-foster.1");
+  });
+
+  it("never points a safe direct dependency on another major at the patch", () => {
+    // ip@3 is direct and safe; a vulnerable ip@2.0.1 sits under socks
+    const dir = project({ name: "x", dependencies: { ip: "^3.0.0", socks: "^2.7.1" } });
+    applyFixes(dir, [finding({ direct: true })]);
+    const pkg = read(dir);
+    expect(pkg.dependencies.ip).toBe("^3.0.0");
+    expect(pkg.overrides).toEqual({ "ip@2.0.1": "npm:@foster-oss/ip@2.0.1-foster.1" });
+  });
+
+  it("rewrites the package in every dependency field whose range installed it", () => {
+    const dir = project({ name: "x", dependencies: { ip: "^2.0.0" }, devDependencies: { ip: "2.0.1" } });
+    applyFixes(dir, [finding({ direct: true })]);
+    const pkg = read(dir);
+    expect(pkg.dependencies.ip).toBe("npm:@foster-oss/ip@2.0.1-foster.1");
+    expect(pkg.devDependencies.ip).toBe("npm:@foster-oss/ip@2.0.1-foster.1");
+  });
+
+  it("keeps nested npm overrides when replacing with --force", () => {
+    const dir = project({ name: "x", overrides: { "ip@2.0.1": { ".": "2.0.1", foo: "1.0.0" } } });
+    const res = applyFixes(dir, [finding()]);
+    expect(res.changes[0]?.from).toBe("2.0.1");
+    applyFixes(dir, [finding()], { force: true });
+    expect(read(dir).overrides["ip@2.0.1"]).toEqual({ ".": "npm:@foster-oss/ip@2.0.1-foster.1", foo: "1.0.0" });
+  });
+
+  it("handles a package.json with a UTF-8 byte order mark and keeps it", () => {
+    const dir = project({ name: "x" });
+    const path = join(dir, "package.json");
+    writeFileSync(path, String.fromCharCode(0xfeff) + readFileSync(path, "utf8"));
+    applyFixes(dir, [finding()]);
+    const text = readFileSync(path, "utf8");
+    expect(text.charCodeAt(0)).toBe(0xfeff);
+    expect(JSON.parse(text.slice(1)).overrides["ip@2.0.1"]).toBe("npm:@foster-oss/ip@2.0.1-foster.1");
+  });
+
+  it("refuses a yarn resolution that would also replace an unaffected copy", () => {
+    const dir = project({ name: "x" }, "yarn.lock");
+    writeFileSync(join(dir, "yarn.lock"), ['ip@^2.0.0:', '  version "2.0.1"', "", "ip@^3.0.0:", '  version "3.0.0"', ""].join("\n"));
+    const res = applyFixes(dir, [finding()]);
+    expect(res.written).toBe(false);
+    expect(res.skipped[0]?.reason).toMatch(/unaffected copies/);
   });
 
   it("scopes overrides per version when several versions are installed", () => {

@@ -16,10 +16,10 @@ npx foster-oss check ip@2.0.1
 ```
 
 > **Not on npm yet.** Until the first release, run it from source:
-> `git clone https://github.com/rekalnx/foster && cd foster && npm ci && npm run build && node dist/cli.js scan <your-project>`
+> `git clone https://github.com/foster-oss/foster && cd foster && npm ci && npm run build && node dist/cli.js scan <your-project>`
 
 **The Orphan Index**, a public dataset of which critical packages are unmaintained, is live at
-**<https://rekalnx.github.io/foster/>** and rebuilt every week.
+**<https://foster-oss.github.io/foster/>** and rebuilt every week.
 
 ## Why
 
@@ -28,17 +28,17 @@ Go, RubyGems, Packagist: the [ecosyste.ms](https://ecosyste.ms) critical set) in
 
 | Ecosystem | Critical packages | Dead | Dormant | Unmaintained |
 |---|---:|---:|---:|---:|
-| npm | 2,295 | 195 | 512 | **31%** |
+| npm | 2,295 | 195 | 513 | **31%** |
 | RubyGems | 974 | 78 | 169 | **25%** |
-| Cargo (Rust) | 813 | 70 | 115 | **23%** |
+| Cargo (Rust) | 813 | 70 | 116 | **23%** |
 | Go | 645 | 120 | 168 | **45%** |
 | Packagist (PHP) | 548 | 59 | 56 | **21%** |
 | PyPI | 522 | 34 | 49 | **16%** |
-| **All** | **5,797** | **556** | **1,069** | **28%** |
+| **All** | **5,797** | **556** | **1,071** | **28%** |
 
-- The unmaintained npm and PyPI packages alone are downloaded **~191 billion times a month**;
-  all unmaintained packages together back **~936 million** dependent repositories.
-- **825** unmaintained packages can only be published by a single account.
+- The unmaintained npm and PyPI packages alone are downloaded **~192 billion times a month**;
+  all unmaintained packages together back **~940 million** dependent repositories.
+- **827** unmaintained packages can only be published by a single account.
 - **10 unmaintained packages have security advisories that no upstream release fixes**, for example:
 
 | Package | Advisory with no upstream fix | Drop-in patch |
@@ -50,7 +50,7 @@ Go, RubyGems, Packagist: the [ecosyste.ms](https://ecosyste.ms) critical set) in
 | Packagist `phpoffice/phpexcel` | 20 advisories, 10 HIGH | none: move to `phpoffice/phpspreadsheet` |
 | npm `elliptic` (74M downloads/month) | LOW: risky cryptographic primitive | none yet |
 
-The full list is in the [Orphan Index](https://rekalnx.github.io/foster/).
+The full list is in the [Orphan Index](https://foster-oss.github.io/foster/).
 
 Upgrade bots (Dependabot, Renovate) can't help when no fixed version exists, and `npm audit`
 just says "no fix available". Meanwhile, people *are* fixing abandoned packages: maintained forks,
@@ -108,7 +108,7 @@ What the findings mean:
 | Finding | Meaning |
 |---|---|
 | `PATCH READY` | A published drop-in patch exists for this exact version. Run `foster-oss fix`. |
-| `ORPHANED+VULN` | Known vulnerability, no fix anywhere, package dead or dormant. Prefer an alternative, or [nominate it](https://github.com/rekalnx/foster/issues/new?template=adopt.yml). |
+| `ORPHANED+VULN` | Known vulnerability, no fix anywhere, package dead or dormant. Prefer an alternative, or [nominate it](https://github.com/foster-oss/foster/issues/new?template=adopt.yml). |
 | `NO FIX YET` | Known vulnerability with no release yet, but the package looks maintained. |
 | `UPGRADE` | Fixed upstream. Just upgrade. |
 | `ORPHANED` | Widely used and unmaintained, no known vulnerability. Shown with `--all`. |
@@ -126,7 +126,7 @@ you can find it; read the provider's source and advisory before adopting it.
 ### GitHub Action
 
 ```yaml
-- uses: rekalnx/foster@v0
+- uses: foster-oss/foster@v0
   with:
     fail-on: orphaned-vulnerable   # none | patch-available | orphaned-vulnerable | unpatched | any
     comment: true                  # optional PR comment; needs pull-requests: write

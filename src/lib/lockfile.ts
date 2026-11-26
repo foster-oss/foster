@@ -45,12 +45,18 @@ export function detectLockfiles(dir: string): LockfileInfo[] {
   return CANDIDATES.filter((c) => existsSync(join(dir, c.file)));
 }
 
+/** Read a text file, dropping a UTF-8 byte order mark (common on Windows) so JSON.parse accepts it. */
+export function readText(path: string): string {
+  const text = readFileSync(path, "utf8");
+  return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+}
+
 /** Names listed directly in package.json, used to mark direct dependencies. */
 export function directNpmNames(dir: string): Set<string> {
   const path = join(dir, "package.json");
   if (!existsSync(path)) return new Set();
   try {
-    const pkg = JSON.parse(readFileSync(path, "utf8")) as Record<string, Record<string, string> | undefined>;
+    const pkg = JSON.parse(readText(path)) as Record<string, Record<string, string> | undefined>;
     const names = new Set<string>();
     for (const field of ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]) {
       for (const n of Object.keys(pkg[field] ?? {})) names.add(n);
@@ -62,7 +68,7 @@ export function directNpmNames(dir: string): Set<string> {
 }
 
 export function readDependencies(dir: string, lock: LockfileInfo): Dependency[] {
-  const text = readFileSync(join(dir, lock.file), "utf8");
+  const text = readText(join(dir, lock.file));
   // null = the lockfile format does not tell direct from transitive; report all as direct.
   let direct: Set<string> | null = null;
   let pairs: [string, string][];
@@ -190,57 +196,58 @@ export function directCargoNames(dir: string): Set<string> {
 export function parseGoMod(text: string): { pairs: [string, string][]; direct: Set<string> } {
   const pairs: [string, string][] = [];
   const direct = new Set<string>();
-  const replaces = new Map<string, [string, string] | null>();
-  let block: "require" | "replace" | null = null;
+  // replace directives: "from [fromVersion] => to [toVersion]"; a version on the left limits the replace to it.
+  const replaces: { from: string; fromVersion?: string; to: [string, string] | null }[] = [];
+  let block: "require" | "replace" | "other" | null = null;
   for (const raw of text.split(/\r?\n/)) {
-    const line = raw.trim();
-    if (!line || line.startsWith("//")) continue;
-    if (/^(require|replace)\s*\($/.test(line)) {
-      block = line.startsWith("require") ? "require" : "replace";
+    const indirect = /\/\/\s*indirect\b/.test(raw);
+    const line = raw.replace(/\/\/.*$/, "").trim();
+    if (!line) continue;
+    const opener = line.match(/^(\w+)\s*\($/);
+    if (opener?.[1]) {
+      block = opener[1] === "require" ? "require" : opener[1] === "replace" ? "replace" : "other";
       continue;
     }
     if (line === ")") {
       block = null;
       continue;
     }
-    let body: string | null = null;
     let kind: "require" | "replace" | null = null;
+    let body = line;
     const single = line.match(/^(require|replace)\s+(.+)$/);
-    if (single?.[1] && single[2] && !single[2].startsWith("(")) {
+    if (single?.[1] && single[2]) {
       kind = single[1] as "require" | "replace";
       body = single[2];
-    } else if (block) {
+    } else if (block === "require" || block === "replace") {
       kind = block;
-      body = line;
     }
-    if (!kind || !body) continue;
-    const indirect = /\/\/\s*indirect/.test(body);
-    const clean = body.replace(/\/\/.*$/, "").trim();
+    if (!kind) continue; // module, go, toolchain, exclude, retract…
     if (kind === "require") {
-      const [mod, ver] = clean.split(/\s+/);
+      const [mod, ver] = body.split(/\s+/);
       if (mod && ver) {
         pairs.push([mod, ver]);
         if (!indirect) direct.add(mod);
       }
     } else {
-      const [left, right] = clean.split("=>").map((s) => s.trim());
-      const from = left?.split(/\s+/)[0];
+      const [left, right] = body.split("=>").map((x) => x.trim());
+      const [from, fromVersion] = (left ?? "").split(/\s+/);
       const [to, toVer] = (right ?? "").split(/\s+/);
       if (!from) continue;
       // Local path replacements (./x, ../x, /abs) are not registry packages.
-      replaces.set(from, to && toVer && !/^[./]/.test(to) ? [to, toVer] : null);
+      replaces.push({ from, fromVersion: fromVersion || undefined, to: to && toVer && !/^[./]/.test(to) ? [to, toVer] : null });
     }
   }
   const out: [string, string][] = [];
   for (const [mod, ver] of pairs) {
-    if (!replaces.has(mod)) {
+    // A version-specific replace wins over a module-wide one, as in the go command.
+    const r = replaces.find((x) => x.from === mod && x.fromVersion === ver) ?? replaces.find((x) => x.from === mod && !x.fromVersion);
+    if (!r) {
       out.push([mod, ver]);
       continue;
     }
-    const r = replaces.get(mod);
-    if (r) {
-      out.push(r);
-      if (direct.has(mod)) direct.add(r[0]);
+    if (r.to) {
+      out.push(r.to);
+      if (direct.has(mod)) direct.add(r.to[0]);
     }
   }
   return { pairs: out, direct };
@@ -266,7 +273,7 @@ export function parseGemfileLock(text: string): { pairs: [string, string][]; dir
       const m = raw.match(/^ {4}([^\s(]+) \(([^)]+)\)$/);
       if (m?.[1] && m[2]) {
         // strip platform suffixes like "1.15.4-x86_64-linux" or "-java"
-        const version = m[2].replace(/-(x86|x64|arm|aarch|universal|java|mingw|mswin|darwin|linux|ruby)[\w.-]*$/i, "");
+        const version = m[2].replace(/-(x86|x64|i386|i686|arm|aarch|universal|java|mingw|mswin|darwin|linux|ruby|wasm)[\w.-]*$/i, "");
         pairs.push([m[1], version]);
       }
     }
@@ -284,7 +291,7 @@ export function parseComposerLock(text: string): [string, string][] {
   const out: [string, string][] = [];
   for (const section of ["packages", "packages-dev"]) {
     for (const p of lock[section] ?? []) {
-      if (!p.name || !p.version || p.version.startsWith("dev-")) continue;
+      if (!p.name || !p.version || p.version.startsWith("dev-") || p.version.endsWith("-dev")) continue; // branches, not releases
       out.push([p.name, p.version.replace(/^v(?=\d)/, "")]);
     }
   }
@@ -295,7 +302,7 @@ export function directComposerNames(dir: string): Set<string> {
   const path = join(dir, "composer.json");
   if (!existsSync(path)) return new Set();
   try {
-    const pkg = JSON.parse(readFileSync(path, "utf8")) as Record<string, Record<string, string> | undefined>;
+    const pkg = JSON.parse(readText(path)) as Record<string, Record<string, string> | undefined>;
     return new Set([...Object.keys(pkg.require ?? {}), ...Object.keys(pkg["require-dev"] ?? {})]);
   } catch {
     return new Set();
@@ -375,7 +382,7 @@ export function parsePnpmLock(text: string): [string, string][] {
   for (const [rawKey, entry] of Object.entries(doc?.packages ?? {})) {
     let key = rawKey.replace(/^\//, "");
     key = key.replace(/\(.*$/, ""); // peer suffix "(react@18.2.0)"
-    key = key.replace(/_.*$/, ""); // v5 peer suffix
+    key = key.replace(/(\/\d[^/_]*)_.*$/, "$1"); // v5 peer suffix after the version ("/foo/1.0.0_react@18"), never in a name
     if (entry?.name && entry.version) {
       out.push([entry.name, entry.version]);
       continue;

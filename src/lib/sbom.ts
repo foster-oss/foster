@@ -26,12 +26,17 @@ export interface SbomRead {
 
 /** Parse a purl such as pkg:npm/%40scope/name@1.2.3 or pkg:golang/github.com/a/b@v1.0.0. */
 export function parsePurl(purl: string): { type: string; name: string; version?: string } | null {
-  const m = purl.match(/^pkg:([a-zA-Z0-9.+-]+)\/([^@?#]+)(?:@([^?#]+))?/);
+  // The name may start with an unencoded npm scope ("pkg:npm/@babel/core@7.22.5").
+  const m = purl.match(/^pkg:([a-zA-Z0-9.+-]+)\/(@?[^@?#]+)(?:@([^?#]+))?/);
   if (!m?.[1] || !m[2]) return null;
-  const type = m[1].toLowerCase();
-  const name = m[2].split("/").map(decodeURIComponent).join("/");
-  const version = m[3] ? decodeURIComponent(m[3]) : undefined;
-  return { type, name, version };
+  try {
+    const type = m[1].toLowerCase();
+    const name = m[2].split("/").map(decodeURIComponent).join("/");
+    const version = m[3] ? decodeURIComponent(m[3]) : undefined;
+    return { type, name, version };
+  } catch {
+    return null; // malformed percent-encoding
+  }
 }
 
 export function readSbom(path: string): SbomRead {
@@ -63,7 +68,11 @@ export function readSbom(path: string): SbomRead {
   const seen = new Set<string>();
   for (const purl of purls) {
     const p = parsePurl(purl);
-    if (!p?.version) continue;
+    if (!p) {
+      skipped["unreadable purl"] = (skipped["unreadable purl"] ?? 0) + 1;
+      continue;
+    }
+    if (!p.version) continue;
     const ecosystem = PURL_TYPE[p.type];
     if (!ecosystem) {
       skipped[p.type] = (skipped[p.type] ?? 0) + 1;

@@ -550,6 +550,7 @@ npm,cookie-signature,dormant,13.4,862539644,4104495,1056,1.2.2,2024-10-29T19:39:
 go,rsc.io/pdf,dead,13.4,,28789,73,v0.1.1,2018-04-11T19:01:10.000000Z,2024-03-06T07:32:09.000Z,true,0,,source repository is archived,https://github.com/rsc/pdf
 npm,array-flatten,dormant,13.3,305344567,4097259,1118,3.0.0,2019-11-21T05:14:39.925000Z,2025-06-24T05:32:34.000Z,false,1,,no release for 7.0 years; no push for 17 months,https://github.com/blakeembrey/array-flatten
 npm,set-blocking,dormant,13.3,300526806,3960025,1222,2.0.0,2016-05-17T22:59:27.619000Z,2023-12-15T11:34:26.000Z,false,1,,no release for 10.5 years; no push for 2.9 years,https://github.com/yargs/set-blocking
+npm,chownr,dormant,13.3,658907191,3832022,706,3.0.0,2024-04-06T21:32:30.155000Z,2025-11-24T22:32:51.000Z,false,1,,no release for 2.6 years; no push for 12 months,https://github.com/isaacs/chownr
 npm,universalify,dormant,13.3,940465778,3543281,1464,2.0.1,2023-11-01T17:12:45.392000Z,2023-11-01T17:12:25.000Z,false,1,,no release for 3.1 years; no push for 3.1 years,https://github.com/RyanZim/universalify
 go,github.com/getsentry/raven-go,dead,13.3,,17019,1005,v0.2.0,2018-11-28T22:11:06.000000Z,2019-06-19T10:34:35.000Z,true,0,,source repository is archived,https://github.com/getsentry/raven-go
 pypi,adal,dead,13.3,22958374,2766,63,1.2.7,2021-04-05T16:33:39.000000Z,2026-03-27T11:34:44.000Z,true,2,,source repository is archived,https://github.com/AzureAD/azure-activedirectory-library-for-python
@@ -610,7 +611,7 @@ npm,spdy-transport,dormant,12.9,78737164,2882507,298,3.0.0,2018-11-08T07:08:53.3
 npm,wbuf,dormant,12.9,77961287,2880775,302,1.7.3,2018-03-10T21:51:19.126000Z,2023-04-15T22:07:17.000Z,false,1,,no release for 8.7 years; no push for 3.6 years,https://github.com/indutny/wbuf
 npm,thunky,dormant,12.9,82882074,2870641,509,1.1.0,2019-10-14T08:54:30.361000Z,2024-06-14T07:43:38.000Z,false,2,,no release for 7.1 years; no push for 2.4 years,https://github.com/mafintosh/thunky
 npm,has-unicode,dormant,12.9,76813196,2839706,450,2.0.1,2016-06-23T22:10:28.872000Z,2020-12-16T19:13:47.000Z,false,1,,no release for 10.4 years; no push for 5.9 years,https://github.com/iarna/has-unicode
-npm,console-control-strings,dormant,12.9,83934067,2830527,405,1.1.0,2016-06-15T23:29:58.743000Z,2020-12-18T05:56:02.000Z,false,1,,no release for 10.4 years; no push for 5.9 years,https://github.com/iarna/console-control-strings
+npm,console-control-strings,dormant,12.9,83934067,2830527,405,1.1.0,2016-06-15T23:29:58.743000Z,2020-12-18T05:56:02.000Z,false,1,,no release for 10.5 years; no push for 5.9 years,https://github.com/iarna/console-control-strings
 npm,clean-css,dormant,12.9,111354266,2829869,3850,5.3.3,2023-11-30T09:05:04.410000Z,2024-10-18T06:34:43.000Z,false,1,,no release for 3.0 years; no push for 2.1 years,https://github.com/clean-css/clean-css
 npm,util.promisify,dormant,12.9,36693307,2823576,805,1.1.3,2024-12-18T17:49:43.884000Z,2024-12-18T17:49:41.000Z,false,1,,no release for 24 months; no push for 24 months,https://github.com/ljharb/util.promisify
 npm,postcss-modules-values,dormant,12.9,131594177,2820939,708,4.0.0,2020-10-13T11:19:42.718000Z,2024-01-18T13:50:14.000Z,false,4,,no release for 6.1 years; no push for 2.9 years,https://github.com/css-modules/postcss-modules-values
@@ -1287,8 +1288,9 @@ rubygems,database_cleaner-active_record,dormant,10.3,,7389,67,2.2.2,2025-07-30T1
 rubygems,redis-rack,dormant,10.3,,5577,7,3.0.0,2023-12-04T22:42:12.035000Z,,false,5,,no release for 3.0 years,
 cargo,tokio-io-timeout,dormant,10.3,,5342,8,1.2.1,2025-07-20T00:47:43.200104Z,2025-07-20T00:48:01.000Z,false,1,,no release for 16 months; no push for 16 months,https://github.com/sfackler/tokio-io-timeout
 rubygems,deep_merge,dormant,10.3,,4874,239,1.2.2,2022-01-07T22:31:29.587000Z,2025-05-27T15:39:48.000Z,false,4,,no release for 4.9 years; no push for 18 months,https://github.com/danielsdeleo/deep_merge
-cargo,atomic,dormant,10.3,,3521,99,0.6.1,2025-06-20T07:00:18.336083Z,2025-09-16T23:58:33.000Z,false,1,,no release for 17 months; no push for 14 months,https://github.com/Amanieu/atomic-rs
+cargo,atomic,dormant,10.3,,3521,99,0.6.1,2025-06-20T07:00:18.336083Z,2025-09-16T23:58:33.000Z,false,1,,no release for 17 months; no push for 15 months,https://github.com/Amanieu/atomic-rs
 cargo,ascii,dormant,10.3,,3191,103,1.1.0,2022-09-18T13:04:12.231348Z,2024-07-22T19:49:25.000Z,false,4,,no release for 4.2 years; no push for 2.3 years,https://github.com/tomprogrammer/rust-ascii
+cargo,oid-registry,dormant,10.3,,2443,9,0.8.1,2025-02-10T12:58:00.890947Z,2025-11-24T23:30:21.000Z,false,1,,no release for 22 months; no push for 12 months,https://github.com/rusticata/oid-registry
 packagist,ezimuel/guzzlestreams,dormant,10.3,,1356,3,4.1.0,2025-08-05T06:44:46.000000Z,2025-08-05T06:47:03.000Z,false,1,,no release for 16 months; no push for 16 months,https://github.com/ezimuel/guzzlestreams
 cargo,outref,dormant,10.3,,1042,4,0.5.2,2025-01-15T09:06:04.205242Z,2025-05-22T16:14:19.000Z,false,1,,no release for 23 months; no push for 18 months,https://github.com/Nugine/outref
 npm,check-more-types,dormant,10.2,20288301,100351,240,2.24.0,2017-03-20T15:26:45.445000Z,2020-07-15T19:48:16.000Z,false,3,,no release for 9.7 years; no push for 6.4 years,https://github.com/kensho-technologies/check-more-types
@@ -1698,7 +1700,6 @@ npm,regexpu-core,active,0,283923162,4004137,1185,6.5.4,2026-11-05T03:19:01.51500
 npm,decamelize,active,0,393167135,3884987,2243,7.0.0,2026-10-13T19:13:43.959000Z,2026-10-13T19:07:34.000Z,false,1,,,https://github.com/sindresorhus/decamelize
 npm,@babel/plugin-transform-reserved-words,active,0,223915039,3878658,52,8.0.1,2026-06-17T09:45:02.946000Z,2026-11-22T14:04:22.000Z,false,4,,,https://github.com/babel/babel
 npm,is-wsl,active,0,865064831,3861743,2778,3.1.1,2026-02-15T08:45:04.136000Z,2026-09-18T19:10:06.000Z,false,1,,,https://github.com/sindresorhus/is-wsl
-npm,chownr,active,0,658907191,3832022,706,3.0.0,2024-04-06T21:32:30.155000Z,2025-11-24T22:32:51.000Z,false,1,,,https://github.com/isaacs/chownr
 npm,@babel/helper-split-export-declaration,active,0,95677443,3795636,30,7.24.7,2024-06-05T13:15:30.530000Z,2026-11-22T14:04:22.000Z,false,4,,,https://github.com/babel/babel
 npm,ret,active,0,209509624,3789143,930,0.6.1,2026-10-30T19:57:47.541000Z,2026-10-30T19:56:21.000Z,false,1,,,https://github.com/fent/ret.js
 npm,@babel/parser,active,0,1608199930,3782849,4546,8.1.3,2026-11-20T17:26:02.259000Z,2026-11-22T14:04:22.000Z,false,4,,,https://github.com/babel/babel
@@ -5310,7 +5311,6 @@ pypi,annotated-types,active,0,1028355766,2461,285,0.8.0,2026-07-23T20:16:12.0000
 packagist,consolidation/site-alias,active,0,,2459,13,4.1.3,2026-03-28T23:34:58.000000Z,2026-03-28T23:43:16.000Z,false,1,,,https://github.com/consolidation/site-alias
 cargo,chacha20,active,0,,2455,99,0.10.2,2026-08-27T17:51:13.045493Z,2026-11-16T10:52:46.000Z,false,1,,,https://github.com/RustCrypto/stream-ciphers
 cargo,xmlparser,active,0,,2453,35,0.13.6,2023-09-30T15:21:25.478529Z,2025-12-29T15:13:20.000Z,false,2,,,https://github.com/RazrFalcon/xmlparser
-cargo,oid-registry,active,0,,2443,9,0.8.1,2025-02-10T12:58:00.890947Z,2025-11-24T23:30:21.000Z,false,1,,,https://github.com/rusticata/oid-registry
 packagist,google/cloud-storage,active,0,,2437,99,v2.7.0,2026-11-17T00:25:19.000000Z,2026-10-16T21:55:01.000Z,false,2,,,https://github.com/googleapis/google-cloud-php-storage
 cargo,hdrhistogram,active,0,,2429,74,7.6.0,2026-07-18T17:50:04.467821Z,2026-11-15T14:34:45.000Z,false,1,,,https://github.com/HdrHistogram/HdrHistogram_rust
 pypi,pywavelets,active,0,13428175,2426,99,1.10.0,2026-09-07T17:13:40.000000Z,2026-11-14T10:35:53.000Z,false,2,,,https://github.com/PyWavelets/pywt

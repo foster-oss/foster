@@ -90,14 +90,18 @@ export function describeForDependency(v: OsvVuln, dep: Dependency): VulnForDepen
   const fixed: string[] = [];
   const lastAffected: string[] = [];
   let severity: Severity = normalizeSeverity(v.database_specific?.severity);
+  const installed = stripV(dep.version);
   for (const aff of v.affected ?? []) {
     if (!sameName(aff.package?.name, dep)) continue;
     if (severity === "UNKNOWN") severity = normalizeSeverity(aff.database_specific?.severity);
     for (const range of aff.ranges ?? []) {
-      for (const ev of range.events ?? []) {
-        if (ev.fixed) fixed.push(ev.fixed);
-        if (ev.last_affected) lastAffected.push(ev.last_affected);
-      }
+      // GIT ranges hold commit hashes, not release versions.
+      if (range.type && range.type !== "SEMVER" && range.type !== "ECOSYSTEM") continue;
+      const end = intervalEndFor(range.events ?? [], installed);
+      if (end === "unrelated") continue;
+      if (end?.fixed) fixed.push(end.fixed);
+      if (end?.last_affected) lastAffected.push(end.last_affected);
+      // end === null: the installed version is in an open-ended interval, nothing fixes it on this line.
     }
   }
   const id = displayId(v);
@@ -113,6 +117,38 @@ export function describeForDependency(v: OsvVuln, dep: Dependency): VulnForDepen
     lastAffected: [...new Set(lastAffected)],
     isMalware,
   };
+}
+
+function stripV(version: string): string {
+  return version.replace(/^v(?=\d)/, "");
+}
+
+/**
+ * OSV ranges are lists of intervals: introduced → fixed / last_affected, possibly several per
+ * range (one per release line). Return the end of the interval that contains the installed
+ * version: { fixed } or { last_affected }, null when that interval is open-ended (no fix), or
+ * "unrelated" when no interval contains it.
+ */
+export function intervalEndFor(events: OsvRangeEvent[], installed: string): { fixed?: string; last_affected?: string } | null | "unrelated" {
+  let start: string | null = null;
+  const cmp = (a: string, b: string) => compareVersions(stripV(a), stripV(b));
+  for (const ev of events) {
+    if (ev.introduced !== undefined) {
+      start = ev.introduced;
+      continue;
+    }
+    if (start === null) continue;
+    const afterStart = start === "0" || cmp(installed, start) >= 0;
+    if (ev.fixed !== undefined) {
+      if (afterStart && cmp(installed, ev.fixed) < 0) return { fixed: ev.fixed };
+      start = null;
+    } else if (ev.last_affected !== undefined) {
+      if (afterStart && cmp(installed, ev.last_affected) <= 0) return { last_affected: ev.last_affected };
+      start = null;
+    }
+  }
+  if (start !== null && (start === "0" || cmp(installed, start) >= 0)) return null;
+  return "unrelated";
 }
 
 /** Advisories about hijacked or sabotaged releases: the answer is "avoid that version", not a patch. */
@@ -150,5 +186,6 @@ export function lowestFixAbove(dep: Dependency, fixedVersions: string[]): string
   const above = fixedVersions
     .filter((f) => compareVersions(f.replace(/^v(?=\d)/, ""), installed) > 0)
     .sort((a, b) => compareVersions(a.replace(/^v(?=\d)/, ""), b.replace(/^v(?=\d)/, "")));
-  return above[0] ?? [...fixedVersions].sort(compareVersions).at(-1);
+  // Never suggest a fix below the installed version: that would be a downgrade.
+  return above[0];
 }

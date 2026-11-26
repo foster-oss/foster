@@ -36,7 +36,7 @@ Options:
   -h, --help             Show this help
 
 Data: ecosyste.ms (maintenance, reach), OSV.dev (vulnerabilities), patch registry (Foster and other providers such as Keep LTS).
-Docs: https://github.com/rekalnx/foster`;
+Docs: https://github.com/foster-oss/foster`;
 
 const FAIL_LEVELS: FailOn[] = ["none", "patch-available", "orphaned-vulnerable", "unpatched", "any"];
 

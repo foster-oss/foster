@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { detectLockfiles, type NodeManager } from "./lockfile.js";
+import semver from "semver";
+import { detectLockfiles, readDependencies, type NodeManager } from "./lockfile.js";
 import type { Finding } from "./types.js";
 
 const DEP_FIELDS = ["dependencies", "devDependencies", "optionalDependencies"] as const;
@@ -77,10 +78,21 @@ export function applyFixes(dirInput: string, findings: Finding[], opts: FixOptio
   }
 
   const pkgPath = join(dir, "package.json");
-  const original = readFileSync(pkgPath, "utf8");
+  const raw = readFileSync(pkgPath, "utf8");
+  const hasBom = raw.charCodeAt(0) === 0xfeff;
+  const original = hasBom ? raw.slice(1) : raw;
   const pkg = JSON.parse(original) as Json;
 
-  // Group installed versions per package so we know whether one override covers all of them.
+  // Every installed version of every npm package, so an override never reaches a copy that is not affected.
+  const installed = new Map<string, Set<string>>();
+  for (const lock of detectLockfiles(dir).filter((l) => l.ecosystem === "npm")) {
+    for (const d of readDependencies(dir, lock)) {
+      const set = installed.get(d.name) ?? new Set<string>();
+      set.add(d.version);
+      installed.set(d.name, set);
+    }
+  }
+
   const byName = new Map<string, Finding[]>();
   for (const f of npmPatchable) {
     const list = byName.get(f.dependency.name) ?? [];
@@ -89,42 +101,60 @@ export function applyFixes(dirInput: string, findings: Finding[], opts: FixOptio
   }
 
   for (const [name, group] of byName) {
-    const patches = new Map(group.map((f) => [`${f.patch!.replacement.name}@${f.patch!.replacement.version}`, f]));
-    if (patches.size > 1) {
-      result.skipped.push({ package: name, reason: "several installed versions map to different patches; fix by hand" });
-      continue;
-    }
-    const first = group[0]!;
-    const target = `npm:${first.patch!.replacement.name}@${first.patch!.replacement.version}`;
+    for (const f of group) {
+      const version = f.dependency.version;
+      const target = `npm:${f.patch!.replacement.name}@${f.patch!.replacement.version}`;
 
-    const directField = DEP_FIELDS.find((field) => (pkg[field] as Record<string, string> | undefined)?.[name] !== undefined);
-    if (directField) {
-      const deps = pkg[directField] as Record<string, string>;
-      const from = deps[name];
-      if (from === target) continue;
-      deps[name] = target;
-      result.changes.push({ package: name, field: directField, key: name, from, to: target, applied: true });
-      continue;
-    }
-
-    const { field, obj } = overrideContainer(pkg, manager);
-    const keys =
-      manager === "yarn" || group.length === 1 ? [name] : group.map((f) => `${name}@${f.dependency.version}`);
-    for (const key of keys) {
-      const existing = obj[key];
-      if (existing === target) continue;
-      if (existing !== undefined && !opts.force) {
-        result.changes.push({ package: name, field, key, from: existing, to: target, applied: false, note: "existing override kept; rerun with --force to replace it" });
+      // A direct dependency is rewritten only where its declared range is what installed this exact version;
+      // a safe "ip": "^3.0.0" must never be pointed back at a 2.x patch.
+      const directFields = DEP_FIELDS.filter((field) => {
+        const spec = (pkg[field] as Record<string, string> | undefined)?.[name];
+        return spec !== undefined && semver.validRange(spec) !== null && semver.satisfies(version, spec, { includePrerelease: true });
+      });
+      if (directFields.length > 0) {
+        for (const field of directFields) {
+          const deps = pkg[field] as Record<string, string>;
+          const from = deps[name];
+          if (from === target) continue;
+          deps[name] = target;
+          result.changes.push({ package: name, field, key: name, from, to: target, applied: true });
+        }
         continue;
       }
-      obj[key] = target;
-      result.changes.push({ package: name, field, key, from: existing, to: target, applied: true });
+
+      const { field, obj } = overrideContainer(pkg, manager);
+      let key = `${name}@${version}`;
+      if (manager === "yarn") {
+        // Yarn resolutions cannot target one resolved version, so only override when every installed copy is affected.
+        const all = installed.get(name) ?? new Set([version]);
+        const affected = new Set(group.map((g) => g.dependency.version));
+        if ([...all].some((v) => !affected.has(v))) {
+          result.skipped.push({ package: `${name}@${version}`, reason: "yarn resolutions would also replace unaffected copies of this package; fix by hand" });
+          continue;
+        }
+        key = name;
+      }
+      const existing = (obj as Record<string, unknown>)[key];
+      const existingValue = typeof existing === "object" && existing !== null ? (existing as Record<string, string>)["."] : (existing as string | undefined);
+      if (existingValue === target) continue;
+      if (existing !== undefined && !opts.force) {
+        result.changes.push({ package: name, field, key, from: existingValue ?? JSON.stringify(existing), to: target, applied: false, note: "existing override kept; rerun with --force to replace it" });
+        continue;
+      }
+      if (typeof existing === "object" && existing !== null) {
+        // npm nested override: keep the child overrides, replace only the package itself.
+        (existing as Record<string, string>)["."] = target;
+      } else {
+        obj[key] = target;
+      }
+      result.changes.push({ package: name, field, key, from: existingValue, to: target, applied: true });
+      if (manager === "yarn") break; // one name-level resolution covers every copy
     }
   }
 
   const applied = result.changes.some((c) => c.applied);
   if (applied && !opts.dryRun) {
-    writeFileSync(pkgPath, stringifyLike(original, pkg));
+    writeFileSync(pkgPath, (hasBom ? "﻿" : "") + stringifyLike(original, pkg));
     result.written = true;
   }
   return result;

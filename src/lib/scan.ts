@@ -74,7 +74,14 @@ export async function scanProject(dirInput: string, opts: ScanOptions = {}): Pro
     );
   }
   // The same package version used by several sub-projects is reported once (first lockfile wins).
-  const deps = [...new Map(all.map((d) => [`${d.ecosystem}:${d.name}@${d.version}`, d])).values()];
+  const merged = new Map<string, Dependency>();
+  for (const d of all) {
+    const key = `${d.ecosystem}:${d.name}@${d.version}`;
+    const prev = merged.get(key);
+    if (!prev) merged.set(key, { ...d });
+    else if (d.direct) prev.direct = true; // direct in any sub-project counts
+  }
+  const deps = [...merged.values()];
   const findings = await analyzeDependencies(deps, opts, warnings);
   return {
     dir,

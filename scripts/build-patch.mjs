@@ -62,7 +62,7 @@ try {
   pkg.foster = {
     upstream: `${upstreamName}@${meta.upstreamVersion}`,
     advisories: meta.advisories,
-    patch: `https://github.com/rekalnx/foster/tree/main/patches/${target}`,
+    patch: `https://github.com/foster-oss/foster/tree/main/patches/${target}`,
   };
   pkg.publishConfig = { access: "public", provenance: true };
   delete pkg.scripts; // never run upstream lifecycle scripts from a Foster release
@@ -73,7 +73,7 @@ try {
       `This is \`${upstreamName}@${meta.upstreamVersion}\` with one security fix applied by Foster.\n\n` +
       `- Fixes: ${meta.advisories.map((a) => `https://github.com/advisories/${a}`).join(", ")}\n` +
       `- What changed: ${meta.summary}\n` +
-      `- Exact diff, tests and review history: https://github.com/rekalnx/foster/tree/main/patches/${target}\n\n` +
+      `- Exact diff, tests and review history: https://github.com/foster-oss/foster/tree/main/patches/${target}\n\n` +
       `Use it without changing your imports:\n\n\`\`\`json\n{ "overrides": { "${upstreamName}": "npm:${meta.replacement.name}@${meta.replacement.version}" } }\n\`\`\`\n\n` +
       `or run \`npx foster-oss fix\`.\n`,
   );

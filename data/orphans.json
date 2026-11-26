@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-25T22:14:46.770Z",
+ "generatedAt": "2026-11-26T00:22:31.487Z",
  "source": "ecosyste.ms critical package set (packages.ecosyste.ms), classified by Foster; see METHODOLOGY.md",
  "records": [
   {
@@ -10978,6 +10978,26 @@
   },
   {
    "ecosystem": "npm",
+   "name": "chownr",
+   "status": "dormant",
+   "reasons": [
+    "no release for 2.6 years",
+    "no push for 12 months"
+   ],
+   "downloadsLastMonth": 658907191,
+   "dependentRepos": 3832022,
+   "dependentPackages": 706,
+   "latestVersion": "3.0.0",
+   "latestReleaseAt": "2024-04-06T21:32:30.155000Z",
+   "repoUrl": "https://github.com/isaacs/chownr",
+   "archived": false,
+   "lastPushAt": "2025-11-24T22:32:51.000Z",
+   "publishers": 1,
+   "unpatchedAdvisories": [],
+   "priority": 13.3
+  },
+  {
+   "ecosystem": "npm",
    "name": "universalify",
    "status": "dormant",
    "reasons": [
@@ -12175,7 +12195,7 @@
    "name": "console-control-strings",
    "status": "dormant",
    "reasons": [
-    "no release for 10.4 years",
+    "no release for 10.5 years",
     "no push for 5.9 years"
    ],
    "downloadsLastMonth": 83934067,
@@ -25699,7 +25719,7 @@
    "status": "dormant",
    "reasons": [
     "no release for 17 months",
-    "no push for 14 months"
+    "no push for 15 months"
    ],
    "downloadsLastMonth": null,
    "dependentRepos": 3521,
@@ -25730,6 +25750,26 @@
    "archived": false,
    "lastPushAt": "2024-07-22T19:49:25.000Z",
    "publishers": 4,
+   "unpatchedAdvisories": [],
+   "priority": 10.3
+  },
+  {
+   "ecosystem": "cargo",
+   "name": "oid-registry",
+   "status": "dormant",
+   "reasons": [
+    "no release for 22 months",
+    "no push for 12 months"
+   ],
+   "downloadsLastMonth": null,
+   "dependentRepos": 2443,
+   "dependentPackages": 9,
+   "latestVersion": "0.8.1",
+   "latestReleaseAt": "2025-02-10T12:58:00.890947Z",
+   "repoUrl": "https://github.com/rusticata/oid-registry",
+   "archived": false,
+   "lastPushAt": "2025-11-24T23:30:21.000Z",
+   "publishers": 1,
    "unpatchedAdvisories": [],
    "priority": 10.3
   },
@@ -33661,23 +33701,6 @@
    "repoUrl": "https://github.com/sindresorhus/is-wsl",
    "archived": false,
    "lastPushAt": "2026-09-18T19:10:06.000Z",
-   "publishers": 1,
-   "unpatchedAdvisories": [],
-   "priority": 0
-  },
-  {
-   "ecosystem": "npm",
-   "name": "chownr",
-   "status": "active",
-   "reasons": [],
-   "downloadsLastMonth": 658907191,
-   "dependentRepos": 3832022,
-   "dependentPackages": 706,
-   "latestVersion": "3.0.0",
-   "latestReleaseAt": "2024-04-06T21:32:30.155000Z",
-   "repoUrl": "https://github.com/isaacs/chownr",
-   "archived": false,
-   "lastPushAt": "2025-11-24T22:32:51.000Z",
    "publishers": 1,
    "unpatchedAdvisories": [],
    "priority": 0
@@ -95134,23 +95157,6 @@
    "archived": false,
    "lastPushAt": "2025-12-29T15:13:20.000Z",
    "publishers": 2,
-   "unpatchedAdvisories": [],
-   "priority": 0
-  },
-  {
-   "ecosystem": "cargo",
-   "name": "oid-registry",
-   "status": "active",
-   "reasons": [],
-   "downloadsLastMonth": null,
-   "dependentRepos": 2443,
-   "dependentPackages": 9,
-   "latestVersion": "0.8.1",
-   "latestReleaseAt": "2025-02-10T12:58:00.890947Z",
-   "repoUrl": "https://github.com/rusticata/oid-registry",
-   "archived": false,
-   "lastPushAt": "2025-11-24T23:30:21.000Z",
-   "publishers": 1,
    "unpatchedAdvisories": [],
    "priority": 0
   },

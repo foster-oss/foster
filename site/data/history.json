@@ -1,1 +1,41 @@
-[]
+[
+ {
+  "date": "2026-11-26T00:22:31.487Z",
+  "since": "2026-11-25T22:14:46.770Z",
+  "newlyUnmaintained": [
+   {
+    "ecosystem": "npm",
+    "name": "chownr",
+    "status": "dormant",
+    "dependentRepos": 3832022,
+    "downloadsLastMonth": 658907191,
+    "from": "active",
+    "reasons": [
+     "no release for 2.6 years",
+     "no push for 12 months"
+    ]
+   },
+   {
+    "ecosystem": "cargo",
+    "name": "oid-registry",
+    "status": "dormant",
+    "dependentRepos": 2443,
+    "downloadsLastMonth": null,
+    "from": "active",
+    "reasons": [
+     "no release for 22 months",
+     "no push for 12 months"
+    ]
+   }
+  ],
+  "recovered": [],
+  "newUnfixed": [],
+  "resolvedUnfixed": [],
+  "counts": {
+   "newlyUnmaintained": 2,
+   "recovered": 0,
+   "newUnfixed": 0,
+   "resolvedUnfixed": 0
+  }
+ }
+]

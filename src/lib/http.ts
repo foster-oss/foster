@@ -15,7 +15,7 @@ export function fosterVersion(): string {
 
 /** ecosyste.ms blocks anonymous default user agents, so every request identifies Foster. */
 export function userAgent(): string {
-  return `foster-oss/${fosterVersion()} (+https://github.com/rekalnx/foster)`;
+  return `foster-oss/${fosterVersion()} (+https://github.com/foster-oss/foster)`;
 }
 
 export class HttpError extends Error {
