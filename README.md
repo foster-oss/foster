@@ -22,6 +22,9 @@ npx foster-oss fix         # switch to published drop-in patches (edits package.
 npx foster-oss check ip@2.0.1
 ```
 
+<p align="center"><img src="brand/demo.svg" alt="foster-oss scan and fix on a small app: two drop-in patches, one orphaned and vulnerable dependency with suggested replacements, and upgrades" width="860"></p>
+<p align="center"><sub>Real output from scanning a small app that depends on <code>socks</code>, <code>request</code> and <code>extract-zip</code> (trimmed).</sub></p>
+
 **The Orphan Index**, a public dataset of which critical packages are unmaintained, is live at
 **<https://foster-oss.github.io/foster/>** and rebuilt every week.
 
