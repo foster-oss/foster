@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.2.0 (unreleased)
+## 0.2.0 (2026-11-27)
+
+First release on npm: `npx foster-oss`.
+
 
 - Six ecosystems: Cargo (`Cargo.lock`), Go (`go.mod`), RubyGems (`Gemfile.lock`) and Packagist
   (`composer.lock`) join npm and PyPI; Python also gains `poetry.lock` and `Pipfile.lock`.

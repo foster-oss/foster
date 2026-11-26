@@ -28,4 +28,8 @@ jobs:
       - run: npm test
       - name: Tag matches package.json
         run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
-      - run: npm publish --provenance --access public
+      - name: Publish (skipped if this version is already on npm)
+        run: |
+          v=$(node -p "require('./package.json').version")
+          if npm view "foster-oss@$v" version >/dev/null 2>&1; then echo "foster-oss@$v is already published"; exit 0; fi
+          npm publish --provenance --access public
