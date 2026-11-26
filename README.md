@@ -145,7 +145,7 @@ scanning next to your other security alerts.
 
 ### AI agents
 
-**MCP** (Claude Code, Codex, Cursor, …):
+**MCP** (Claude Code, Codex, Cursor, …). Listed in the official [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.foster-oss/foster`, or configure it directly:
 
 ```json
 { "mcpServers": { "foster": { "command": "npx", "args": ["-y", "foster-oss", "mcp"] } } }
