@@ -46,20 +46,26 @@ export interface VulnForDependency {
   isMalware: boolean;
 }
 
-/** Query OSV for every dependency in batches of up to 1000. Returns vuln ids per dependency index. */
+/** Answers already fetched in this process, per "ecosystem:name@version". */
+const batchCache = new Map<string, string[]>();
+const batchKey = (d: Dependency) => `${d.ecosystem}:${d.name}@${d.version}`;
+
+/**
+ * Query OSV for every dependency in batches of up to 1000. Returns vuln ids per dependency index.
+ * Answers are remembered for the life of the process, so guard can ask about every package of a
+ * command in one request up front and the per-package checks after it need none.
+ */
 export async function queryBatch(deps: readonly Dependency[]): Promise<string[][]> {
-  const out: string[][] = deps.map(() => []);
-  for (let start = 0; start < deps.length; start += 1000) {
-    const chunk = deps.slice(start, start + 1000);
+  const missing = [...new Map(deps.filter((d) => !batchCache.has(batchKey(d))).map((d) => [batchKey(d), d])).values()];
+  for (let start = 0; start < missing.length; start += 1000) {
+    const chunk = missing.slice(start, start + 1000);
     const body = {
       queries: chunk.map((d) => ({ package: { name: d.name, ecosystem: OSV_ECOSYSTEM[d.ecosystem] }, version: d.version })),
     };
     const res = await fetchJson<OsvBatchResponse>(`${OSV}/querybatch`, { method: "POST", body, timeoutMs: 60_000 });
-    res.results.forEach((r, i) => {
-      out[start + i] = (r.vulns ?? []).map((v) => v.id);
-    });
+    res.results.forEach((r, i) => batchCache.set(batchKey(chunk[i]!), (r.vulns ?? []).map((v) => v.id)));
   }
-  return out;
+  return deps.map((d) => batchCache.get(batchKey(d)) ?? []);
 }
 
 const vulnCache = new Map<string, Promise<OsvVuln>>();

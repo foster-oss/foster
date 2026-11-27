@@ -4,7 +4,7 @@ import { checkPackage, type CheckResult } from "./check.js";
 import { mapLimit } from "./http.js";
 import { detectLockfiles, readDependencies, type LockfileInfo } from "./lockfile.js";
 import { npmInstallRisk, resolveNpmVersion, type InstallRisk } from "./npmrisk.js";
-import { lockfileMalware, malwareReports, type LockedMalware, type MalwareReport } from "./osv.js";
+import { lockfileMalware, malwareReports, queryBatch, type LockedMalware, type MalwareReport } from "./osv.js";
 import { describeAlternatives } from "./replacements.js";
 import type { Dependency, Ecosystem } from "./types.js";
 import { existsOnRegistry, lookAlike, type LookAlike } from "./typosquat.js";
@@ -24,6 +24,8 @@ export interface RequestedPackage {
   range?: string;
   /** Installed straight from a URL or git: no registry or advisory database covers it. */
   remote?: boolean;
+  /** Read from the project's package.json (an install with no names), not typed in the command. */
+  fromManifest?: boolean;
   /** The token as written in the command. */
   spec: string;
 }
@@ -36,6 +38,8 @@ export interface LockfileInstall {
   ecosystem: Ecosystem;
   /** An explicit file (`pip install -r dev.txt`); otherwise the lockfiles found in `dir`. */
   file?: string;
+  /** Installs exactly what the lockfile says (`npm ci`, `--frozen-lockfile`, `--immutable`). */
+  frozen?: boolean;
 }
 
 export type Decision = "allow" | "ask" | "deny";
@@ -292,8 +296,10 @@ export function parseCommand(line: string, cwd: string = process.cwd()): { packa
     const sub = rest[k];
     const args = [...lead, ...rest.slice(k + 1)];
     const add = (r: RequestedPackage | null) => r && found.push(r);
+    // npm ci and --frozen-lockfile / --immutable installs use the lockfile as it is; others may rewrite it
+    const frozen = (cmd === "npm" && !!sub && NPM_LOCKED.includes(sub)) || args.some((a) => ["--frozen-lockfile", "--immutable", "--immutable-cache"].includes(a));
     const lock = (tool: string, ecosystem: Ecosystem, at?: string, file?: string) =>
-      locked.push({ tool, dir: at ? resolve(dir, at) : dir, ecosystem, ...(file ? { file } : {}) });
+      locked.push({ tool, dir: at ? resolve(dir, at) : dir, ecosystem, ...(file ? { file } : {}), ...(frozen ? { frozen } : {}) });
 
     if (cmd === "npm" && sub && NPM_LOCKED.includes(sub)) lock(`npm ${sub}`, "npm", flagValue(args, "--prefix", "-C"));
     else if (cmd === "npm" && sub && NPM_INSTALL.includes(sub)) {
@@ -437,7 +443,12 @@ function baseVerdict(requested: RequestedPackage, check: CheckResult, extras: Ve
   const alt = check.alternatives ? ` Maintained alternatives: ${describeAlternatives(check.alternatives)}.` : "";
   const finding = check.findings[0];
   if (finding?.kind === "malicious") {
-    return { requested, decision: "deny", reason: `${label} is known malware (${finding.advisories.map((a) => a.id).join(", ")}). Do not install it.` };
+    const first = finding.advisories[0];
+    return {
+      requested,
+      decision: "deny",
+      reason: `${label} is known malware (${finding.advisories.map((a) => `${a.id}: ${a.title}`).join("; ")}). Do not install it. If it is already installed, remove it and rotate any credentials and tokens this machine holds.${first?.url ? ` Details: ${first.url}` : ""}`,
+    };
   }
   if (finding?.kind === "patch-available" && finding.patch) {
     return { requested, decision: "ask", reason: `${label} has ${finding.advisories.map((a) => a.id).join(", ")} with no upstream fix. A drop-in patch exists: ${finding.patch.replacement.name}@${finding.patch.replacement.version} (run \`npx foster-oss fix\` after installing).${alt}` };
@@ -447,7 +458,11 @@ function baseVerdict(requested: RequestedPackage, check: CheckResult, extras: Ve
     return { requested, decision: "deny", reason: `${label} has security advisories that no release fixes (${finding.advisories.map((a) => `${a.id} ${a.severity}`).join(", ")}); maintenance: ${status}.${alt}` };
   }
   if (finding?.kind === "upgrade-available") {
-    return { requested, decision: "ask", reason: `${label} is vulnerable (${finding.advisories.map((a) => a.id).join(", ")}); ${finding.fixedIn ? `version ${finding.fixedIn} fixes it` : "a newer release fixes it"}. Install a fixed version instead.` };
+    const reason = `${label} is vulnerable (${finding.advisories.map((a) => a.id).join(", ")}); ${finding.fixedIn ? `version ${finding.fixedIn} fixes it` : "a newer release fixes it"}. Install a fixed version instead.`;
+    // From a project's own package.json the dependency is already chosen: asking on every install is
+    // noise. `foster-oss scan` reports it; here it is a note.
+    if (requested.fromManifest) return { requested, decision: "allow", reason, note: reason };
+    return { requested, decision: "ask", reason };
   }
   const status = check.record?.status;
   if (status === "dead" || status === "dormant") {
@@ -474,7 +489,9 @@ export interface GuardOptions extends Partial<GuardProbes> {
 }
 
 const LIVE_PROBES: GuardProbes = {
-  malware: malwareReports,
+  // With a version, the package check already asked OSV (it reports malware as a "malicious" finding):
+  // a second query per package would double the requests. Without one, ask about the package as a whole.
+  malware: (e, n, v) => (v ? Promise.resolve([]) : malwareReports(e, n)),
   installRisk: (n, v, r) => npmInstallRisk(n, v, r),
   resolveRange: (n, range, latest) => resolveNpmVersion(n, range, latest),
   lockfileMalware,
@@ -566,7 +583,7 @@ function subdirs(dir: string): string[] {
  * dependencies are installed too, so they are included. Local folders and the workspaces themselves
  * (`workspace:*`, or a dependency on another workspace by name) are skipped.
  */
-export function manifestPackages(dir: string): RequestedPackage[] {
+export function manifestPackages(dir: string, why = "no lockfile"): RequestedPackage[] {
   const root = readManifest(dir);
   if (!root) return [];
   const manifests: { rel: string; pkg: Record<string, unknown> }[] = [{ rel: "package.json", pkg: root }];
@@ -587,7 +604,7 @@ export function manifestPackages(dir: string): RequestedPackage[] {
         if (out.has(key)) continue;
         const remote = REMOTE.test(spec) || /^[\w.-]+\/[\w.-]+(#.*)?$/.test(spec);
         const r: RequestedPackage | null = remote ? { ecosystem: "npm", name, remote: true, spec } : npmSpec(key);
-        if (r) out.set(key, { ...r, spec: `${key} (${rel}, no lockfile)` });
+        if (r) out.set(key, { ...r, fromManifest: true, spec: `${key} (${rel}, ${why})` });
       }
     }
   }
@@ -688,27 +705,50 @@ export async function guardCommand(
   const requested = [...parsed.packages];
   const lockfiles: LockfileInstall[] = [];
   for (const install of parsed.lockfiles) {
+    const lockedNpm = install.ecosystem === "npm" && !install.file ? lockedDependencies(install) : null;
     // No lockfile npm/pnpm/yarn/bun can read: they resolve package.json instead, so check those packages.
-    if (install.ecosystem === "npm" && !install.file && lockedDependencies(install).deps.length === 0) requested.push(...manifestPackages(install.dir));
-    else lockfiles.push(install);
+    if (lockedNpm && lockedNpm.files.length === 0) {
+      requested.push(...manifestPackages(install.dir));
+      continue;
+    }
+    lockfiles.push(install);
+    // A plain install rewrites a stale lockfile from package.json (a merge that added a dependency, a new
+    // workspace): check what it would add, the dependencies the lockfile does not have yet.
+    if (lockedNpm && !install.frozen) {
+      const have = new Set(lockedNpm.deps.map((d) => d.name));
+      requested.push(...manifestPackages(install.dir, "not in the lockfile yet").filter((p) => !have.has(p.name)));
+    }
   }
   // Packages are checked in parallel (a few at a time): guard runs before every install.
-  const verdicts = await mapLimit(requested, requested.length > 8 ? 8 : 4, async (r): Promise<PackageVerdict> => {
+  const width = requested.length > 30 ? 16 : requested.length > 8 ? 8 : 4;
+  // 1. Which version each package would install: pinned, the range's best match, else the latest release.
+  const resolved = await mapLimit(requested, width, async (r): Promise<{ version?: string; first?: CheckResult; error?: Error }> => {
+    if (r.remote || r.version) return { version: r.version };
+    try {
+      const first = await check(r.ecosystem, r.name);
+      if (first.notFound) return { first };
+      let target = first.record?.latestVersion ?? undefined;
+      if (r.range && r.ecosystem === "npm") target = (await probe.resolveRange(r.name, r.range, target ?? null).catch(() => undefined)) ?? target;
+      return { version: target, first };
+    } catch (err) {
+      return { error: err as Error };
+    }
+  });
+  // 2. One OSV request for all of them; the per-package checks below then find their answers cached.
+  if (check === checkPackage) {
+    const deps = requested.flatMap((r, i) => (!r.remote && resolved[i]!.version ? [{ ecosystem: r.ecosystem, name: r.name, version: resolved[i]!.version!, direct: true, source: "guard" }] : []));
+    if (deps.length > 1) await queryBatch(deps).catch(() => undefined);
+  }
+  // 3. The checks themselves.
+  const verdicts = await mapLimit(requested, width, async (r, i): Promise<PackageVerdict> => {
     if (r.remote) {
       return { requested: r, decision: "ask", reason: `${r.spec} is installed straight from a URL or git repository: no registry or advisory database covers it, so Foster cannot check it. Install it only from a source you trust.` };
     }
     try {
-      let result = await check(r.ecosystem, r.name, r.version);
-      let version = r.version;
-      if (!version && !result.notFound) {
-        // With no exact version, check what would be installed: the range's best match, else the latest release.
-        let target = result.record?.latestVersion ?? undefined;
-        if (r.range && r.ecosystem === "npm") target = (await probe.resolveRange(r.name, r.range, target ?? null).catch(() => undefined)) ?? target;
-        if (target) {
-          result = await check(r.ecosystem, r.name, target);
-          version = target;
-        }
-      }
+      const pre = resolved[i]!;
+      if (pre.error) throw pre.error;
+      const version = pre.version;
+      const result = version ? await check(r.ecosystem, r.name, version) : pre.first!;
       const extras: VerdictExtras = { lookAlike: lookAlike(r.ecosystem, r.name, result.record?.dependentRepos, result.record?.downloadsLastMonth) };
       if (result.notFound) extras.existsOnRegistry = await exists(r.ecosystem, r.name);
       if (!(result.notFound && extras.existsOnRegistry === false)) {
@@ -744,8 +784,10 @@ export async function guardCommand(
         ? `Foster guard: ${checked.join(", ")}, nothing to flag.`
         : "Foster guard: no package installs in this command."
       : `Foster guard ${decision === "deny" ? "blocked" : "flagged"} this install:\n${flagged.map((v) => `- ${v.reason}`).join("\n")}`;
-  // Notes do not stop the install; they say what is worth a look later.
-  const message = notes.length ? `${head}\nNote (not blocking):\n${notes.join("\n")}` : head;
+  // Notes do not stop the install; they say what is worth a look later. A few, not a wall of text.
+  const MAX_NOTES = 5;
+  const more = notes.length > MAX_NOTES ? `\n- …and ${notes.length - MAX_NOTES} more. \`npx foster-oss scan --all\` lists them.` : "";
+  const message = notes.length ? `${head}\nNote (not blocking):\n${notes.slice(0, MAX_NOTES).join("\n")}${more}` : head;
   return { decision, verdicts, message };
 }
 

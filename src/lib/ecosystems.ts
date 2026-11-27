@@ -63,9 +63,19 @@ export interface RawPackage {
   issue_metadata?: RawIssueMetadata | null;
 }
 
-export async function getPackage(ecosystem: Ecosystem, name: string): Promise<RawPackage> {
+const packageCache = new Map<string, Promise<RawPackage>>();
+
+/** One package record. Cached for the life of the process: guard looks a package up more than once. */
+export function getPackage(ecosystem: Ecosystem, name: string): Promise<RawPackage> {
   const url = `${BASE}/registries/${REGISTRY[ecosystem]}/packages/${encodeURIComponent(name)}`;
-  return fetchJson<RawPackage>(url);
+  let p = packageCache.get(url);
+  if (!p) {
+    p = fetchJson<RawPackage>(url);
+    // a failure (404, timeout) is not cached, so a retry can still succeed
+    p.catch(() => packageCache.delete(url));
+    packageCache.set(url, p);
+  }
+  return p;
 }
 
 /** One page of the ecosyste.ms "critical" package set for a registry. Empty array when past the end. */

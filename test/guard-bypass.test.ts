@@ -299,3 +299,70 @@ describe("found in the 0.8.1 review", () => {
     expect(r.message).toMatch(/nothing to flag\.\nNote \(not blocking\):\n- cross-env \(npm\) looks dead \(source repository is archived\)/);
   });
 });
+
+describe("found in the 0.8.2 review", () => {
+  function staleMono(): string {
+    // the root lockfile was written before apps/a added crossenv (a merge, a new workspace)
+    const root = lockDir({ lodash: "4.17.21" });
+    writeFileSync(join(root, "package.json"), JSON.stringify({ name: "root", private: true, workspaces: ["apps/*"], dependencies: { lodash: "^4.17.0" } }));
+    mkdirSync(join(root, "apps/a"), { recursive: true });
+    writeFileSync(join(root, "apps/a/package.json"), JSON.stringify({ name: "a", dependencies: { crossenv: "0.0.2-security", lodash: "^4.17.0" } }));
+    return root;
+  }
+  const malware = async (_e: Ecosystem, name: string) => (name === "crossenv" ? [{ id: "GHSA-c2m4-w5hm-vqjw", url: "", title: "crossenv is malware", wholePackage: true }] : []);
+
+  for (const line of ["npm install", "npm i", "yarn install", "pnpm install", "bun install"]) {
+    it(`checks what a stale lockfile does not have yet: ${line}`, async () => {
+      const asked: string[] = [];
+      const r = await guardCommand(line, healthy, async () => true, {
+        ...quiet,
+        cwd: staleMono(),
+        malware: async (e, name, v) => {
+          asked.push(name);
+          return malware(e, name);
+        },
+      });
+      expect(r.decision).toBe("deny");
+      expect(r.message).toMatch(/crossenv@0\.0\.2-security \(npm\) is known malware/);
+      expect(asked).toEqual(["crossenv"]); // lodash is in the lockfile: not looked up again
+    });
+  }
+
+  for (const line of ["npm ci", "pnpm install --frozen-lockfile", "yarn install --immutable", "bun install --frozen-lockfile"]) {
+    it(`trusts the lockfile when the install cannot change it: ${line}`, async () => {
+      const r = await guardCommand(line, healthy, async () => true, { ...quiet, cwd: staleMono(), malware });
+      expect(r.decision).toBe("allow");
+    });
+  }
+
+  it("notes, rather than asks about, fixable vulnerabilities read from package.json", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "foster-guard-"));
+    writeFileSync(join(dir, "package.json"), JSON.stringify({ dependencies: { lodash: "4.17.21" } }));
+    const vulnerable = async (ecosystem: Ecosystem, name: string, version?: string): Promise<CheckResult> => ({
+      ...(await healthy(ecosystem, name, version)),
+      findings: version
+        ? [{ kind: "upgrade-available", dependency: { ecosystem, name, version, direct: true, source: "t" }, status: "active", severity: "HIGH", advisories: [{ id: "GHSA-r5fr-rjxr-66jc", url: "", severity: "HIGH", title: "" }], fixedIn: "4.18.0", message: "" }]
+        : [],
+    });
+    const fromManifest = await guardCommand("npm install", vulnerable, async () => true, { ...quiet, cwd: dir });
+    expect(fromManifest.decision).toBe("allow");
+    expect(fromManifest.message).toMatch(/Note \(not blocking\):\n- lodash@4\.17\.21 \(npm\) is vulnerable/);
+    // typed on the command line, it is still a question
+    expect((await guardCommand("npm i lodash@4.17.21", vulnerable, async () => true, quiet)).decision).toBe("ask");
+  });
+});
+
+describe("malware found by the version check itself", () => {
+  it("denies a malicious finding with the same detail as the malware lookup", async () => {
+    const { verdictFor } = await import("../src/lib/guard.js");
+    const v = verdictFor(
+      { ecosystem: "npm", name: "evil", version: "1.0.0", spec: "evil@1.0.0" },
+      {
+        ...(await healthy("npm", "evil", "1.0.0")),
+        findings: [{ kind: "malicious", dependency: { ecosystem: "npm", name: "evil", version: "1.0.0", direct: true, source: "t" }, status: "active", severity: "CRITICAL", advisories: [{ id: "MAL-1", url: "https://osv.dev/vulnerability/MAL-1", severity: "CRITICAL", title: "Malicious code in evil" }], message: "" }],
+      },
+    );
+    expect(v.decision).toBe("deny");
+    expect(v.reason).toMatch(/known malware \(MAL-1: Malicious code in evil\).*rotate.*Details: https:\/\/osv\.dev/);
+  });
+});

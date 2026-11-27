@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.8.3
+
+From a fourth outside review: the last way past guard it found, and speed on big monorepos.
+
+- **Stale lockfiles.** A monorepo whose root lockfile predates a dependency added in a workspace (a merge,
+  a new workspace) passed `npm install`, `pnpm install`, `yarn install` and `bun install`, which rewrite the
+  lockfile from package.json and install the new dependency. Guard now also checks every dependency in the
+  root and workspace package.json files that the lockfile does not have yet. `npm ci`, `--frozen-lockfile`
+  and `--immutable` still trust the lockfile, since they install it as it is.
+- **Faster.** A root install of 60 workspaces and 120 packages with no lockfile went from 7.4 s to 2.5 s:
+  all versions are resolved first and sent to OSV in one request instead of 240, the Orphan Index and patch
+  registry are loaded once per run instead of once per package, and package records are cached.
+- **Less noise from package.json installs.** A fixable vulnerability in a dependency your own package.json
+  already pins is a note instead of an ask on every install (typed on the command line, it is still an ask).
+  More than five notes are summarised.
+- An existing lockfile with no external packages (a workspace-only monorepo) is trusted as a lockfile, not
+  mistaken for a missing one.
+
 ## 0.8.2
 
 From a third outside review: two monorepo paths, `npm exec`, and noise that could stop CI.

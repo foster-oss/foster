@@ -41,8 +41,29 @@ export interface LoadOptions {
   file?: string;
 }
 
+/** Loaded once per process: guard checks many packages and each check needs the same data. */
+const loaded = new Map<string, Promise<unknown>>();
+
 async function load<T>(rel: string, remoteUrl: string, opts: LoadOptions, warnings: string[]): Promise<T | null> {
   if (opts.file) return JSON.parse(readFileSync(opts.file, "utf8")) as T;
+  const key = `${rel}|${remoteUrl}|${opts.offline ? 1 : 0}`;
+  let p = loaded.get(key) as Promise<{ data: T | null; warning?: string }> | undefined;
+  if (!p) {
+    p = loadOnce<T>(rel, remoteUrl, opts);
+    loaded.set(key, p);
+  }
+  const { data, warning } = await p;
+  if (warning) warnings.push(warning);
+  return data;
+}
+
+async function loadOnce<T>(rel: string, remoteUrl: string, opts: LoadOptions): Promise<{ data: T | null; warning?: string }> {
+  const warnings: string[] = [];
+  const data = await loadUncached<T>(rel, remoteUrl, opts, warnings);
+  return { data, ...(warnings[0] ? { warning: warnings[0] } : {}) };
+}
+
+async function loadUncached<T>(rel: string, remoteUrl: string, opts: LoadOptions, warnings: string[]): Promise<T | null> {
   const bundled = readBundled<T>(rel);
   if (!opts.offline) {
     try {
