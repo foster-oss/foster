@@ -1,6 +1,6 @@
 {
   "name": "foster",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "Check every package install before it runs: blocks known malware, hallucinated names, look-alikes and unfixable vulnerabilities (npm, PyPI, Cargo, Go, RubyGems, Packagist)",
   "author": {
     "name": "foster-oss",

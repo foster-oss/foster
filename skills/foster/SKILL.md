@@ -47,6 +47,10 @@ Then act on the exit code:
 allow, `--json` gives a machine-readable result. If the Foster MCP server is available,
 `foster_check_install_command` does the same check without a shell.
 
+If your own permission system stops the check itself (for example Claude Code's auto mode, which blocks
+`npx -y …@latest`), do not install without it: ask the user to allow `foster-oss guard` and `foster-oss check`.
+`npx foster-oss skill install` adds those rules to `.claude/settings.json`; they only read, never install.
+
 ## No network, no check
 
 Guard has no offline mode: known malware and "does this name exist" need the registries and OSV. When it

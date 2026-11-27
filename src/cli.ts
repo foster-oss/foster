@@ -75,6 +75,10 @@ Usage:
   foster-oss skill install --global     Install for your user, into every agent installed on this machine
                                         (and ~/.agents/skills)
   foster-oss skill install --agent <id> Only these agents (repeat the flag or separate with commas)
+  foster-oss skill install --no-permissions
+                                        Leave Claude Code's settings alone. By default .claude/settings.json is
+                                        set to allow "foster-oss guard" and "foster-oss check" (they only read),
+                                        so the check is not stopped by a prompt or by auto mode
   foster-oss skill print                Print SKILL.md, for agents that take instructions another way
 
 Agent ids: ${AGENT_DIRS.map(([ids]) => ids[0]).join(", ")}
@@ -128,6 +132,7 @@ async function main(argv: string[]): Promise<number> {
       quiet: { type: "boolean", short: "q", default: false },
       global: { type: "boolean", short: "g", default: false },
       agent: { type: "string", multiple: true },
+      "no-permissions": { type: "boolean", default: false },
     },
   });
 
@@ -209,11 +214,13 @@ Maintained alternatives: ${describeAlternatives(result.alternatives)}`);
       }
       if (action !== "install") throw new UsageError('skill takes "install" or "print", e.g. foster-oss skill install');
       const agents = (values.agent ?? []).flatMap((a) => a.split(",")).map((a) => a.trim()).filter(Boolean);
-      const result = installSkill(positionals[2] ?? ".", { global: values.global, agents });
+      const result = installSkill(positionals[2] ?? ".", { global: values.global, agents, permissions: !values["no-permissions"] });
       if (result.unknownAgents.length) console.error(`foster-oss: unknown agent ${result.unknownAgents.join(", ")}; known: ${AGENT_DIRS.map(([ids]) => ids[0]).join(", ")}`);
       if (!result.installed.length) return 2;
       const list = result.installed.map((p) => `  ${p}`).join("\n");
       console.log(`Installed the Foster skill:\n${list}\n\nAgents that read these folders now check every install with foster-oss guard before running it.`);
+      for (const f of result.permissions.updated) console.log(`Claude Code may run Foster's check (guard, check) without asking, also in auto mode: ${f}`);
+      for (const f of result.permissions.skipped) console.error(`foster-oss: ${f} is not valid JSON, so it was left alone; allow "Bash(npx -y foster-oss@latest guard:*)" there yourself.`);
       return 0;
     }
     case "shell-init": {

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.9.3
+
+- **The skill's check is no longer blocked in Claude Code.** In auto mode, Claude Code refused to run
+  `npx -y foster-oss@latest guard -- …` (code fetched from the registry), so an agent following the skill could
+  not check anything; it rightly refused to install without the check. `foster-oss skill install` now adds
+  allow rules for Foster's own check (`foster-oss guard` and `foster-oss check`, in their npx and installed
+  forms; they only read, never install) to `.claude/settings.json`, merged with what is there and never
+  rewriting a file it cannot parse. `--no-permissions` skips it; `--global` writes `~/.claude/settings.json`.
+- The skill tells agents what to do when their own permission system stops the check: ask the user to allow it,
+  never install without it.
+
 ## 0.9.2
 
 No change in behaviour: the README, the npm description and the Orphan Index site now say up front that

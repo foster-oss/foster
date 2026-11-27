@@ -1,4 +1,4 @@
-import { cpSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -55,11 +55,52 @@ export interface SkillInstallOptions {
   /** agent ids from AGENT_DIRS; empty means "the shared folders plus every agent already set up here" */
   agents?: string[];
   home?: string;
+  /** add Claude Code permission rules for Foster's own check (default: true) */
+  permissions?: boolean;
 }
 
 export interface SkillInstallResult {
   installed: string[];
   unknownAgents: string[];
+  /** settings files that now allow Foster's check, and ones that could not be read */
+  permissions: { updated: string[]; skipped: string[] };
+}
+
+/**
+ * The commands the skill tells an agent to run. They only read (check a command or a package, never
+ * install), so Claude Code may run them without a prompt, also in auto mode, which otherwise blocks
+ * "npx -y …@latest" as running code fetched from the registry.
+ */
+export const CHECK_RULES = [
+  "Bash(npx -y foster-oss@latest guard:*)",
+  "Bash(npx -y foster-oss guard:*)",
+  "Bash(npx foster-oss guard:*)",
+  "Bash(foster-oss guard:*)",
+  "Bash(npx -y foster-oss@latest check:*)",
+  "Bash(npx foster-oss check:*)",
+  "Bash(foster-oss check:*)",
+];
+
+/** Merge CHECK_RULES into a Claude Code settings file. Returns false when the file exists but is not JSON. */
+export function allowChecks(settingsPath: string): boolean {
+  let settings: Record<string, unknown> = {};
+  if (existsSync(settingsPath)) {
+    try {
+      const parsed = JSON.parse(readFileSync(settingsPath, "utf8")) as unknown;
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return false;
+      settings = parsed as Record<string, unknown>;
+    } catch {
+      return false; // never rewrite a file we cannot read
+    }
+  }
+  const perms = (settings.permissions && typeof settings.permissions === "object" ? settings.permissions : {}) as Record<string, unknown>;
+  const allow = Array.isArray(perms.allow) ? (perms.allow as unknown[]).filter((r): r is string => typeof r === "string") : [];
+  const missing = CHECK_RULES.filter((r) => !allow.includes(r));
+  if (!missing.length) return true;
+  settings.permissions = { ...perms, allow: [...(Array.isArray(perms.allow) ? perms.allow : []), ...missing] };
+  mkdirSync(join(settingsPath, ".."), { recursive: true });
+  writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n");
+  return true;
 }
 
 /**
@@ -98,5 +139,10 @@ export function installSkill(dir: string, opts: SkillInstallOptions = {}): Skill
     cpSync(SKILL_DIR, dest, { recursive: true });
     installed.push(dest);
   }
-  return { installed, unknownAgents };
+  const permissions = { updated: [] as string[], skipped: [] as string[] };
+  if (opts.permissions !== false && [...targets].includes(".claude/skills")) {
+    const file = join(base, ".claude", "settings.json");
+    (allowChecks(file) ? permissions.updated : permissions.skipped).push(file);
+  }
+  return { installed, unknownAgents, permissions };
 }

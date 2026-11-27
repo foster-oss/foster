@@ -102,6 +102,8 @@ npx foster-oss skill install --agent hermes     # one agent (windsurf, kiro, roo
 npx skills add foster-oss/foster        # or with the community skills CLI
 ```
 
+For Claude Code, `skill install` also allows Foster's own check (`foster-oss guard` and `foster-oss check`, which
+only read) in `.claude/settings.json`, so neither a prompt nor auto mode stops it; `--no-permissions` skips that.
 `foster-oss skill print` prints the SKILL.md for agents that take instructions some other way. A skill is
 advice the agent follows; the hook below enforces the check even when the agent forgets.
 
