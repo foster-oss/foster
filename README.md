@@ -193,13 +193,13 @@ sometimes install hallucinated package names (attackers register them: "slopsqua
 abandoned packages, or versions with known holes. `foster-oss guard` checks every package a shell command
 would install, before it runs:
 
-<p align="center"><img src="brand/guard-demo.svg" alt="foster-oss guard blocking a look-alike name (lodahs), a hallucinated name and an abandoned vulnerable package (request)" width="820"></p>
+<p align="center"><img src="brand/guard-demo.svg" alt="foster-oss guard blocking known malware (lodahs), a hallucinated name and an abandoned vulnerable package (request)" width="820"></p>
 
 | Situation | Decision |
 |---|---|
 | The package or version is known malware (OSV, including the OpenSSF malicious-packages database) | **deny** |
 | The name does not exist on the registry (checked against the real registry, not just an index) | **deny**, with "did you mean …?" |
-| The name is a look-alike of a far more popular package (`lodahs` → `lodash`, `reqeusts` → `requests`) | **ask** |
+| The name is a look-alike of a far more popular package (`expres` → `express`, `reqeusts` → `requests`) | **ask** |
 | Brand-new package that no index tracks yet | **ask** |
 | npm: a package first published in the last 30 days that runs an install script (`preinstall`/`install`/`postinstall`) | **ask**, showing the script |
 | npm: a fresh release that adds an install script the previous release did not have (how hijacked packages spread, as in the 2025 Shai-Hulud worm) | **ask**, suggesting the previous version |
