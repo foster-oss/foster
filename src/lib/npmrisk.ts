@@ -159,3 +159,17 @@ function newScript(label: string, v: string, scripts: string[], published: numbe
     reason: `${label} (released ${plural(published, "day")}) ${runs}, and the previous release ${prev} did not. A new install script in a fresh release is how hijacked packages spread: check the release is genuine, or pin ${prev}.`,
   };
 }
+
+/**
+ * The version npm would install for a range or dist-tag ("^4.1.0", "next"). The latest release
+ * satisfies most ranges and needs no request; otherwise the abbreviated packument is read.
+ */
+export async function resolveNpmVersion(name: string, range: string, latestKnown: string | null, get: FetchJson = defaultFetch): Promise<string | undefined> {
+  const valid = semver.validRange(range);
+  if (latestKnown && valid && semver.satisfies(latestKnown, range)) return latestKnown;
+  const doc = await get<Packument>(`${REGISTRY}/${pkgPath(name)}`, { headers: { Accept: "application/vnd.npm.install-v1+json" } });
+  const tagged = doc["dist-tags"]?.[range];
+  if (tagged) return tagged;
+  if (!valid) return undefined;
+  return semver.maxSatisfying(Object.keys(doc.versions ?? {}), range) ?? undefined;
+}

@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.8.0
+
+Closes four ways past `guard` found in an outside review of 0.7.0, and brings guard to the shell.
+
+- **Lockfile installs are checked.** `npm ci`, `npm install` with no package names, `pnpm install`, `yarn`,
+  `bun install`, `pip install -r`, `uv sync`, `uv pip sync`, `poetry install`, `pipenv sync`, `bundle install`,
+  `composer install` and `cargo fetch`/`build` used to pass unchecked. Guard now reads the lockfile the
+  command would use (following `cd dir &&`, `--prefix`, `--dir`, `--cwd`) and denies the install when any
+  locked package is known malware: one OSV batch query for the whole lockfile. The Claude Code hook uses
+  the session's working directory.
+- **npm aliases** (`tc@npm:@ctrl/tinycolor@4.1.1`) are checked as the real package.
+- **npm registry tarball URLs** are checked as the package and version they name. Other URLs and git
+  sources (`https://…/x.tgz`, `github:a/b`, `git+https://…`, `pkg @ https://…`) are an **ask**: no registry
+  or advisory database covers them.
+- **Ranges and dist-tags** (`x@^4.1.0`, `x@~1.2`, `x@next`) are resolved to the version npm would install;
+  before, guard checked the latest release whatever the range said.
+- **`guard` exit codes**: 0 allow, 1 deny, **10 ask** (was 0), so `foster-oss guard -- <cmd> && <cmd>`
+  stops on an ask too, and a wrapper can tell the cases apart. `--strict` still turns ask into 1; new
+  `--quiet` prints nothing when the install is allowed.
+- **`foster-oss shell-init bash|zsh|powershell`** prints functions that guard the installs you type: npm,
+  npx, pnpm, yarn, bun, pip, uv, poetry, pipx, pipenv, cargo, go, gem, bundle and composer. Deny cancels,
+  ask prompts `Install anyway? [y/N]` (cancelled without a terminal), and a guard that cannot run never
+  blocks. `command npm …` skips the check once.
+- The command parser keeps backslashes in Windows paths (`cd "C:\Users\me\app"`), and inside double
+  quotes only treats a backslash before `$`, a backtick, `"` or another backslash as an escape, as
+  POSIX shells do.
+
 ## 0.7.0
 
 - **Guard blocks known malware.** Every install is checked against OSV, which includes the OpenSSF

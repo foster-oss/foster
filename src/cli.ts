@@ -6,7 +6,8 @@ import { applyFixes, installCommand } from "./lib/fix.js";
 import { fosterVersion } from "./lib/http.js";
 import { formatFix, formatMarkdown, formatRecord, formatSarif, formatText } from "./lib/report.js";
 import { describeAlternatives } from "./lib/replacements.js";
-import { commandLineFrom, guardCommand, parseInstallCommand } from "./lib/guard.js";
+import { commandLineFrom, guardCommand, installsSomething } from "./lib/guard.js";
+import { shellInit, SHELLS, type Shell } from "./lib/shell.js";
 import { formatFund, fundProject } from "./lib/fund.js";
 import { scanProject, scanSbom, shouldFail, type FailOn } from "./lib/scan.js";
 import { ECOSYSTEMS, type Ecosystem } from "./lib/types.js";
@@ -22,6 +23,8 @@ Usage:
   foster-oss mcp                   Start the MCP server (stdio) for AI agents
   foster-oss guard -- <command>    Check the packages a shell command would install
   foster-oss guard --hook claude   Same, as a Claude Code PreToolUse hook (reads the hook JSON on stdin)
+                                   guard exits 0 (allow), 1 (deny) or 10 (ask: a person should decide)
+  foster-oss shell-init <shell>    Print shell functions that guard npm, pip, … installs (bash, zsh, powershell)
 
 Options:
   --json                 Machine-readable output (scan, check)
@@ -38,6 +41,8 @@ Options:
   --include-staged       Also use patches that are reviewed but not yet released
   --dry-run              Show what fix would change without writing
   --force                Replace existing overrides for the same package (fix)
+  --strict               guard: exit 1 on ask too (default: ask exits 10)
+  -q, --quiet            guard: print nothing when the install is allowed
   --ecosystem <name>     Ecosystem for check: npm, pypi, cargo, go, rubygems, packagist (default: npm)
   -v, --version          Print version
   -h, --help             Show this help
@@ -71,6 +76,7 @@ async function main(argv: string[]): Promise<number> {
       hook: { type: "string" },
       command: { type: "string" },
       strict: { type: "boolean", default: false },
+      quiet: { type: "boolean", short: "q", default: false },
     },
   });
 
@@ -136,8 +142,14 @@ Maintained alternatives: ${describeAlternatives(result.alternatives)}`);
       if (!line.trim()) throw new UsageError("guard needs a command, e.g. foster-oss guard -- npm install left-pad");
       const result = await guardCommand(line);
       if (values.json) console.log(JSON.stringify(result, null, 2));
-      else console.log(result.message);
-      return result.decision === "deny" || (values.strict && result.decision === "ask") ? 1 : 0;
+      else if (!(values.quiet && result.decision === "allow")) console.log(result.message);
+      // ask is its own exit code, so "guard -- x && x" stops and a wrapper can ask the person
+      return result.decision === "deny" || (values.strict && result.decision === "ask") ? 1 : result.decision === "ask" ? 10 : 0;
+    }
+    case "shell-init": {
+      if (!arg || !SHELLS.includes(arg as Shell)) throw new UsageError(`shell-init needs a shell: ${SHELLS.join(", ")}`);
+      console.log(shellInit(arg as Shell));
+      return 0;
     }
     case "fund": {
       const result = await fundProject(arg ?? ".", { offline: values.offline, recursive: values.recursive });
@@ -171,12 +183,13 @@ async function runClaudeHook(): Promise<void> {
       process.stdin.on("end", () => resolve(data));
       process.stdin.on("error", reject);
     });
-    const input = JSON.parse(raw || "{}") as { hook_event_name?: string; tool_name?: string; tool_input?: { command?: string } };
+    const input = JSON.parse(raw || "{}") as { hook_event_name?: string; tool_name?: string; cwd?: string; tool_input?: { command?: string } };
     if (input.tool_name !== "Bash" || (input.hook_event_name && input.hook_event_name !== "PreToolUse")) return;
     const line = input.tool_input?.command ?? "";
-    if (parseInstallCommand(line).length === 0) return;
+    const cwd = input.cwd || process.cwd();
+    if (!installsSomething(line, cwd)) return;
     const result = await Promise.race([
-      guardCommand(line),
+      guardCommand(line, undefined, undefined, { cwd }),
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 25_000).unref()),
     ]);
     if (!result || result.decision === "allow") return;

@@ -30,9 +30,12 @@ describe("parseInstallCommand", () => {
   });
 
   it("ignores installs that are not registry packages", () => {
-    expect(names("npm install ./local-dir ../x file:../y git+https://g.com/a/b.git user/repo https://x/y.tgz")).toEqual([]);
+    expect(names("npm install ./local-dir ../x file:../y link:../z")).toEqual([]);
     expect(names("npm install")).toEqual([]);
     expect(names("pip install -r requirements.txt -e .")).toEqual([]);
+    // code from git or a URL is reported as remote: nothing can vouch for it
+    const remote = parseInstallCommand("npm install git+https://g.com/a/b.git user/repo https://x/y.tgz");
+    expect(remote.map((r) => r.remote)).toEqual([true, true, true]);
   });
 
   it("checks what npx and dlx would run", () => {

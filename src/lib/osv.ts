@@ -229,3 +229,28 @@ export function lowestFixAbove(dep: Dependency, fixedVersions: string[]): string
   // Never suggest a fix below the installed version: that would be a downgrade.
   return above[0];
 }
+
+export interface LockedMalware {
+  dependency: Dependency;
+  report: MalwareReport;
+}
+
+/**
+ * Known malware among locked dependencies: one OSV batch query for all of them, then the details
+ * of the advisories found (cached), keeping only malware reports.
+ */
+export async function lockfileMalware(deps: Dependency[]): Promise<LockedMalware[]> {
+  if (deps.length === 0) return [];
+  const ids = await queryBatch(deps);
+  const details = await getVulns(ids.flat());
+  const out: LockedMalware[] = [];
+  deps.forEach((dep, i) => {
+    for (const id of ids[i] ?? []) {
+      const v = details.get(id);
+      if (!v || v.withdrawn || !isMalwareRecord(v)) continue;
+      const mal = v.id.startsWith("MAL-") ? v.id : (v.aliases?.find((a) => a.startsWith("MAL-")) ?? displayId(v));
+      out.push({ dependency: dep, report: { id: mal, url: `https://osv.dev/vulnerability/${v.id}`, title: v.summary ?? mal, wholePackage: false } });
+    }
+  });
+  return out;
+}

@@ -118,7 +118,8 @@ Node 20+. Reads lockfiles from six ecosystems:
 | `foster-oss scan [dir]` | Report orphaned and unpatched dependencies. `--since <ref>` (only what changed), `--recursive` (monorepos), `--json`, `--markdown`, `--sarif <file>`, `--all`, `--fail-on <level>`, `--offline` |
 | `foster-oss fix [dir]` | Point dependencies at published drop-in patches. `--dry-run`, `--force` |
 | `foster-oss check <name[@version]>` | Maintenance status, reach, unfixed advisories, patches and replacements for one package. `--ecosystem pypi\|cargo\|go\|rubygems\|packagist` |
-| `foster-oss guard -- <command>` | Check the packages a shell command would install, before it runs. `--hook claude` for Claude Code, `--strict`, `--json` |
+| `foster-oss guard -- <command>` | Check the packages a shell command would install, before it runs. `--hook claude` for Claude Code, `--strict`, `--quiet`, `--json` |
+| `foster-oss shell-init <shell>` | Shell functions that guard the installs you type (bash, zsh, powershell) |
 | `foster-oss fund [dir]` | At-risk dependencies you rely on, ranked, with their maintainers' sponsorship links (GitHub Sponsors, Open Collective, Tidelift, …) and the few people who cover most of them |
 | `foster-oss mcp` | Start the MCP server for AI agents |
 
@@ -211,8 +212,16 @@ Install-script checks cost one small request per npm package (its version manife
 metadata is fetched only when a script is present. Native modules run install scripts too, so these
 are questions, not blocks.
 
-It understands npm, pnpm, yarn, bun, npx/dlx, pip, uv, poetry, pipx, cargo, go, gem, bundle and
-composer commands, including `cd app && npm i -D x` chains.
+It understands npm, pnpm, yarn, bun, npx/dlx, pip, uv, poetry, pipx, pipenv, cargo, go, gem, bundle and
+composer commands, including `cd app && npm i -D x` chains, and the less obvious ways in:
+
+- **Installs from a lockfile** (`npm ci`, `npm install` with no names, `pnpm install`, `yarn`, `pip install -r`,
+  `uv sync`, `poetry install`, `bundle install`, `composer install`, `cargo fetch`): every locked package
+  is checked for known malware in one OSV query, and the install is denied if any is found.
+- **Aliases** (`npm i tc@npm:@ctrl/tinycolor@4.1.1`): the real package is checked.
+- **Registry tarball URLs** (`https://registry.npmjs.org/x/-/x-1.0.0.tgz`): package and version are read from the URL.
+- **Other URLs and git** (`https://…/x.tgz`, `github:a/b`, `git+https://…`): **ask**, since no database covers them.
+- **Ranges and dist-tags** (`x@^4.1.0`, `x@next`): the version npm would pick is checked, not just the latest.
 
 **Claude Code**: add a PreToolUse hook to `.claude/settings.json` (project) or `~/.claude/settings.json` (all projects):
 
@@ -242,7 +251,24 @@ Before running any command that installs packages, call the `foster_check_instal
 explain why and suggest the alternative it names. If it says ASK, show the reason and let the user decide.
 ```
 
-**Shells and CI**: `npx foster-oss guard -- <command>` exits 1 when it would deny (`--strict` also fails on ask).
+**Shells and CI**: `npx foster-oss guard -- <command>` exits 0 (allow), 1 (deny) or 10 (ask), so
+`foster-oss guard -- npm ci && npm ci` stops on both; `--strict` turns ask into 1, `--quiet` prints nothing on allow.
+
+**Your own shell**: wrap npm, npx, pnpm, yarn, bun, pip, uv, poetry, pipx, cargo, go, gem, bundle and composer so
+every install you type is checked first. A deny cancels it, an ask prompts `Install anyway? [y/N]`, and if guard
+itself cannot run the install goes ahead. Install Foster once (`npm i -g foster-oss`) so the check starts fast:
+
+```sh
+# ~/.bashrc or ~/.zshrc
+eval "$(foster-oss shell-init bash)"     # or: zsh
+```
+
+```powershell
+# $PROFILE
+foster-oss shell-init powershell | Out-String | Invoke-Expression
+```
+
+To skip the check once: `command npm install …` (bash/zsh).
 
 **MCP** (Claude Code, Codex, Cursor, …). Listed in the official [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.foster-oss/foster`, or configure it directly:
 
