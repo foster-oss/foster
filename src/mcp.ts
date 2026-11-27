@@ -6,6 +6,7 @@ import { loadRegistry } from "./lib/data.js";
 import { fosterVersion } from "./lib/http.js";
 import { formatMarkdown, formatRecord } from "./lib/report.js";
 import { scanProject } from "./lib/scan.js";
+import { guardCommand } from "./lib/guard.js";
 import { describeAlternatives } from "./lib/replacements.js";
 
 function text(s: string) {
@@ -59,6 +60,26 @@ export function createMcpServer(): McpServer {
     async ({ path, recursive }) => {
       const result = await scanProject(path, { recursive });
       return text(formatMarkdown(result));
+    },
+  );
+
+  server.registerTool(
+    "foster_check_install_command",
+    {
+      title: "Check an install command before running it",
+      description:
+        "Before running a shell command that installs packages (npm/pnpm/yarn/bun, npx, pip/uv/poetry, cargo, go get, gem, composer), " +
+        "check every package it would install. Returns deny for names that do not exist (hallucinated or typo'd) and for " +
+        "vulnerabilities no release fixes, ask for unmaintained packages or fixable vulnerable versions, allow otherwise.",
+      inputSchema: {
+        command: z.string().describe("The exact shell command you are about to run, e.g. 'npm install left-pad'"),
+      },
+      annotations: { readOnlyHint: true, openWorldHint: true },
+    },
+    async ({ command }) => {
+      const r = await guardCommand(command);
+      return text(`Decision: ${r.decision.toUpperCase()}
+${r.message}`);
     },
   );
 

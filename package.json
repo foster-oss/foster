@@ -1,6 +1,6 @@
 {
   "name": "foster-oss",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "mcpName": "io.github.foster-oss/foster",
   "description": "Find dependencies nobody maintains anymore (npm, PyPI, Cargo, Go, RubyGems, Packagist), and switch to published drop-in security patches without changing your imports.",
   "keywords": [
@@ -19,7 +19,11 @@
     "php",
     "python",
     "sarif",
-    "code-scanning"
+    "code-scanning",
+    "guard",
+    "hallucination",
+    "slopsquatting",
+    "claude-code"
   ],
   "license": "Apache-2.0",
   "type": "module",

@@ -20,6 +20,7 @@ single import.
 npx foster-oss scan        # what in my lockfile is orphaned, or vulnerable with no fix?
 npx foster-oss fix         # switch to published drop-in patches (edits package.json)
 npx foster-oss check ip@2.0.1
+npx foster-oss guard -- npm install some-package   # check before installing (great for AI agents)
 ```
 
 <p align="center"><img src="brand/demo.svg" alt="foster-oss scan and fix on a small app: two drop-in patches, one orphaned and vulnerable dependency with suggested replacements, and upgrades" width="860"></p>
@@ -108,6 +109,7 @@ Node 20+. Reads lockfiles from six ecosystems:
 | `foster-oss scan [dir]` | Report orphaned and unpatched dependencies. `--recursive` (monorepos), `--json`, `--markdown`, `--sarif <file>`, `--all`, `--fail-on <level>`, `--offline` |
 | `foster-oss fix [dir]` | Point dependencies at published drop-in patches. `--dry-run`, `--force` |
 | `foster-oss check <name[@version]>` | Maintenance status, reach, unfixed advisories, patches and replacements for one package. `--ecosystem pypi\|cargo\|go\|rubygems\|packagist` |
+| `foster-oss guard -- <command>` | Check the packages a shell command would install, before it runs. `--hook claude` for Claude Code, `--strict`, `--json` |
 | `foster-oss mcp` | Start the MCP server for AI agents |
 
 What the findings mean:
@@ -145,14 +147,51 @@ scanning next to your other security alerts.
 
 ### AI agents
 
+**Guard: stop agents from installing packages that don't exist or nobody can fix.** Coding agents
+sometimes install hallucinated package names (attackers register them: "slopsquatting"), abandoned
+packages, or versions with known holes. `foster-oss guard` checks every package a shell command
+would install, before it runs:
+
+| Situation | Decision |
+|---|---|
+| The name does not exist on the registry | **deny** |
+| A vulnerability that no release fixes | **deny**, with maintained alternatives |
+| Vulnerable version that a newer release fixes, or a drop-in patch exists | **ask** |
+| The package is dead or dormant | **ask**, with maintained alternatives |
+| Everything else | allowed silently |
+
+It understands npm, pnpm, yarn, bun, npx/dlx, pip, uv, poetry, pipx, cargo, go, gem, bundle and
+composer commands, including `cd app && npm i -D x` chains.
+
+**Claude Code**: add a PreToolUse hook to `.claude/settings.json` (project) or `~/.claude/settings.json` (all projects):
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "npx -y foster-oss guard --hook claude", "timeout": 60 }]
+      }
+    ]
+  }
+}
+```
+
+The hook answers with Claude Code's `deny` / `ask` permission decisions and stays silent for commands
+that install nothing. It fails open: if the registry or OSV can't be reached, the normal permission flow
+continues. **Other agents and shells**: `npx foster-oss guard -- <command>` exits 1 when it would deny
+(`--strict` also fails on ask), or call the MCP tool `foster_check_install_command`.
+
 **MCP** (Claude Code, Codex, Cursor, …). Listed in the official [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.foster-oss/foster`, or configure it directly:
 
 ```json
 { "mcpServers": { "foster": { "command": "npx", "args": ["-y", "foster-oss", "mcp"] } } }
 ```
 
-Tools: `foster_check_package` (call it before adding a dependency; it also catches names that
-don't exist, a common sign of a hallucinated package), `foster_scan_project`, `foster_list_patches`.
+Tools: `foster_check_install_command` (call it before running an install command), `foster_check_package`
+(call it before adding a dependency; it also catches names that don't exist, a common sign of a hallucinated
+package), `foster_scan_project`, `foster_list_patches`.
 
 **Skill**: copy [`skills/foster`](skills/foster/SKILL.md) into your agent's skills folder
 (e.g. `.claude/skills/foster/`).

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0
+
+- **`foster-oss guard`**: checks every package a shell command would install, before it runs.
+  Blocks names that do not exist on the registry (hallucinated or typo'd names, the "slopsquatting"
+  risk) and packages with vulnerabilities no release fixes; asks about unmaintained packages and
+  vulnerable versions that a newer release fixes, with maintained alternatives.
+  Understands npm, pnpm, yarn, bun, npx/dlx, pip, uv, poetry, pipx, cargo, go, gem, bundle and composer.
+- `guard --hook claude`: drop-in Claude Code PreToolUse hook (JSON decisions, fails open).
+- MCP tool `foster_check_install_command` for agents without hooks.
+
 ## 0.2.1
 
 - Listed in the official MCP Registry as `io.github.foster-oss/foster` (`server.json`, `mcpName`).
