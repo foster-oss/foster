@@ -19,7 +19,7 @@ inputs:
     description: Git ref to compare against instead (overrides only-new). Empty = check everything.
     default: ""
   fail-on:
-    description: "Fail the job at this level: none | patch-available | orphaned-vulnerable | unpatched | any"
+    description: "Fail the job at this level: none | malicious | patch-available | orphaned-vulnerable | unpatched | any. Known malware fails every level except none."
     default: orphaned-vulnerable
   include-staged:
     description: Also report patches that are reviewed but not yet released.

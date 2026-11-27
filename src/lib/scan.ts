@@ -30,7 +30,7 @@ export interface ScanOptions {
   since?: string;
 }
 
-const KIND_ORDER: Finding["kind"][] = ["patch-available", "orphaned-vulnerable", "unpatched-vulnerable", "upgrade-available", "orphaned"];
+const KIND_ORDER: Finding["kind"][] = ["malicious", "patch-available", "orphaned-vulnerable", "unpatched-vulnerable", "upgrade-available", "orphaned"];
 const SEVERITY_ORDER: Severity[] = ["CRITICAL", "HIGH", "MODERATE", "LOW", "UNKNOWN"];
 
 /** Folders never worth descending into when looking for lockfiles. */
@@ -189,7 +189,6 @@ export async function analyzeDependencies(deps: Dependency[], opts: ScanOptions 
       const v = vulnDetails.get(id);
       if (!v || v.withdrawn) continue;
       const d = describeForDependency(v, dep);
-      if (d.isMalware) continue; // hijacked releases need removal, not a patch; npm audit / OSV scanners report them
       vulns.push(d);
     }
     const record = index.get(indexKey(dep.ecosystem, dep.name));
@@ -221,6 +220,22 @@ export async function analyzeDependencies(deps: Dependency[], opts: ScanOptions 
   // 4. Split into "fixed somewhere upstream" and "no fix anywhere", then turn into findings.
   const findings: Finding[] = [];
   for (const p of pending) {
+    // A malicious package or hijacked release: removal, not a patch or an upgrade path.
+    const malware = p.vulns.filter((v) => v.isMalware);
+    if (malware.length) {
+      const advisories = dedupeAdvisories(malware.map((v) => ({ ...v.advisory, severity: "CRITICAL" as Severity })));
+      const fix = highestVersion(malware.flatMap((v) => v.fixedVersions));
+      findings.push({
+        kind: "malicious",
+        dependency: p.dep,
+        status: p.record?.status ?? "unknown",
+        severity: "CRITICAL",
+        advisories,
+        ...(fix ? { fixedIn: fix } : {}),
+        message: `${p.dep.name}@${p.dep.version}: known malware (${advisories.map((a) => a.id).join(", ")}). ${fix ? `Move to ${fix} or later, ` : "Remove it, "}then rotate every credential and token this machine or CI can reach.`,
+      });
+      continue;
+    }
     const unpatched: AdvisorySummary[] = [];
     const fixable: AdvisorySummary[] = [];
     const fixes: string[] = [];
@@ -340,19 +355,22 @@ export function summarize(findings: Finding[]): FindingSummary {
   return s;
 }
 
-export type FailOn = "none" | "patch-available" | "orphaned-vulnerable" | "unpatched" | "any";
+export type FailOn = "none" | "malicious" | "patch-available" | "orphaned-vulnerable" | "unpatched" | "any";
 
 /** Whether the scan should fail CI, given the --fail-on threshold. */
 export function shouldFail(findings: Finding[], failOn: FailOn): boolean {
   switch (failOn) {
     case "none":
       return false;
+    case "malicious":
+      return findings.some((f) => f.kind === "malicious");
+    // Malware fails every threshold except "none".
     case "patch-available":
-      return findings.some((f) => f.kind === "patch-available");
+      return findings.some((f) => f.kind === "malicious" || f.kind === "patch-available");
     case "orphaned-vulnerable":
-      return findings.some((f) => f.kind === "patch-available" || f.kind === "orphaned-vulnerable");
+      return findings.some((f) => ["malicious", "patch-available", "orphaned-vulnerable"].includes(f.kind));
     case "unpatched":
-      return findings.some((f) => ["patch-available", "orphaned-vulnerable", "unpatched-vulnerable"].includes(f.kind));
+      return findings.some((f) => ["malicious", "patch-available", "orphaned-vulnerable", "unpatched-vulnerable"].includes(f.kind));
     case "any":
       return findings.length > 0;
   }

@@ -3,6 +3,8 @@ import type { CheckResult } from "../src/lib/check.js";
 import { commandLineFrom, guardCommand, parseInstallCommand, splitCommands, verdictFor } from "../src/lib/guard.js";
 import type { Ecosystem } from "../src/lib/types.js";
 
+const noProbes = { malware: async () => [], installRisk: async () => null };
+
 const names = (line: string) => parseInstallCommand(line).map((r) => `${r.ecosystem}:${r.name}${r.version ? `@${r.version}` : ""}`);
 
 describe("commandLineFrom", () => {
@@ -99,9 +101,9 @@ describe("guardCommand", () => {
       if (name === "ghost") return result({ notFound: true, name });
       return result({ name, record: { ecosystem, name, status: "active", reasons: [], downloadsLastMonth: 1, dependentRepos: 1, dependentPackages: 1, latestVersion: "2.0.0", latestReleaseAt: null, repoUrl: null, archived: false, lastPushAt: null, publishers: 1, unpatchedAdvisories: [], priority: 0 } });
     };
-    const r = await guardCommand("npm i good ghost", check, async () => false);
+    const r = await guardCommand("npm i good ghost", check, async () => false, noProbes);
     expect(r.decision).toBe("deny");
-    expect(seen).toEqual(["good@", "good@2.0.0", "ghost@"]);
+    expect(seen.sort()).toEqual(["ghost@", "good@", "good@2.0.0"]);
     expect(r.message).toMatch(/ghost/);
   });
 
@@ -112,6 +114,7 @@ describe("guardCommand", () => {
         throw new Error("offline");
       },
       async () => null,
+      noProbes,
     );
     expect(r.decision).toBe("allow");
     expect(r.verdicts[0]?.reason).toMatch(/could not be checked/);

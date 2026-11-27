@@ -7,6 +7,7 @@ import type { FixResult } from "./fix.js";
 import type { Dependency, Finding, FindingKind, OrphanRecord, ScanResult } from "./types.js";
 
 const KIND_LABEL: Record<FindingKind, string> = {
+  malicious: "MALWARE",
   "patch-available": "PATCH READY",
   "orphaned-vulnerable": "ORPHANED+VULN",
   "unpatched-vulnerable": "NO FIX YET",
@@ -15,6 +16,7 @@ const KIND_LABEL: Record<FindingKind, string> = {
 };
 
 const KIND_TITLE: Record<FindingKind, string> = {
+  malicious: "Known malware: remove it now",
   "patch-available": "Drop-in security patch available",
   "orphaned-vulnerable": "Vulnerable, no fix exists, and nobody maintains it",
   "unpatched-vulnerable": "Vulnerable, no fix released yet",
@@ -57,7 +59,7 @@ const nameList = (list: Finding[], max = 6) => list.slice(0, max).map((f) => f.d
  * those will never ship the fix, so the way out is replacing them. Returns their names, or null.
  */
 export function stuckBehind(f: Finding, findings: Finding[]): string[] | null {
-  if (f.dependency.direct || !f.dependency.via?.length || f.kind === "orphaned" || f.kind === "patch-available") return null;
+  if (f.dependency.direct || !f.dependency.via?.length || f.kind === "orphaned" || f.kind === "patch-available" || f.kind === "malicious") return null;
   const unmaintained = new Set(
     findings.filter((x) => x.dependency.direct && (x.status === "dead" || x.status === "dormant")).map((x) => x.dependency.name),
   );
@@ -80,7 +82,7 @@ export function formatText(result: ScanResult, color = false, showAll = false): 
   const shown = showAll ? result.findings : result.findings.filter((f) => f.kind !== "orphaned");
   const stuckGroups = new Map<string, Finding[]>();
   for (const f of shown) {
-    const tagColor = f.kind === "patch-available" ? 36 : f.kind === "orphaned-vulnerable" ? 31 : f.kind === "unpatched-vulnerable" ? 33 : 90;
+    const tagColor = f.kind === "malicious" ? 41 : f.kind === "patch-available" ? 36 : f.kind === "orphaned-vulnerable" ? 31 : f.kind === "unpatched-vulnerable" ? 33 : 90;
     const tag = c(tagColor, KIND_LABEL[f.kind].padEnd(14));
     const sev = f.severity === "UNKNOWN" ? "" : ` [${f.severity}]`;
     const stuck = stuckBehind(f, result.findings);
@@ -120,6 +122,8 @@ export function formatText(result: ScanResult, color = false, showAll = false): 
   lines.push("");
   if (stuckLines.length) lines.push(...stuckLines, "");
   lines.push(summaryLine(result.findings));
+  if (result.findings.some((f) => f.kind === "malicious"))
+    lines.push(c(41, "Known malware is installed. Remove it, then rotate every credential and token this machine and your CI can reach."));
   if (result.findings.some((f) => f.kind === "patch-available")) lines.push(c(36, "Run `npx foster-oss fix` to switch to the patched packages."));
   if (shown.some((f) => f.kind !== "patch-available" && f.kind !== "orphaned" && f.dependency.via?.length))
     lines.push(c(90, "A transitive package is fixed by upgrading (or replacing) the direct dependency named after \"via\"."));
@@ -132,7 +136,7 @@ function summaryLine(findings: Finding[]): string {
   const n = counts(findings);
   // "(2 direct)" only when some of them are transitive: the direct ones are what the project can change itself
   const part = (k: FindingKind, label: string) => `${n[k].total} ${label}${n[k].direct < n[k].total ? ` (${n[k].direct} direct)` : ""}`;
-  return `Summary: ${part("patch-available", "patch available")} · ${part("orphaned-vulnerable", "orphaned+vulnerable")} · ${part("unpatched-vulnerable", "no fix yet")} · ${part("upgrade-available", "upgrade")} · ${part("orphaned", "orphaned")}`;
+  return `Summary: ${n.malicious.total ? `${part("malicious", "MALWARE")} · ` : ""}${part("patch-available", "patch available")} · ${part("orphaned-vulnerable", "orphaned+vulnerable")} · ${part("unpatched-vulnerable", "no fix yet")} · ${part("upgrade-available", "upgrade")} · ${part("orphaned", "orphaned")}`;
 }
 
 /** Markdown for PR comments and GitHub job summaries. */
@@ -154,7 +158,9 @@ export function formatMarkdown(result: ScanResult): string {
       for (const f of group) {
         const adv = f.advisories.slice(0, 3).map((a) => `[${a.id}](${a.url})`).join(", ") || "-";
         const stuck = stuckBehind(f, result.findings);
-        const action = stuck
+        const action = f.kind === "malicious"
+          ? `**remove now**${f.fixedIn ? ` (or move to ${f.fixedIn})` : ""}, then rotate credentials`
+          : stuck
           ? `replace ${stuck.map((n) => `\`${n}\``).join(", ")} (unmaintained, will not move to the fix)${f.fixedIn ? `, or force ${f.fixedIn}` : ""}`
           : f.kind === "patch-available"
             ? `\`npx foster-oss fix\` → \`${f.patch!.replacement.name}@${f.patch!.replacement.version}\``
@@ -210,6 +216,7 @@ function fmt(n: number | null): string {
 }
 
 const SARIF_LEVEL: Record<FindingKind, "error" | "warning" | "note"> = {
+  malicious: "error",
   "orphaned-vulnerable": "error",
   "patch-available": "warning",
   "unpatched-vulnerable": "warning",
@@ -220,6 +227,7 @@ const SARIF_LEVEL: Record<FindingKind, "error" | "warning" | "note"> = {
 const SECURITY_SEVERITY: Record<string, string | undefined> = { CRITICAL: "9.5", HIGH: "7.5", MODERATE: "5.5", LOW: "3.0" };
 
 const RULE_HELP: Record<FindingKind, string> = {
+  malicious: "This exact package version is a known malicious package or a hijacked release (OSV, OpenSSF malicious-packages). Remove it or move to an unaffected version, then rotate every credential and token the machine or CI runner could reach: install scripts run before any of your code does.",
   "patch-available": "A published drop-in security patch exists for this exact version. Run `npx foster-oss fix` to switch to it through an npm alias; your imports do not change.",
   "orphaned-vulnerable": "This dependency has a known vulnerability that no release fixes, and nobody appears to maintain it. Replace it, or nominate it for adoption.",
   "unpatched-vulnerable": "This dependency has a known vulnerability with no fixed release yet. The package still looks maintained; watch for a release.",

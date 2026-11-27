@@ -42,6 +42,7 @@ If the MCP server is configured (`npx -y foster-oss mcp`), prefer its tools:
 
 | Finding | Meaning | What to do |
 |---|---|---|
+| `MALWARE` | Known malicious package or hijacked release | Stop. Tell the user to remove it now and rotate credentials and tokens the machine or CI can reach |
 | `PATCH READY` | A published drop-in patch exists for this exact version | Show the user, then `foster-oss fix` (ask before editing package.json) |
 | `ORPHANED+VULN` | Known vulnerability, no fix anywhere, package dead or dormant | Prefer a maintained alternative; otherwise tell the user it can be nominated for adoption |
 | `NO FIX YET` | Known vulnerability, no fix released, but the package seems maintained | Watch for a release; consider mitigations |
@@ -52,7 +53,7 @@ If the MCP server is configured (`npx -y foster-oss mcp`), prefer its tools:
 ## Before running an install command
 
 Run `npx -y foster-oss guard -- <the exact command>` (or the MCP tool `foster_check_install_command`).
-It also catches look-alike names of popular packages (typosquats). If it says **deny**, do not run the command: tell the user why and offer the suggested alternative or a
+It also catches known malware, look-alike names of popular packages (typosquats), and npm packages that are brand new or freshly changed and run install scripts. If it says **deny**, do not run the command: tell the user why and offer the suggested alternative or a
 fixed version. If it says **ask**, show the user the reason and let them decide.
 
 ## Rules

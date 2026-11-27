@@ -126,6 +126,7 @@ What the findings mean:
 
 | Finding | Meaning |
 |---|---|
+| `MALWARE` | This exact version is a known malicious package or hijacked release ([OSV](https://osv.dev), OpenSSF malicious-packages). Remove it and rotate credentials. Fails the scan by default. |
 | `PATCH READY` | A published drop-in patch exists for this exact version. Run `foster-oss fix`. |
 | `ORPHANED+VULN` | Known vulnerability, no fix anywhere, package dead or dormant. Prefer an alternative, or [nominate it](https://github.com/foster-oss/foster/issues/new?template=adopt.yml). |
 | `NO FIX YET` | Known vulnerability with no release yet, but the package looks maintained. |
@@ -172,7 +173,7 @@ you can find it; read the provider's source and advisory before adopting it.
 ```yaml
 - uses: foster-oss/foster@v0
   with:
-    fail-on: orphaned-vulnerable   # none | patch-available | orphaned-vulnerable | unpatched | any
+    fail-on: orphaned-vulnerable   # none | malicious | patch-available | orphaned-vulnerable | unpatched | any
     comment: true                  # optional PR comment; needs pull-requests: write
     sarif: true                    # optional: findings in the Security tab; needs security-events: write
 ```
@@ -186,22 +187,29 @@ scanning next to your other security alerts.
 
 ### AI agents
 
-**Guard: stop agents from installing packages that don't exist or nobody can fix.** Coding agents
-sometimes install hallucinated package names (attackers register them: "slopsquatting"), abandoned
-packages, or versions with known holes. `foster-oss guard` checks every package a shell command
+**Guard: stop agents from installing malware, packages that don't exist, or ones nobody can fix.** Coding agents
+sometimes install hallucinated package names (attackers register them: "slopsquatting"), known malware,
+abandoned packages, or versions with known holes. `foster-oss guard` checks every package a shell command
 would install, before it runs:
 
 <p align="center"><img src="brand/guard-demo.svg" alt="foster-oss guard blocking a look-alike name (lodahs), a hallucinated name and an abandoned vulnerable package (request)" width="820"></p>
 
 | Situation | Decision |
 |---|---|
+| The package or version is known malware (OSV, including the OpenSSF malicious-packages database) | **deny** |
 | The name does not exist on the registry (checked against the real registry, not just an index) | **deny**, with "did you mean …?" |
 | The name is a look-alike of a far more popular package (`lodahs` → `lodash`, `reqeusts` → `requests`) | **ask** |
 | Brand-new package that no index tracks yet | **ask** |
+| npm: a package first published in the last 30 days that runs an install script (`preinstall`/`install`/`postinstall`) | **ask**, showing the script |
+| npm: a fresh release that adds an install script the previous release did not have (how hijacked packages spread, as in the 2025 Shai-Hulud worm) | **ask**, suggesting the previous version |
 | A vulnerability that no release fixes | **deny**, with maintained alternatives |
 | Vulnerable version that a newer release fixes, or a drop-in patch exists | **ask** |
 | The package is dead or dormant | **ask**, with maintained alternatives |
 | Everything else | allowed silently |
+
+Install-script checks cost one small request per npm package (its version manifest); the full
+metadata is fetched only when a script is present. Native modules run install scripts too, so these
+are questions, not blocks.
 
 It understands npm, pnpm, yarn, bun, npx/dlx, pip, uv, poetry, pipx, cargo, go, gem, bundle and
 composer commands, including `cd app && npm i -D x` chains.

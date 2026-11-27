@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.7.0
+
+- **Guard blocks known malware.** Every install is checked against OSV, which includes the OpenSSF
+  malicious-packages database and GitHub's malware advisories: `npm i @ctrl/tinycolor@4.1.1`
+  (Shai-Hulud, 2025), `npm i crossenv` and `npm i ua-parser-js@0.7.29` are now denied.
+- **Guard asks about install scripts in a suspicious context (npm).** A package first published in the
+  last 30 days that runs `preinstall`/`install`/`postinstall`, or a fresh release that adds an install
+  script the previous release did not have, is an **ask**, showing the script and the previous version.
+  One small request per package; nothing is fetched beyond that unless a script is present.
+- **`scan` reports malware** instead of skipping it: a `MALWARE` finding (SARIF `error`) for a known
+  malicious package or hijacked release in your lockfile, with what to do (remove, rotate credentials).
+  `--fail-on` has a new level, `malicious`, which is now the CLI default: known malware exits 1 at every
+  level except `none`.
+- Advisories whose titles merely mention similar words ("session hijacking") are no longer mistaken for
+  malware: malware is recognised by OSV `MAL-` ids and the titles GitHub and OpenSSF use for it.
+- **`fund` helps without money too.** For at-risk packages with no funding link it now lists each one with
+  a concrete next step: the issue tracker to offer co-maintenance or send fixes, a note when the
+  repository is archived (fork it together, or replace it), and maintained alternatives when known.
+- Guard checks the packages of one command in parallel: five packages take under two seconds instead of five.
+
 ## 0.6.1
 
 - The CLI no longer lets a stale copy of the Orphan Index from the GitHub CDN replace the newer data

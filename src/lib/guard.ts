@@ -1,4 +1,7 @@
 import { checkPackage, type CheckResult } from "./check.js";
+import { mapLimit } from "./http.js";
+import { npmInstallRisk, type InstallRisk } from "./npmrisk.js";
+import { malwareReports, type MalwareReport } from "./osv.js";
 import { describeAlternatives } from "./replacements.js";
 import type { Ecosystem } from "./types.js";
 import { existsOnRegistry, lookAlike, type LookAlike } from "./typosquat.js";
@@ -264,6 +267,12 @@ export interface VerdictExtras {
   existsOnRegistry?: boolean | null;
   /** A far more popular package this name closely resembles. */
   lookAlike?: LookAlike;
+  /** Known malware reports (OSV / OpenSSF malicious-packages) for this package or version. */
+  malware?: MalwareReport[];
+  /** False when no version could be determined (the package index does not know it yet). */
+  versionKnown?: boolean;
+  /** Install-time code in a suspicious context (npm only). */
+  installRisk?: InstallRisk | null;
 }
 
 function fmtRepos(n: number): string {
@@ -273,6 +282,23 @@ function fmtRepos(n: number): string {
 /** Decide about one package from a live check. */
 export function verdictFor(requested: RequestedPackage, check: CheckResult, extras: VerdictExtras = {}): PackageVerdict {
   const label = `${requested.name}${requested.version ? `@${requested.version}` : ""} (${requested.ecosystem})`;
+  const malware = extras.malware ?? [];
+  if (malware.length) {
+    const ids = malware.map((m) => m.id).join(", ");
+    const what = malware[0]!.title;
+    // Without a version we only know some releases were malicious, unless the report covers them all.
+    if (extras.versionKnown === false && !malware.some((m) => m.wholePackage)) {
+      return { requested, decision: "ask", reason: `Some releases of ${label} were malicious (${ids}: ${what}). Pin a version that is not affected: https://osv.dev/vulnerability/${malware[0]!.id}` };
+    }
+    return { requested, decision: "deny", reason: `${label} is known malware (${ids}: ${what}). Do not install it. If it is already installed, remove it and rotate any credentials and tokens this machine holds. Details: ${malware[0]!.url}` };
+  }
+  const base = baseVerdict(requested, check, extras, label);
+  const risk = extras.installRisk;
+  if (!risk || base.decision === "deny") return base;
+  return { requested, decision: "ask", reason: base.decision === "allow" ? risk.reason : `${base.reason} Also: ${risk.reason}` };
+}
+
+function baseVerdict(requested: RequestedPackage, check: CheckResult, extras: VerdictExtras, label: string): PackageVerdict {
   const like = extras.lookAlike;
   const didYouMean = like ? ` Did you mean ${like.name} (used by ${fmtRepos(like.dependentRepos)} repositories)?` : "";
   if (check.notFound) {
@@ -286,6 +312,9 @@ export function verdictFor(requested: RequestedPackage, check: CheckResult, extr
   }
   const alt = check.alternatives ? ` Maintained alternatives: ${describeAlternatives(check.alternatives)}.` : "";
   const finding = check.findings[0];
+  if (finding?.kind === "malicious") {
+    return { requested, decision: "deny", reason: `${label} is known malware (${finding.advisories.map((a) => a.id).join(", ")}). Do not install it.` };
+  }
   if (finding?.kind === "patch-available" && finding.patch) {
     return { requested, decision: "ask", reason: `${label} has ${finding.advisories.map((a) => a.id).join(", ")} with no upstream fix. A drop-in patch exists: ${finding.patch.replacement.name}@${finding.patch.replacement.version} (run \`npx foster-oss fix\` after installing).${alt}` };
   }
@@ -303,14 +332,24 @@ export function verdictFor(requested: RequestedPackage, check: CheckResult, extr
   return { requested, decision: "allow", reason: `${label}: ok` };
 }
 
+/** Network lookups guard makes besides the package check; replaceable for tests. */
+export interface GuardProbes {
+  malware: (ecosystem: Ecosystem, name: string, version?: string) => Promise<MalwareReport[]>;
+  installRisk: (name: string, version: string | undefined, record: CheckResult["record"]) => Promise<InstallRisk | null>;
+}
+
+const LIVE_PROBES: GuardProbes = { malware: malwareReports, installRisk: (n, v, r) => npmInstallRisk(n, v, r) };
+
 export async function guardCommand(
   line: string,
   check: Checker = checkPackage,
   exists: (ecosystem: Ecosystem, name: string) => Promise<boolean | null> = existsOnRegistry,
+  probes: Partial<GuardProbes> = {},
 ): Promise<GuardResult> {
+  const probe = { ...LIVE_PROBES, ...probes };
   const requested = parseInstallCommand(line);
-  const verdicts: PackageVerdict[] = [];
-  for (const r of requested) {
+  // Packages are checked in parallel (a few at a time): guard runs before every install.
+  const verdicts = await mapLimit(requested, 4, async (r): Promise<PackageVerdict> => {
     try {
       // With no pinned version, check the version that would be installed: the latest release.
       let result = await check(r.ecosystem, r.name, r.version);
@@ -319,12 +358,24 @@ export async function guardCommand(
       }
       const extras: VerdictExtras = { lookAlike: lookAlike(r.ecosystem, r.name, result.record?.dependentRepos) };
       if (result.notFound) extras.existsOnRegistry = await exists(r.ecosystem, r.name);
-      verdicts.push(verdictFor(r, result, extras));
+      if (!(result.notFound && extras.existsOnRegistry === false)) {
+        // The version that would be installed: pinned, else the latest the index knows.
+        const version = r.version ?? result.record?.latestVersion ?? undefined;
+        extras.versionKnown = version !== undefined;
+        // Both lookups fail open: a slow registry must not block an install.
+        const [malware, installRisk] = await Promise.all([
+          probe.malware(r.ecosystem, r.name, version).catch(() => [] as MalwareReport[]),
+          r.ecosystem === "npm" ? probe.installRisk(r.name, r.version, result.record).catch(() => null) : Promise.resolve(null),
+        ]);
+        extras.malware = malware;
+        extras.installRisk = installRisk;
+      }
+      return verdictFor(r, result, extras);
     } catch (err) {
       // Fail open: a network problem must not block development, but say so.
-      verdicts.push({ requested: r, decision: "allow", reason: `${r.name} (${r.ecosystem}): could not be checked (${(err as Error).message})` });
+      return { requested: r, decision: "allow", reason: `${r.name} (${r.ecosystem}): could not be checked (${(err as Error).message})` };
     }
-  }
+  });
   const decision = verdicts.reduce<Decision>((d, v) => (RANK[v.decision] > RANK[d] ? v.decision : d), "allow");
   const flagged = verdicts.filter((v) => v.decision !== "allow");
   const message =

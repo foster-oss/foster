@@ -53,7 +53,7 @@ describe("SARIF", () => {
     expect(sarif.version).toBe("2.1.0");
     const run = sarif.runs[0];
     expect(run.tool.driver.name).toBe("Foster");
-    expect(run.tool.driver.rules).toHaveLength(5);
+    expect(run.tool.driver.rules).toHaveLength(6);
     expect(run.results).toHaveLength(result.findings.filter((f) => f.kind !== "orphaned").length);
     const all = JSON.parse(formatSarif(result, "0.0.0-test", fixtures, true));
     expect(all.runs[0].results).toHaveLength(result.findings.length);

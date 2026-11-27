@@ -64,6 +64,17 @@ describe("fund", () => {
       warnings: [],
     });
     expect(text).toContain("GitHub Sponsors: a");
-    expect(text).toContain("no funding link is known (1): b");
+    expect(text).toContain("no funding link is known (1). You can still help:");
+    expect(text).toContain("b (npm) · unmaintained (dormant)");
+    expect(text).toContain("no source repository is linked");
+  });
+
+  it("suggests help that takes no money", async () => {
+    const { helpFor } = await import("../src/lib/fund.js");
+    const base = { dependency: dep("b"), status: "dead" as const, reasons: ["unmaintained (dead)"], dependentRepos: 5, links: [] };
+    expect(helpFor({ ...base, repoUrl: "https://github.com/o/b.git" })).toEqual(["offer to co-maintain, or review and send fixes: https://github.com/o/b/issues"]);
+    expect(helpFor({ ...base, repoUrl: "https://github.com/o/b", archived: true })[0]).toMatch(/archived.*Fork it together/);
+    expect(helpFor({ ...base, repoUrl: "https://example.org/b" })).toEqual(["send fixes or offer help: https://example.org/b"]);
+    expect(helpFor({ ...base, repoUrl: null, alternatives: { options: [{ kind: "package", name: "c" } as never], source: "Foster registry" } })[1]).toBe("or switch to: c");
   });
 });

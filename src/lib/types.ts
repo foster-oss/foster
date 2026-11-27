@@ -89,6 +89,8 @@ export interface PatchEntry {
 }
 
 export type FindingKind =
+  /** A known malicious package or hijacked release (OSV / OpenSSF malicious-packages). Remove it now. */
+  | "malicious"
   /** A published drop-in security patch (from Foster or another provider) exists for this exact version. */
   | "patch-available"
   /** Known vulnerability with no upstream fix, and the package is dead or dormant. */

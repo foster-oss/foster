@@ -3,7 +3,7 @@ import { fetchJson, mapLimit } from "./http.js";
 import type { AdvisorySummary, Dependency, Ecosystem, Severity } from "./types.js";
 
 const OSV = "https://api.osv.dev/v1";
-const OSV_ECOSYSTEM: Record<Ecosystem, string> = {
+export const OSV_ECOSYSTEM: Record<Ecosystem, string> = {
   npm: "npm",
   pypi: "PyPI",
   cargo: "crates.io",
@@ -105,7 +105,7 @@ export function describeForDependency(v: OsvVuln, dep: Dependency): VulnForDepen
     }
   }
   const id = displayId(v);
-  const isMalware = v.id.startsWith("MAL-") || MALWARE_TITLE.test(v.summary ?? "");
+  const isMalware = isMalwareRecord(v);
   return {
     advisory: {
       id,
@@ -153,6 +153,46 @@ export function intervalEndFor(events: OsvRangeEvent[], installed: string): { fi
 
 /** Advisories about hijacked or sabotaged releases: the answer is "avoid that version", not a patch. */
 export const MALWARE_TITLE = /malicious|malware|compromised|hijack|embedded .*(code|payload)|protestware|sabotage/i;
+
+/**
+ * How GitHub and the OpenSSF malicious-packages database title malware reports: "Malicious code in x",
+ * "Embedded malware in x", "x is malware". Stricter than MALWARE_TITLE, so that an ordinary
+ * vulnerability ("session hijacking", "lets an attacker inject malicious code into ...") is not
+ * mistaken for a malicious release.
+ */
+const MALWARE_REPORT = /\b(embedded )?(malicious (code|package|version|release|payload)s?|malware|protestware) in\b|\bis (a )?malware\b|\bcontains? (malware|malicious code)\b|^malware\b|\bcompromised (package|version|release)s?\b/i;
+
+/** Is this OSV record a malware report (a malicious package or a hijacked release) rather than a vulnerability? */
+export function isMalwareRecord(v: Pick<OsvVuln, "id" | "aliases" | "summary">): boolean {
+  return v.id.startsWith("MAL-") || (v.aliases ?? []).some((a) => a.startsWith("MAL-")) || MALWARE_REPORT.test(v.summary ?? "");
+}
+
+export interface MalwareReport {
+  id: string;
+  url: string;
+  title: string;
+  /** Every release is malicious (the report starts at version 0), not just some hijacked versions. */
+  wholePackage: boolean;
+}
+
+/**
+ * Known malware reports for a package (OSV, which includes the OpenSSF malicious-packages database
+ * and GitHub's malware advisories). With a version, only reports that cover that version.
+ */
+export async function malwareReports(ecosystem: Ecosystem, name: string, version?: string): Promise<MalwareReport[]> {
+  const body = { package: { name, ecosystem: OSV_ECOSYSTEM[ecosystem] }, ...(version ? { version } : {}) };
+  const res = await fetchJson<{ vulns?: OsvVuln[] }>(`${OSV}/query`, { method: "POST", body, timeoutMs: 15_000, retries: 1 });
+  const dep: Dependency = { ecosystem, name, version: version ?? "0", direct: true, source: "guard" };
+  return (res.vulns ?? [])
+    .filter((v) => !v.withdrawn && isMalwareRecord(v))
+    .map((v) => {
+      const id = v.id.startsWith("MAL-") ? v.id : (v.aliases?.find((a) => a.startsWith("MAL-")) ?? displayId(v));
+      const wholePackage = (v.affected ?? []).some(
+        (a) => sameName(a.package?.name, dep) && (a.ranges ?? []).some((r) => r.events?.[0]?.introduced === "0"),
+      );
+      return { id, url: `https://osv.dev/vulnerability/${v.id}`, title: v.summary ?? id, wholePackage };
+    });
+}
 
 export { compareVersions } from "./versions.js";
 import { compareVersions } from "./versions.js";

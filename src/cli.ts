@@ -32,7 +32,8 @@ Options:
   --summary-file <path>  Also append the markdown report to this file (e.g. $GITHUB_STEP_SUMMARY)
   --sarif <path>         Also write a SARIF 2.1.0 report (GitHub code scanning, other dashboards)
   --fail-on <level>      Exit 1 when findings reach a level:
-                         none | patch-available | orphaned-vulnerable | unpatched | any (default: none)
+                         none | malicious | patch-available | orphaned-vulnerable | unpatched | any
+                         (default: malicious, so known malware always fails; every level above none does)
   --offline              Use only data bundled with this release (no network)
   --include-staged       Also use patches that are reviewed but not yet released
   --dry-run              Show what fix would change without writing
@@ -44,7 +45,7 @@ Options:
 Data: ecosyste.ms (maintenance, reach), OSV.dev (vulnerabilities), patch registry (Foster and other providers such as Keep LTS).
 Docs: https://github.com/foster-oss/foster`;
 
-const FAIL_LEVELS: FailOn[] = ["none", "patch-available", "orphaned-vulnerable", "unpatched", "any"];
+const FAIL_LEVELS: FailOn[] = ["none", "malicious", "patch-available", "orphaned-vulnerable", "unpatched", "any"];
 
 async function main(argv: string[]): Promise<number> {
   const { values, positionals } = parseArgs({
@@ -59,7 +60,7 @@ async function main(argv: string[]): Promise<number> {
       sbom: { type: "string" },
       since: { type: "string" },
       recursive: { type: "boolean", short: "r", default: false },
-      "fail-on": { type: "string", default: "none" },
+      "fail-on": { type: "string", default: "malicious" },
       offline: { type: "boolean", default: false },
       "include-staged": { type: "boolean", default: false },
       "dry-run": { type: "boolean", default: false },

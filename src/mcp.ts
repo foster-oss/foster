@@ -70,8 +70,9 @@ export function createMcpServer(): McpServer {
       title: "Check an install command before running it",
       description:
         "Before running a shell command that installs packages (npm/pnpm/yarn/bun, npx, pip/uv/poetry, cargo, go get, gem, composer), " +
-        "check every package it would install. Returns deny for names that do not exist (hallucinated or typo'd) and for " +
-        "vulnerabilities no release fixes, ask for unmaintained packages or fixable vulnerable versions, allow otherwise.",
+        "check every package it would install. Returns deny for known malware, names that do not exist (hallucinated or typo'd) and " +
+        "vulnerabilities no release fixes; ask for look-alike names, brand-new npm packages or fresh releases that run install scripts, " +
+        "unmaintained packages and fixable vulnerable versions; allow otherwise.",
       inputSchema: {
         command: z.string().describe("The exact shell command you are about to run, e.g. 'npm install left-pad'"),
       },

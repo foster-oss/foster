@@ -1,6 +1,7 @@
 import { resolve } from "node:path";
 import { indexByName, indexKey, loadOrphanIndex, type LoadOptions } from "./data.js";
 import { detectLockfiles, readDependencies } from "./lockfile.js";
+import { alternativesFor, describeAlternatives, type AlternativeSet } from "./replacements.js";
 import { findProjectDirs } from "./scan.js";
 import type { Dependency, MaintenanceStatus, OrphanRecord } from "./types.js";
 
@@ -20,6 +21,10 @@ export interface FundingCandidate {
   /** Sponsorship pages (GitHub Sponsors, Open Collective, Tidelift, Ko-fi, …). Empty when none is known. */
   links: string[];
   repoUrl: string | null;
+  /** The source repository is archived: nobody will merge fixes there. */
+  archived?: boolean;
+  /** Maintained replacements, when known. */
+  alternatives?: AlternativeSet;
 }
 
 export interface FundResult {
@@ -57,7 +62,17 @@ export function fundingCandidates(deps: Dependency[], records: Map<string, Recor
     const reasons = atRisk(r);
     if (!reasons.length) continue;
     seen.add(key);
-    out.push({ dependency: d, status: r.status, reasons, dependentRepos: r.dependentRepos, links: [...new Set(r.funding ?? [])], repoUrl: r.repoUrl });
+    const alternatives = alternativesFor(d.ecosystem, d.name);
+    out.push({
+      dependency: d,
+      status: r.status,
+      reasons,
+      dependentRepos: r.dependentRepos,
+      links: [...new Set(r.funding ?? [])],
+      repoUrl: r.repoUrl,
+      ...(r.archived ? { archived: true } : {}),
+      ...(alternatives ? { alternatives } : {}),
+    });
   }
   out.sort(
     (a, b) =>
@@ -100,6 +115,20 @@ export function fundingLabel(url: string): string {
   return host;
 }
 
+const FORGES = /^https:\/\/(github\.com|gitlab\.com|codeberg\.org)\/[^/]+\/[^/]+/;
+
+/** What someone can do for an at-risk package that takes no money. */
+export function helpFor(c: FundingCandidate): string[] {
+  const out: string[] = [];
+  const repo = c.repoUrl?.replace(/\.git$/, "").replace(/\/$/, "") ?? null;
+  if (c.archived) out.push(`archived: nobody merges fixes there. Fork it together with other users${repo ? ` (${repo})` : ""}, or replace it.`);
+  else if (repo && FORGES.test(repo)) out.push(`offer to co-maintain, or review and send fixes: ${repo.match(FORGES)![0]}/issues`);
+  else if (repo) out.push(`send fixes or offer help: ${repo}`);
+  else out.push("no source repository is linked: prefer replacing it.");
+  if (c.alternatives) out.push(`or switch to: ${describeAlternatives(c.alternatives)}`);
+  return out;
+}
+
 export function formatFund(result: FundResult): string {
   const lines: string[] = [`Foster fund: ${result.dir}`, `${result.dependencyCount} packages checked`, ""];
   for (const w of result.warnings) lines.push(`warning: ${w}`);
@@ -125,10 +154,18 @@ export function formatFund(result: FundResult): string {
     lines.push("");
   }
   if (result.unfundable.length) {
-    const names = result.unfundable.slice(0, 12).map((c) => c.dependency.name).join(", ");
-    lines.push(`At risk, but no funding link is known (${result.unfundable.length}): ${names}${result.unfundable.length > 12 ? ", …" : ""}`);
-    lines.push("  Help by sending fixes upstream, offering to co-maintain, or asking a foundation to adopt them.");
+    // Money is not the only way: time, a fork with others, or a move off the package also help.
+    lines.push(`At risk, and no funding link is known (${result.unfundable.length}). You can still help:`, "");
+    const SHOWN = 8;
+    for (const c of result.unfundable.slice(0, SHOWN)) {
+      lines.push(`  ${c.dependency.name} (${c.dependency.ecosystem}) · ${c.reasons.join(", ")} · ${compact(c.dependentRepos)} dependent repos`);
+      for (const h of helpFor(c)) lines.push(`      ${h}`);
+    }
+    const rest = result.unfundable.slice(SHOWN);
+    if (rest.length) lines.push(`  …and ${rest.length} more: ${rest.slice(0, 10).map((c) => c.dependency.name).join(", ")}${rest.length > 10 ? ", …" : ""}`);
     lines.push("");
+    if (result.unfundable.some((c) => c.reasons.some((r) => r.includes("advisory")) && (c.status === "dead" || c.status === "dormant")))
+      lines.push("Unmaintained packages with unfixed advisories can be nominated for adoption: https://github.com/foster-oss/foster/issues/new?template=adopt.yml", "");
   }
   lines.push("Funding the people who maintain what you depend on fixes the cause; scanners only show the symptoms.");
   return lines.join("\n");

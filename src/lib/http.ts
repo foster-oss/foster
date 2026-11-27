@@ -34,10 +34,11 @@ export interface FetchJsonOptions {
   body?: unknown;
   timeoutMs?: number;
   retries?: number;
+  headers?: Record<string, string>;
 }
 
 export async function fetchJson<T>(url: string, opts: FetchJsonOptions = {}): Promise<T> {
-  const { method = "GET", body, timeoutMs = 30_000, retries = 2 } = opts;
+  const { method = "GET", body, timeoutMs = 30_000, retries = 2, headers } = opts;
   let lastError: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
@@ -47,6 +48,7 @@ export async function fetchJson<T>(url: string, opts: FetchJsonOptions = {}): Pr
           "User-Agent": userAgent(),
           Accept: "application/json",
           ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+          ...headers,
         },
         body: body !== undefined ? JSON.stringify(body) : undefined,
         signal: AbortSignal.timeout(timeoutMs),
