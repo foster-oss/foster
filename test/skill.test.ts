@@ -38,6 +38,14 @@ describe("skill", () => {
     expect(rel).toEqual([".agents/skills/foster", ".claude/skills/foster", ".codex/skills/foster"]);
   });
 
+  it("knows Hermes, in the project and in the home folder", () => {
+    const dir = tmp(), home = tmp();
+    mkdirSync(join(home, ".hermes"));
+    const rel = (base: string, paths: string[]) => paths.map((p) => p.slice(base.length + 1).replace(/\\/g, "/"));
+    expect(rel(dir, installSkill(dir, { agents: ["hermes"], home }).installed)).toEqual([".hermes/skills/foster"]);
+    expect(rel(home, installSkill(dir, { global: true, home }).installed)).toEqual([".agents/skills/foster", ".hermes/skills/foster"]);
+  });
+
   it("installs for named agents and reports unknown ones", () => {
     const dir = tmp();
     const { installed, unknownAgents } = installSkill(dir, { agents: ["cursor", "kiro", "nope"], home: tmp() });

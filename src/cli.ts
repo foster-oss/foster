@@ -64,7 +64,42 @@ Options:
 Data: ecosyste.ms (maintenance, reach), OSV.dev (vulnerabilities), patch registry (Foster and other providers such as Keep LTS).
 Docs: https://github.com/foster-oss/foster`;
 
-const FAIL_LEVELS: FailOn[] = ["none", "malicious", "patch-available", "orphaned-vulnerable", "unpatched", "any"];
+const SUBCOMMAND_HELP: Record<string, () => string> = {
+  skill: () => `foster-oss skill: the Foster Agent Skill, so coding agents check every install before running it
+
+Usage:
+  foster-oss skill install [dir]        Install into a project (default: current directory):
+                                        .agents/skills/foster (Codex, Cursor, Gemini CLI, GitHub Copilot,
+                                        OpenCode, Amp, Cline, Zed, Warp, …), .claude/skills/foster (Claude Code),
+                                        and the skills folder of any other agent already set up in the project
+  foster-oss skill install --global     Install for your user, into every agent installed on this machine
+                                        (and ~/.agents/skills)
+  foster-oss skill install --agent <id> Only these agents (repeat the flag or separate with commas)
+  foster-oss skill print                Print SKILL.md, for agents that take instructions another way
+
+Agent ids: ${AGENT_DIRS.map(([ids]) => ids[0]).join(", ")}
+
+Also: npx skills add foster-oss/foster, or the Claude Code plugin:
+  /plugin install foster --marketplace foster-oss/foster`,
+  guard: () => `foster-oss guard: check what a command would install, before it runs
+
+Usage:
+  foster-oss guard -- <command>         e.g. foster-oss guard -- npm install left-pad
+  foster-oss guard --command "<line>"   the same, with the command line as one string
+  foster-oss guard --hook claude        Claude Code PreToolUse hook (reads the hook JSON on stdin)
+
+Exit codes: 0 allow, 1 deny, 10 ask (a person should decide).
+Options:
+  --strict      exit 1 on ask too (CI and other places where nobody can answer)
+  -q, --quiet   print nothing when the install is allowed
+  --json        machine-readable result
+
+Run it from the directory the command runs in: guard follows "cd dir &&" and --prefix/-C/--dir/--cwd, and
+reads that directory's lockfile, package.json and workspaces. Packages it cannot reach the registry or OSV
+for are allowed with a "could not be checked" line.`,
+};
+
+const FAIL_LEVELS: FailOn[] =["none", "malicious", "patch-available", "orphaned-vulnerable", "unpatched", "any"];
 
 async function main(argv: string[]): Promise<number> {
   const { values, positionals } = parseArgs({
@@ -99,6 +134,10 @@ async function main(argv: string[]): Promise<number> {
   const [command, arg] = positionals;
   if (values.version) {
     console.log(fosterVersion());
+    return 0;
+  }
+  if (values.help && command && SUBCOMMAND_HELP[command]) {
+    console.log(SUBCOMMAND_HELP[command]());
     return 0;
   }
   if (values.help || !command) {

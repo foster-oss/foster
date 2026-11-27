@@ -93,7 +93,7 @@ it, including the scaffolding command that starts a new project.
 npx foster-oss skill install            # this project: .agents/skills (Codex, Cursor, Gemini CLI, GitHub Copilot,
                                         # OpenCode, Amp, Cline, Zed, Warp, …) and .claude/skills (Claude Code)
 npx foster-oss skill install --global   # your user, for every agent installed on this machine
-npx foster-oss skill install --agent windsurf   # one agent (kiro, roo, goose, continue, trae, …)
+npx foster-oss skill install --agent hermes     # one agent (windsurf, kiro, roo, goose, trae, …; see skill --help)
 npx skills add foster-oss/foster        # or with the community skills CLI
 ```
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.9.1
+
+From the first outside review of the skill (it was also confirmed to load in Hermes as is).
+
+- **More agents for `skill install --agent`**: Hermes, Crush, Devin, Mistral Vibe, Pi, Tabnine, Qoder,
+  CodeBuddy and Zencoder, each in its own skills folder; `--global` finds them when they are installed.
+- **`foster-oss skill --help` and `foster-oss guard --help`** show their own options instead of the
+  general help.
+- **The skill is lighter and says more where it matters**: its description is half as long (387
+  characters, less context in agents that load every description), and it now covers the faster
+  `foster-oss guard` when Foster is installed, what "could not be checked" means without a network (treat it
+  as ask), `--strict`/`--quiet`/`--json`, and guarding monorepo commands exactly as they will run.
+
 ## 0.9.0
 
 Foster as an Agent Skill, for every coding agent.

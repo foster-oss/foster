@@ -13,7 +13,7 @@ export function skillText(): string {
 /**
  * Where agents look for skills: [agent ids, project folder, global folder (relative to home)].
  * `.agents/skills` is the shared folder of the Agent Skills standard (Codex, Cursor, Gemini CLI,
- * GitHub Copilot, OpenCode, Amp, Cline, Zed, Warp, …); a few agents keep their own.
+ * GitHub Copilot, OpenCode, Amp, Cline, Zed, Warp, Kimi, …); the others keep their own (Hermes, Windsurf, Kiro, …).
  */
 export const AGENT_DIRS: [string[], string, string | null][] = [
   [["claude-code", "claude"], ".claude/skills", ".claude/skills"],
@@ -36,6 +36,15 @@ export const AGENT_DIRS: [string[], string, string | null][] = [
   [["augment"], ".augment/skills", ".augment/skills"],
   [["openhands"], ".openhands/skills", ".openhands/skills"],
   [["junie"], ".junie/skills", ".junie/skills"],
+  [["hermes", "hermes-agent"], ".hermes/skills", ".hermes/skills"],
+  [["crush"], ".crush/skills", ".config/crush/skills"],
+  [["devin"], ".devin/skills", ".config/devin/skills"],
+  [["mistral-vibe", "vibe"], ".vibe/skills", ".vibe/skills"],
+  [["pi"], ".pi/skills", ".pi/agent/skills"],
+  [["tabnine", "tabnine-cli"], ".tabnine/agent/skills", ".tabnine/agent/skills"],
+  [["qoder"], ".qoder/skills", ".qoder/skills"],
+  [["codebuddy"], ".codebuddy/skills", ".codebuddy/skills"],
+  [["zencoder"], ".zencoder/skills", ".zencoder/skills"],
 ];
 
 /** Folders that are always written: the shared folder and Claude Code's. */
