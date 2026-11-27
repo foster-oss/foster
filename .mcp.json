@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "foster": { "command": "npx", "args": ["-y", "foster-oss@latest", "mcp"] }
+  }
+}

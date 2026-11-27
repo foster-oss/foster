@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.9.0
+
+Foster as an Agent Skill, for every coding agent.
+
+- **`foster-oss skill install`** adds the Foster skill (the open [Agent Skills](https://agentskills.io) format)
+  to a project: `.agents/skills`, read by Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode, Amp, Cline,
+  Zed, Warp and others, and `.claude/skills` for Claude Code, plus any other agent folder already in the
+  project. `--global` installs it for every agent on the machine, `--agent <id>` for one, and
+  `foster-oss skill print` prints it. `npx skills add foster-oss/foster` works too.
+- **The skill is rewritten around the pre-install check**: run `foster-oss guard` on the exact command,
+  act on exit 0 / 1 / 10, guard the scaffolding command and the first install of a new project, check
+  names before writing them into a manifest, and never work around a block. Finding details moved to
+  `references/findings.md`.
+- **Claude Code plugin** in the same repository: `/plugin install foster --marketplace foster-oss/foster`
+  installs the PreToolUse hook, the skill and the MCP server in one step.
+- **Project scaffolders are checked**: `npm create`, `npm init <initializer>`, `pnpm create`, `yarn create`
+  and `bun create` run a `create-*` package from the registry, which guard now checks the way npm maps it
+  (`vite` → `create-vite`, `@scope` → `@scope/create`). `npm create vitee@latest` is denied: no such package.
+
 ## 0.8.7
 
 No change in behaviour: Foster now says what it does.

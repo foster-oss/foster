@@ -1,0 +1,35 @@
+{
+  "name": "foster",
+  "version": "0.9.0",
+  "description": "Check every package install before it runs: blocks known malware, hallucinated names, look-alikes and unfixable vulnerabilities (npm, PyPI, Cargo, Go, RubyGems, Packagist)",
+  "author": {
+    "name": "foster-oss",
+    "url": "https://github.com/foster-oss"
+  },
+  "homepage": "https://github.com/foster-oss/foster",
+  "repository": "https://github.com/foster-oss/foster",
+  "license": "Apache-2.0",
+  "keywords": [
+    "security",
+    "supply-chain",
+    "malware",
+    "npm",
+    "pre-install",
+    "guard",
+    "mcp"
+  ],
+  "icon": ".claude-plugin/icon.png",
+  "network": {
+    "hosts": [
+      "registry.npmjs.org",
+      "api.osv.dev",
+      "packages.ecosyste.ms",
+      "pypi.org",
+      "crates.io",
+      "proxy.golang.org",
+      "rubygems.org",
+      "repo.packagist.org",
+      "raw.githubusercontent.com"
+    ]
+  }
+}

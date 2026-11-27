@@ -8,6 +8,7 @@ import { formatFix, formatMarkdown, formatRecord, formatSarif, formatText } from
 import { describeAlternatives } from "./lib/replacements.js";
 import { commandLineFrom, guardCommand, installsSomething } from "./lib/guard.js";
 import { shellInit, SHELLS, type Shell } from "./lib/shell.js";
+import { AGENT_DIRS, installSkill, skillText } from "./lib/skill.js";
 import { formatFund, fundProject } from "./lib/fund.js";
 import { scanProject, scanSbom, shouldFail, type FailOn } from "./lib/scan.js";
 import { ECOSYSTEMS, type Ecosystem } from "./lib/types.js";
@@ -21,6 +22,10 @@ Usage:
                                    lockfiles, package.json, workspaces and overrides bring along
   foster-oss guard --hook claude   Same, as a Claude Code PreToolUse hook (reads the hook JSON on stdin)
                                    guard exits 0 (allow), 1 (deny) or 10 (ask: a person should decide)
+  foster-oss skill install [dir]   Add the Foster agent skill so coding agents check installs themselves
+                                   (.agents/skills for Codex, Cursor, Gemini CLI, Copilot, OpenCode, …;
+                                   .claude/skills; --global for your user; --agent <id> for one agent)
+  foster-oss skill print           Print the skill (SKILL.md) for any other agent
   foster-oss shell-init <shell>    Print shell functions that guard npm, pip, … installs (bash, zsh, powershell)
   foster-oss scan [dir]            Check a project's lockfiles
   foster-oss scan --sbom <file>    Check a CycloneDX or SPDX JSON SBOM instead
@@ -32,6 +37,7 @@ Usage:
 Examples:
   npx foster-oss guard -- npm install left-pad
   npx foster-oss guard -- npm ci
+  npx foster-oss skill install
   npx foster-oss scan --since main
 
 Options:
@@ -85,6 +91,8 @@ async function main(argv: string[]): Promise<number> {
       command: { type: "string" },
       strict: { type: "boolean", default: false },
       quiet: { type: "boolean", short: "q", default: false },
+      global: { type: "boolean", short: "g", default: false },
+      agent: { type: "string", multiple: true },
     },
   });
 
@@ -153,6 +161,21 @@ Maintained alternatives: ${describeAlternatives(result.alternatives)}`);
       else if (!(values.quiet && result.decision === "allow")) console.log(result.message);
       // ask is its own exit code, so "guard -- x && x" stops and a wrapper can ask the person
       return result.decision === "deny" || (values.strict && result.decision === "ask") ? 1 : result.decision === "ask" ? 10 : 0;
+    }
+    case "skill": {
+      const action = arg ?? "install";
+      if (action === "print") {
+        process.stdout.write(skillText());
+        return 0;
+      }
+      if (action !== "install") throw new UsageError('skill takes "install" or "print", e.g. foster-oss skill install');
+      const agents = (values.agent ?? []).flatMap((a) => a.split(",")).map((a) => a.trim()).filter(Boolean);
+      const result = installSkill(positionals[2] ?? ".", { global: values.global, agents });
+      if (result.unknownAgents.length) console.error(`foster-oss: unknown agent ${result.unknownAgents.join(", ")}; known: ${AGENT_DIRS.map(([ids]) => ids[0]).join(", ")}`);
+      if (!result.installed.length) return 2;
+      const list = result.installed.map((p) => `  ${p}`).join("\n");
+      console.log(`Installed the Foster skill:\n${list}\n\nAgents that read these folders now check every install with foster-oss guard before running it.`);
+      return 0;
     }
     case "shell-init": {
       if (!arg || !SHELLS.includes(arg as Shell)) throw new UsageError(`shell-init needs a shell: ${SHELLS.join(", ")}`);

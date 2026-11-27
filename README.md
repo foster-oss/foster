@@ -17,6 +17,7 @@ already have. Open source, no account or API key, six ecosystems: npm, PyPI, Car
 Packagist.
 
 ```bash
+npx foster-oss skill install                       # teach your coding agent to check every install first
 npx foster-oss guard -- npm install some-package   # check an install before it runs
 npx foster-oss scan                                # what in my lockfile is orphaned, or vulnerable with no fix?
 npx foster-oss fund                                # which at-risk dependencies I rely on, and who to sponsor
@@ -75,11 +76,37 @@ chains and options before the subcommand (`npm --prefix app ci`), and follows th
 - **Ranges and dist-tags** (`x@^4.1.0`, `x@next`): the version npm would pick, not just the latest.
 - **Run-once tools**: `npx`, `npm exec`, `pnpm dlx`, `pnpx`, `yarn dlx`, `bunx`, and `corepack pnpm …` /
   `corepack yarn@4 …`.
+- **Project scaffolders**: `npm create vite@latest`, `npm init next-app`, `pnpm create`, `yarn create` and
+  `bun create` run a `create-*` package straight from the registry; that package is checked
+  (`npm create vitee` is a name that does not exist: deny).
 
 A fixable vulnerability in a dependency your own package.json already pins is a note rather than a
 question on every install (`scan` reports it). More than five notes are summarised.
 
 ### Set it up
+
+**Any coding agent, as an [Agent Skill](https://agentskills.io)**: one folder, `skills/foster`, in the open
+Agent Skills format. The agent reads it and runs `foster-oss guard` on every install command before it runs
+it, including the scaffolding command that starts a new project.
+
+```bash
+npx foster-oss skill install            # this project: .agents/skills (Codex, Cursor, Gemini CLI, GitHub Copilot,
+                                        # OpenCode, Amp, Cline, Zed, Warp, …) and .claude/skills (Claude Code)
+npx foster-oss skill install --global   # your user, for every agent installed on this machine
+npx foster-oss skill install --agent windsurf   # one agent (kiro, roo, goose, continue, trae, …)
+npx skills add foster-oss/foster        # or with the community skills CLI
+```
+
+`foster-oss skill print` prints the SKILL.md for agents that take instructions some other way. A skill is
+advice the agent follows; the hook below enforces the check even when the agent forgets.
+
+**Claude Code plugin** (hook + skill + MCP server in one step):
+
+```
+/plugin install foster --marketplace foster-oss/foster
+```
+
+or `/plugin marketplace add foster-oss/foster` then `/plugin install foster@foster-oss`.
 
 **Claude Code**: a PreToolUse hook in `.claude/settings.json` (project) or `~/.claude/settings.json` (all projects):
 
@@ -312,8 +339,8 @@ Tools: `foster_check_install_command` (call it before running an install command
 (call it before adding a dependency; it also catches names that don't exist, a common sign of a hallucinated
 package), `foster_scan_project`, `foster_fund_project`, `foster_list_patches`.
 
-**Skill**: copy [`skills/foster`](skills/foster/SKILL.md) into your agent's skills folder
-(e.g. `.claude/skills/foster/`).
+**Skill**: `npx foster-oss skill install` (see [Set it up](#set-it-up)), or copy [`skills/foster`](skills/foster/SKILL.md)
+into your agent's skills folder.
 
 ### Library
 

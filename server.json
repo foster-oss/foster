@@ -3,7 +3,7 @@
   "name": "io.github.foster-oss/foster",
   "title": "Foster",
   "description": "Check installs for malware, hallucinated or abandoned packages before an agent runs them.",
-  "version": "0.8.7",
+  "version": "0.9.0",
   "websiteUrl": "https://foster-oss.github.io/foster/",
   "repository": {
     "url": "https://github.com/foster-oss/foster",
@@ -22,7 +22,7 @@
     {
       "registryType": "npm",
       "identifier": "foster-oss",
-      "version": "0.8.7",
+      "version": "0.9.0",
       "transport": {
         "type": "stdio"
       },

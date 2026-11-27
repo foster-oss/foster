@@ -1,6 +1,6 @@
 {
   "name": "foster-oss",
-  "version": "0.8.7",
+  "version": "0.9.0",
   "mcpName": "io.github.foster-oss/foster",
   "description": "Stop AI agents and people installing malware, hallucinated or abandoned packages, and find the dependencies nobody maintains (npm, PyPI, Cargo, Go, RubyGems, Packagist).",
   "keywords": [
@@ -26,7 +26,10 @@
     "claude-code",
     "typosquatting",
     "malware",
-    "pre-install"
+    "pre-install",
+    "agent-skills",
+    "skill",
+    "claude-code-plugin"
   ],
   "license": "Apache-2.0",
   "type": "module",

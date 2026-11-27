@@ -265,6 +265,19 @@ const GLOBAL_VALUE_FLAGS: Record<string, string[]> = {
   composer: ["-d", "--working-dir"],
 };
 
+/**
+ * The package an initializer runs, as npm maps it: "vite" -> create-vite, "@scope" -> @scope/create,
+ * "@scope/app" -> @scope/create-app; a version stays attached. Git, URL and path templates are not packages.
+ */
+export function createPackage(spec: string): string | null {
+  if (/^[./~]|:/.test(spec) || (!spec.startsWith("@") && spec.includes("/"))) return null;
+  const m = /^(@[^/@]+)(?:\/([^@]+))?(@.+)?$/.exec(spec) ?? /^()([^@]+)(@.+)?$/.exec(spec);
+  if (!m) return null;
+  const [, scope, name, version = ""] = m;
+  if (scope) return `${scope}/${name ? `create-${name}` : "create"}${version}`;
+  return `create-${name}${version}`;
+}
+
 const NPM_INSTALL = ["install", "i", "in", "add", "isntall"];
 const NPM_LOCKED = ["ci", "clean-install", "ic", "install-clean", "isntall-clean", "install-test", "it", "install-ci-test", "cit"];
 
@@ -352,7 +365,11 @@ export function parseCommand(line: string, cwd: string = process.cwd()): { packa
       lock("bundle install", "rubygems", gemfile ? dirname(gemfile) : undefined);
     } else if (cmd === "composer" && sub === "install") lock("composer install", "packagist", flagValue(args, "--working-dir", "-d"));
     else if (cmd === "cargo" && (sub === "build" || sub === "fetch")) lock(`cargo ${sub}`, "cargo");
-    else if (cmd === "npx" || cmd === "bunx" || cmd === "pnpx" || (cmd === "npm" && (sub === "exec" || sub === "x")) || (cmd === "pnpm" && sub === "dlx") || (cmd === "yarn" && sub === "dlx")) {
+    else if (((cmd === "npm" && sub && ["create", "init", "innit"].includes(sub)) || ((cmd === "yarn" || cmd === "pnpm" || cmd === "bun") && sub === "create")) && positional(args, "npm")[0]) {
+      // scaffolders: "npm create vite@latest", "npm init next-app", "pnpm create astro" run create-<name> from the registry
+      const initializer = createPackage(positional(args, "npm")[0]!);
+      if (initializer) add(npmSpec(initializer));
+    } else if (cmd === "npx" || cmd === "bunx" || cmd === "pnpx" || (cmd === "npm" && (sub === "exec" || sub === "x")) || (cmd === "pnpm" && sub === "dlx") || (cmd === "yarn" && sub === "dlx")) {
       const runArgs = cmd === "npx" || cmd === "bunx" || cmd === "pnpx" ? rest : args;
       const pkgFlag = flagValue(runArgs, "-p", "--package");
       const first = pkgFlag ?? positional(runArgs.filter((a) => a !== "-y" && a !== "--yes"), "npm")[0];

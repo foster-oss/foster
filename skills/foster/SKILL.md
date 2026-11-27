@@ -1,65 +1,77 @@
 ---
 name: foster
-description: Check whether a dependency is still maintained and whether it has security holes nobody can fix, before adding it or when auditing a project. Use when adding, upgrading or reviewing dependencies (npm, PyPI, Cargo, Go, RubyGems, Packagist), when a user asks "is this package safe / maintained / abandoned", when a security scan reports a vulnerability with no fixed version, or when auditing a lockfile for supply-chain risk.
+description: Pre-install safety check for dependencies. Use BEFORE running any command that installs or adds packages (npm/pnpm/yarn/bun install or add, npm ci, npx, pnpm dlx, bunx, npm create or npm init scaffolders, pip/uv/poetry/pipx/pipenv install, cargo add or install, go get or install, gem/bundle install, composer require) and before writing a new dependency into package.json, requirements.txt, pyproject.toml, Cargo.toml, go.mod, Gemfile or composer.json. Blocks known malware, hallucinated package names that do not exist, look-alike names and vulnerabilities no release fixes, across npm, PyPI, Cargo, Go, RubyGems and Packagist. Also use when asked whether a package is safe, maintained or abandoned, or to audit a project's dependencies.
+license: Apache-2.0
+compatibility: Needs Node.js 20+ and network access to the npm registry, OSV.dev and ecosyste.ms. No account or API key.
+metadata:
+  homepage: https://github.com/foster-oss/foster
+  package: foster-oss
 ---
 
-# Foster: orphaned dependency check
+# Foster: check every install before it runs
 
-Foster finds dependencies that nobody maintains anymore, tells apart "just upgrade" from
-"no fix exists anywhere", and can switch a project to published drop-in security patches (from Foster or providers such as Keep LTS)
-without changing any import.
+Agents install dependencies on their own, and that is where supply-chain attacks land: names an AI
+model hallucinates and attackers register, look-alikes of popular packages, hijacked releases.
+Foster checks what a command would really install (named packages, lockfiles, package.json in a
+fresh clone, monorepo workspaces, overrides, aliases) before anything touches the machine.
 
-## When to use it
+## The rule
 
-- **Before adding a dependency** you have not used before: check it.
-- **When an audit says "no fix available"**: Foster may have a patch, or the package may be abandoned.
-- **When reviewing a project's health**: scan the lockfile.
-
-## Commands
-
-Run them with `npx` (no install needed). Node 20+.
+Before you run **any** command that installs, adds or executes a package, run Foster's guard on the
+exact command, from the same working directory:
 
 ```bash
-# One package, optionally a specific version
-npx -y foster-oss check <name>[@<version>]            # npm
-npx -y foster-oss check <name>@<version> --ecosystem pypi
-
-# A whole project: package-lock.json, pnpm-lock.yaml, yarn.lock, uv.lock, poetry.lock,
-# Pipfile.lock, requirements.txt, Cargo.lock, go.mod, Gemfile.lock, composer.lock
-npx -y foster-oss scan <dir>
-npx -y foster-oss scan <dir> --json        # for further processing
-npx -y foster-oss scan <dir> --all         # also list quiet orphans
-
-# Switch to published drop-in patches (edits package.json, then reinstall)
-npx -y foster-oss fix <dir> --dry-run      # show first
-npx -y foster-oss fix <dir>
+npx -y foster-oss@latest guard -- <the exact command>
 ```
 
-If the MCP server is configured (`npx -y foster-oss mcp`), prefer its tools:
-`foster_check_package`, `foster_scan_project`, `foster_list_patches`.
+Examples:
 
-## How to read the results
+```bash
+npx -y foster-oss@latest guard -- npm create vite@latest my-app -- --template react
+npx -y foster-oss@latest guard -- npm install
+npx -y foster-oss@latest guard -- pnpm add zod @tanstack/react-query
+npx -y foster-oss@latest guard -- pip install -r requirements.txt
+npx -y foster-oss@latest guard -- cargo add serde
+```
 
-| Finding | Meaning | What to do |
+Then act on the exit code:
+
+| Exit | Decision | What you do |
 |---|---|---|
-| `MALWARE` | Known malicious package or hijacked release | Stop. Tell the user to remove it now and rotate credentials and tokens the machine or CI can reach |
-| `PATCH READY` | A published drop-in patch exists for this exact version | Show the user, then `foster-oss fix` (ask before editing package.json) |
-| `ORPHANED+VULN` | Known vulnerability, no fix anywhere, package dead or dormant | Prefer a maintained alternative; otherwise tell the user it can be nominated for adoption |
-| `NO FIX YET` | Known vulnerability, no fix released, but the package seems maintained | Watch for a release; consider mitigations |
-| `UPGRADE` | Fixed upstream | Upgrade normally; Foster is not needed |
-| `ORPHANED` | Widely used, unmaintained, no known vulnerability | Informational. Avoid for *new* code; a `consider:` line names maintained replacements when known |
-| "not found" | The name does not exist on the registry | Likely a typo or hallucinated package: do **not** install it |
+| `0` | allow | Run the original command. |
+| `1` | **deny** | Do **not** run it. Tell the user what Foster found (malware, a name that does not exist, an unfixable vulnerability) and offer the alternative or fixed version it names. |
+| `10` | **ask** | Do not run it yet. Show the user Foster's reason (look-alike name, brand-new package with install scripts, a URL or git source, …) and run it only if they say yes. |
+| other | guard could not run | Say so (no Node 20+, no network). Continue only if the user agrees. |
 
-## Before running an install command
+If the Foster MCP server is available, `foster_check_install_command` does the same check without a
+shell.
 
-Run `npx -y foster-oss guard -- <the exact command>` (or the MCP tool `foster_check_install_command`).
-It also catches known malware, look-alike names of popular packages (typosquats), and npm packages that are brand new or freshly changed and run install scripts. If it says **deny**, do not run the command: tell the user why and offer the suggested alternative or a
-fixed version. If it says **ask**, show the user the reason and let them decide.
+## Building a new project
 
-## Rules
+1. Guard the scaffolding command itself (`npm create …`, `npm init …`, `pnpm create …`, `npx create-…`):
+   it runs a package straight from the registry.
+2. Before the first `npm install` (or `pnpm install`, `pip install -r`, …) in the new project, guard
+   it again: Foster reads the generated package.json and lockfile.
+3. When you add a dependency by editing a manifest instead of running a command, check each new name
+   first: `npx -y foster-oss@latest check <name>@<version>` (add `--ecosystem pypi|cargo|go|rubygems|packagist`
+   outside npm). "not found" means the name does not exist: never invent a replacement name, ask the user.
 
-- Never run `foster-oss fix` without telling the user what will change; run `--dry-run` first.
-- After `fix`, run the project's install command and its tests.
-- "Dormant" is a signal, not a verdict: small finished libraries can be dormant and fine. Only
-  call something risky when it is dormant **and** vulnerable, or when the user is choosing a new dependency.
-- Do not suggest replacing a dependency just because it is dormant unless the user asked about maintenance.
+## Never work around a block
+
+- Do not retry a denied package under another name, through a tarball or git URL, with `--ignore-scripts`,
+  or by downloading it some other way.
+- Do not split a command so the risky part is no longer visible to the check.
+- A deny for known malware means: if it is already installed, tell the user to remove it and rotate every
+  credential and token the machine or CI can reach.
+
+## Auditing an existing project
+
+```bash
+npx -y foster-oss@latest scan <dir>        # known malware, unfixable vulnerabilities, abandoned dependencies
+npx -y foster-oss@latest fund <dir>        # at-risk dependencies and where to fund their maintainers
+npx -y foster-oss@latest fix <dir> --dry-run   # drop-in patches that exist; show first, then ask before running without --dry-run
+```
+
+What each finding means and what to do about it: [references/findings.md](references/findings.md).
+Dormant is a signal, not a verdict: small finished libraries can be dormant and fine. Do not suggest
+replacing a dependency only because it is dormant unless the user asked about maintenance.

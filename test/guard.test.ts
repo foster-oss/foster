@@ -23,6 +23,20 @@ describe("splitCommands", () => {
   });
 });
 
+describe("scaffolders", () => {
+  it("checks the create-* package that npm/pnpm/yarn/bun create and npm init run", () => {
+    expect(names("npm create vite@latest my-app -- --template react")).toEqual(["npm:create-vite"]);
+    expect(names("npm init next-app@14.2.0 web")).toEqual(["npm:create-next-app@14.2.0"]);
+    expect(names("pnpm create astro && yarn create remix && bun create hono")).toEqual(["npm:create-astro", "npm:create-remix", "npm:create-hono"]);
+    expect(names("npm init @angular")).toEqual(["npm:@angular/create"]);
+    expect(names("npm create @scope/app@1.0.0")).toEqual(["npm:@scope/create-app@1.0.0"]);
+  });
+  it("leaves plain npm init and git templates alone", () => {
+    expect(names("npm init -y")).toEqual([]);
+    expect(names("bun create user/repo app")).toEqual([]);
+  });
+});
+
 describe("parseInstallCommand", () => {
   it("reads npm, pnpm, yarn and bun installs, skipping flags and their values", () => {
     expect(names("npm install -D typescript @types/node@20.11.0 --registry https://r.example lodash@^4")).toEqual(["npm:typescript", "npm:@types/node@20.11.0", "npm:lodash"]);

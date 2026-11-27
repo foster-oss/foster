@@ -1,0 +1,12 @@
+{
+  "name": "foster-oss",
+  "owner": { "name": "foster-oss", "url": "https://github.com/foster-oss" },
+  "description": "Foster: check every package install before an AI agent runs it",
+  "plugins": [
+    {
+      "name": "foster",
+      "source": "./",
+      "description": "Blocks installs of known malware, hallucinated and look-alike packages before they run: a PreToolUse hook on Bash, the foster skill and the Foster MCP server"
+    }
+  ]
+}
