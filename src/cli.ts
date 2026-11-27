@@ -6,9 +6,9 @@ import { applyFixes, installCommand } from "./lib/fix.js";
 import { fosterVersion } from "./lib/http.js";
 import { formatFix, formatMarkdown, formatRecord, formatSarif, formatText } from "./lib/report.js";
 import { describeAlternatives } from "./lib/replacements.js";
-import { commandLineFrom, guardCommand, installsSomething } from "./lib/guard.js";
+import { commandLineFrom, guardCommand, installsSomething, splitGuardArgs } from "./lib/guard.js";
 import { shellInit, SHELLS, type Shell } from "./lib/shell.js";
-import { AGENT_DIRS, installSkill, skillText } from "./lib/skill.js";
+import { AGENT_DIRS, fosterOnPath, installSkill, skillText } from "./lib/skill.js";
 import { formatFund, fundProject } from "./lib/fund.js";
 import { scanProject, scanSbom, shouldFail, type FailOn } from "./lib/scan.js";
 import { ECOSYSTEMS, type Ecosystem } from "./lib/types.js";
@@ -77,8 +77,8 @@ Usage:
   foster-oss skill install --agent <id> Only these agents (repeat the flag or separate with commas)
   foster-oss skill install --no-permissions
                                         Leave Claude Code's settings alone. By default .claude/settings.json is
-                                        set to allow "foster-oss guard" and "foster-oss check" (they only read),
-                                        so the check is not stopped by a prompt or by auto mode
+                                        set to allow "foster-oss guard" and "foster-oss check" (they only read,
+                                        Bash and PowerShell), so the check runs without a prompt
   foster-oss skill print                Print SKILL.md, for agents that take instructions another way
 
 Agent ids: ${AGENT_DIRS.map(([ids]) => ids[0]).join(", ")}
@@ -106,6 +106,9 @@ for are allowed with a "could not be checked" line.`,
 const FAIL_LEVELS: FailOn[] =["none", "malicious", "patch-available", "orphaned-vulnerable", "unpatched", "any"];
 
 async function main(argv: string[]): Promise<number> {
+  // guard's command is never parsed as Foster options, with or without "--" (PowerShell drops it)
+  const guardArgs = splitGuardArgs(argv);
+  if (guardArgs) argv = ["guard", ...guardArgs.own];
   const { values, positionals } = parseArgs({
     args: argv,
     allowPositionals: true,
@@ -198,7 +201,7 @@ Maintained alternatives: ${describeAlternatives(result.alternatives)}`);
         await runClaudeHook();
         return 0;
       }
-      const line = values.command ?? commandLineFrom(positionals.slice(1));
+      const line = values.command ?? commandLineFrom(guardArgs?.command ?? positionals.slice(1));
       if (!line.trim()) throw new UsageError("guard needs a command, e.g. foster-oss guard -- npm install left-pad");
       const result = await guardCommand(line);
       if (values.json) console.log(JSON.stringify(result, null, 2));
@@ -219,8 +222,12 @@ Maintained alternatives: ${describeAlternatives(result.alternatives)}`);
       if (!result.installed.length) return 2;
       const list = result.installed.map((p) => `  ${p}`).join("\n");
       console.log(`Installed the Foster skill:\n${list}\n\nAgents that read these folders now check every install with foster-oss guard before running it.`);
-      for (const f of result.permissions.updated) console.log(`Claude Code may run Foster's check (guard, check) without asking, also in auto mode: ${f}`);
-      for (const f of result.permissions.skipped) console.error(`foster-oss: ${f} is not valid JSON, so it was left alone; allow "Bash(npx -y foster-oss@latest guard:*)" there yourself.`);
+      for (const f of result.permissions.updated) console.log(`Claude Code may run Foster's check (guard, check) without asking: ${f}`);
+      for (const f of result.permissions.skipped) console.error(`foster-oss: ${f} is not valid JSON, so it was left alone; allow "Bash(foster-oss guard:*)" and "PowerShell(foster-oss guard *)" there yourself.`);
+      if (!fosterOnPath()) console.log(`
+Tip: install Foster once with "npm i -g foster-oss". Agents then run "foster-oss guard" directly: about
+1.5 s faster, and not blocked by permission systems that refuse "npx -y …@latest" (Claude Code's auto mode).
+In Claude Code the plugin works without it: /plugin install foster --marketplace foster-oss/foster`);
       return 0;
     }
     case "shell-init": {
@@ -261,7 +268,7 @@ async function runClaudeHook(): Promise<void> {
       process.stdin.on("error", reject);
     });
     const input = JSON.parse(raw || "{}") as { hook_event_name?: string; tool_name?: string; cwd?: string; tool_input?: { command?: string } };
-    if (input.tool_name !== "Bash" || (input.hook_event_name && input.hook_event_name !== "PreToolUse")) return;
+    if (!["Bash", "PowerShell"].includes(input.tool_name ?? "") || (input.hook_event_name && input.hook_event_name !== "PreToolUse")) return;
     const line = input.tool_input?.command ?? "";
     const cwd = input.cwd || process.cwd();
     if (!installsSomething(line, cwd)) return;

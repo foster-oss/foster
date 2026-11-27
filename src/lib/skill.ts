@@ -68,8 +68,10 @@ export interface SkillInstallResult {
 
 /**
  * The commands the skill tells an agent to run. They only read (check a command or a package, never
- * install), so Claude Code may run them without a prompt, also in auto mode, which otherwise blocks
- * "npx -y …@latest" as running code fetched from the registry.
+ * install), so Claude Code may run them without a prompt. Claude Code runs commands through its Bash
+ * tool, or its PowerShell tool on Windows, and each tool has its own rules. Auto mode drops the npx
+ * rules (they fetch and run code) and blocks "npx -y …@latest", so there the skill uses an installed
+ * foster-oss, which auto mode lets run.
  */
 export const CHECK_RULES = [
   "Bash(npx -y foster-oss@latest guard:*)",
@@ -79,7 +81,27 @@ export const CHECK_RULES = [
   "Bash(npx -y foster-oss@latest check:*)",
   "Bash(npx foster-oss check:*)",
   "Bash(foster-oss check:*)",
+  "PowerShell(npx -y foster-oss@latest guard *)",
+  "PowerShell(npx foster-oss guard *)",
+  "PowerShell(foster-oss guard *)",
+  "PowerShell(npx -y foster-oss@latest check *)",
+  "PowerShell(npx foster-oss check *)",
+  "PowerShell(foster-oss check *)",
 ];
+
+/**
+ * Whether an installed foster-oss is on PATH (not npx's temporary copy or a project's node_modules/.bin,
+ * which an agent's shell does not see). Works with POSIX and Windows PATHs and npm's .cmd/.ps1 shims.
+ */
+export function fosterOnPath(env: NodeJS.ProcessEnv = process.env, platform: NodeJS.Platform = process.platform): boolean {
+  const pathVar = env.PATH ?? env.Path ?? "";
+  const sep = platform === "win32" ? ";" : ":";
+  const names = platform === "win32" ? ["foster-oss.cmd", "foster-oss.ps1", "foster-oss.exe", "foster-oss"] : ["foster-oss"];
+  return pathVar.split(sep).some((d) => {
+    if (!d || /[\\/]_npx[\\/]|node_modules[\\/]\.bin/.test(d)) return false;
+    return names.some((n) => existsSync(join(d, n)));
+  });
+}
 
 /** Merge CHECK_RULES into a Claude Code settings file. Returns false when the file exists but is not JSON. */
 export function allowChecks(settingsPath: string): boolean {

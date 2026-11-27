@@ -74,6 +74,68 @@ jobs:
           echo '{"peerDependencies":{"crossenv":"0.0.2-security"}}' > "$o/package.json"
           (cd "$o" && check_guard 1 "npm install") || exit 1
 
+  shells:
+    # The package as users get it (npm pack, npm i -g), run from every shell agents use: npm's shims
+    # differ per platform, and PowerShell drops "--" on the way into the .ps1 shim.
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci && npm run build
+      - name: Install the packed package globally
+        shell: bash
+        run: |
+          npm pack --silent
+          npm i -g ./foster-oss-*.tgz
+          foster-oss --version
+      - name: bash
+        shell: bash
+        run: |
+          set +e
+          cd "$RUNNER_TEMP"
+          check() { want=$1; shift; foster-oss guard "$@" >/dev/null; got=$?; echo "bash ($got): $*"; [ "$got" = "$want" ] || { echo "::error::bash: guard $* exited $got, expected $want"; exit 1; }; }
+          check 0 -- npm i -D vitest
+          check 1 -- npm i crossenv
+          check 10 -- npm i expres
+          check 1 --strict -- npm i expres
+          check 0 --command "cd web && npm install --save-dev typescript"
+          foster-oss skill install . >/dev/null && test -f .claude/skills/foster/SKILL.md && test -f .agents/skills/foster/SKILL.md && grep -q "PowerShell(foster-oss guard \*)" .claude/settings.json && echo "skill install ok"
+      - name: PowerShell
+        shell: pwsh
+        run: |
+          Set-Location $env:RUNNER_TEMP
+          function Check($want) { $null = foster-oss guard @args; $got = $LASTEXITCODE; "pwsh ($got): $args"; if ($got -ne $want) { Write-Error "pwsh: guard $args exited $got, expected $want"; exit 1 } }
+          Check 0 -- npm i -D vitest
+          Check 1 -- npm i crossenv
+          Check 10 -- npm i expres
+          Check 0 --command "cd web && npm install --save-dev typescript"
+          $global:LASTEXITCODE = 0
+      - name: Windows PowerShell 5.1
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          Set-Location $env:RUNNER_TEMP
+          $null = foster-oss guard -- npm i -D vitest; if ($LASTEXITCODE -ne 0) { exit 1 }
+          $null = foster-oss guard -- npm i crossenv; if ($LASTEXITCODE -ne 1) { exit 1 }
+          "powershell 5.1 ok"; exit 0
+      - name: cmd
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          cd /d %RUNNER_TEMP%
+          call foster-oss guard -- npm i -D vitest >nul
+          if errorlevel 1 exit /b 1
+          call foster-oss guard -- npm i crossenv >nul
+          if not errorlevel 1 exit /b 1
+          echo cmd ok
+
   patches:
     # Every patch is rebuilt from the upstream release and re-verified on every change.
     runs-on: ubuntu-latest

@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.9.4
+
+Windows and Linux terminals, and Claude Code's auto mode, tested end to end.
+
+- **Auto mode, really this time.** 0.9.3's allow rules did not help there: Claude Code drops rules that run
+  fetched code (`npx …`) on entering auto mode, and its classifier blocks `npx -y foster-oss@latest`. It lets
+  an installed `foster-oss guard` run. The skill now checks for an installed `foster-oss` (`foster-oss
+  --version`) and uses it, falling back to npx; `skill install` suggests `npm i -g foster-oss` when it is not
+  on PATH. Tested: in auto mode an agent with the skill checked and installed dayjs, and refused crossenv
+  (known malware) and offered cross-env, with no prompt and nothing blocked.
+- **Claude Code on Windows.** There Claude Code runs commands with its PowerShell tool, not Bash: the plugin's
+  hook now covers both (`"matcher": "Bash|PowerShell"`), and `skill install` adds `PowerShell(foster-oss guard *)`
+  rules next to the Bash ones. Before, the plugin's hook never saw a command on Windows.
+- **PowerShell dropped `--`.** Through npm's `.ps1` shim, `foster-oss guard -- npm i -D vitest` reached Foster
+  as `guard npm i -D vitest` and failed on `-D`. Everything after guard's own options is now the command,
+  with or without `--`.
+- **Commands inside other commands are checked.** `bash -c "npm i x"`, `sh -lc`, `cmd /c`, `powershell -Command`
+  and `-EncodedCommand`, `eval`, `iex`, subshells `( … )` and `$( … )`, `{ …; }` and PowerShell blocks,
+  `if …; then`, `do`, `!`, a single `&` and PowerShell's call operator `& npm …` all went unchecked before.
+  `Set-Location`/`cd /d` move where the lockfile is read.
+- CI installs the packed package globally and runs guard and `skill install` from bash and PowerShell on
+  Linux, macOS and Windows, plus Windows PowerShell 5.1 and cmd.
+
 ## 0.9.3
 
 - **The skill's check is no longer blocked in Claude Code.** In auto mode, Claude Code refused to run

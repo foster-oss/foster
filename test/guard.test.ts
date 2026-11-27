@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CheckResult } from "../src/lib/check.js";
-import { commandLineFrom, guardCommand, parseInstallCommand, splitCommands, verdictFor } from "../src/lib/guard.js";
+import { commandLineFrom, guardCommand, parseCommand, parseInstallCommand, splitCommands, splitGuardArgs, verdictFor } from "../src/lib/guard.js";
 import type { Ecosystem } from "../src/lib/types.js";
 
 const noProbes = { malware: async () => [], installRisk: async () => null };
@@ -14,6 +14,23 @@ describe("commandLineFrom", () => {
   it("joins separate tokens and keeps tokens with spaces together", () => {
     expect(commandLineFrom(["npm", "install", "lodahs"])).toBe("npm install lodahs");
     expect(commandLineFrom(["sh", "-c", "npm i x"])).toBe(`sh -c "npm i x"`);
+  });
+});
+
+describe("splitGuardArgs", () => {
+  it("keeps the command away from Foster's own options, with or without --", () => {
+    expect(splitGuardArgs(["guard", "--", "npm", "i", "-D", "vitest"])).toEqual({ own: [], command: ["npm", "i", "-D", "vitest"] });
+    // PowerShell drops "--" on the way into npm's .ps1 shim
+    expect(splitGuardArgs(["guard", "npm", "i", "-D", "vitest"])).toEqual({ own: [], command: ["npm", "i", "-D", "vitest"] });
+    expect(splitGuardArgs(["guard", "--strict", "-q", "pnpm", "add", "--save-dev", "x"])).toEqual({ own: ["--strict", "-q"], command: ["pnpm", "add", "--save-dev", "x"] });
+    expect(splitGuardArgs(["guard", "--json", "--", "npm", "i", "--json"])).toEqual({ own: ["--json"], command: ["npm", "i", "--json"] });
+  });
+
+  it("passes guard options that take a value, and leaves other subcommands alone", () => {
+    expect(splitGuardArgs(["guard", "--hook", "claude"])).toEqual({ own: ["--hook", "claude"], command: [] });
+    expect(splitGuardArgs(["guard", "--command", "npm i -D x"])).toEqual({ own: ["--command", "npm i -D x"], command: [] });
+    expect(splitGuardArgs(["guard", "--command=npm i x"])).toEqual({ own: ["--command=npm i x"], command: [] });
+    expect(splitGuardArgs(["scan", "."])).toBeNull();
   });
 });
 
@@ -34,6 +51,45 @@ describe("scaffolders", () => {
   it("leaves plain npm init and git templates alone", () => {
     expect(names("npm init -y")).toEqual([]);
     expect(names("bun create user/repo app")).toEqual([]);
+  });
+});
+
+describe("commands inside other commands", () => {
+  it("reads command lines handed to bash, cmd, PowerShell, eval and iex", () => {
+    expect(names('bash -c "npm i crossenv"')).toEqual(["npm:crossenv"]);
+    expect(names("sh -lc 'pip install requests'")).toEqual(["pypi:requests"]);
+    expect(names("cmd /c npm i crossenv")).toEqual(["npm:crossenv"]);
+    expect(names('powershell -NoProfile -Command "npm i crossenv"')).toEqual(["npm:crossenv"]);
+    expect(names('pwsh -c "pnpm add zod"')).toEqual(["npm:zod"]);
+    const enc = Buffer.from("npm i crossenv", "utf16le").toString("base64");
+    expect(names(`powershell -EncodedCommand ${enc}`)).toEqual(["npm:crossenv"]);
+    expect(names('eval "npm i crossenv"')).toEqual(["npm:crossenv"]);
+    expect(names('iex "npm i crossenv"')).toEqual(["npm:crossenv"]);
+  });
+
+  it("reads installs in subshells, blocks and after shell keywords", () => {
+    expect(names("(npm i crossenv)")).toEqual(["npm:crossenv"]);
+    expect(names("echo $(npm i crossenv)")).toEqual(["npm:crossenv"]);
+    expect(names("if true; then npm i crossenv; fi")).toEqual(["npm:crossenv"]);
+    expect(names("for x in 1; do npm i crossenv; done")).toEqual(["npm:crossenv"]);
+    expect(names("! npm i crossenv")).toEqual(["npm:crossenv"]);
+    expect(names("{ npm i crossenv; }")).toEqual(["npm:crossenv"]);
+    expect(names("npm i react & npm i crossenv")).toEqual(["npm:react", "npm:crossenv"]);
+  });
+
+  it("reads PowerShell: the call operator, blocks, Set-Location", () => {
+    expect(names("& npm i crossenv")).toEqual(["npm:crossenv"]);
+    expect(names("if ($true) { npm i crossenv }")).toEqual(["npm:crossenv"]);
+    expect(names('npm install zod; "EXIT=$LASTEXITCODE"')).toEqual(["npm:zod"]);
+    const dirs = parseCommand("Set-Location -Path web; npm ci", "/repo").lockfiles.map((l) => l.dir.replace(/\\/g, "/").replace(/^[A-Z]:/, ""));
+    expect(dirs).toEqual(["/repo/web"]);
+  });
+
+  it("leaves redirections, braces in words and quoted text alone", () => {
+    expect(names("npm i react 2>&1 | tee log")).toEqual(["npm:react"]);
+    expect(names("npm i react &>/dev/null")).toEqual(["npm:react"]);
+    expect(names("echo ${HOME}; npm i react")).toEqual(["npm:react"]);
+    expect(names('git commit -m "fix (x) & {y}"')).toEqual([]);
   });
 });
 

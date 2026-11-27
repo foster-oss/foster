@@ -95,17 +95,22 @@ Agent Skills format. The agent reads it and runs `foster-oss guard` on every ins
 it, including the scaffolding command that starts a new project.
 
 ```bash
-npx foster-oss skill install            # this project: .agents/skills (Codex, Cursor, Gemini CLI, GitHub Copilot,
-                                        # OpenCode, Amp, Cline, Zed, Warp, …) and .claude/skills (Claude Code)
-npx foster-oss skill install --global   # your user, for every agent installed on this machine
-npx foster-oss skill install --agent hermes     # one agent (windsurf, kiro, roo, goose, trae, …; see skill --help)
-npx skills add foster-oss/foster        # or with the community skills CLI
+npm i -g foster-oss                 # recommended: agents then run "foster-oss guard" directly
+foster-oss skill install            # this project: .agents/skills (Codex, Cursor, Gemini CLI, GitHub Copilot,
+                                    # OpenCode, Amp, Cline, Zed, Warp, …) and .claude/skills (Claude Code)
+foster-oss skill install --global   # your user, for every agent installed on this machine
+foster-oss skill install --agent hermes   # one agent (windsurf, kiro, roo, goose, trae, …; see skill --help)
+npx skills add foster-oss/foster    # or with the community skills CLI
 ```
 
-For Claude Code, `skill install` also allows Foster's own check (`foster-oss guard` and `foster-oss check`, which
-only read) in `.claude/settings.json`, so neither a prompt nor auto mode stops it; `--no-permissions` skips that.
-`foster-oss skill print` prints the SKILL.md for agents that take instructions some other way. A skill is
-advice the agent follows; the hook below enforces the check even when the agent forgets.
+The same commands work in bash, zsh, PowerShell and cmd, on Linux, macOS and Windows. Without the global
+install the skill falls back to `npx -y foster-oss@latest guard`, which works too but is about 1.5 s slower,
+and some permission systems refuse it: Claude Code's auto mode blocks `npx -y …@latest` as code fetched from
+the registry, while it lets an installed `foster-oss guard` run. For Claude Code, `skill install` also allows
+Foster's own check (`foster-oss guard` and `foster-oss check`, which only read) in `.claude/settings.json`, for
+both its Bash tool and its PowerShell tool on Windows, so it runs without a prompt; `--no-permissions` skips
+that. `foster-oss skill print` prints the SKILL.md for agents that take instructions some other way. A skill
+is advice the agent follows; the hook below enforces the check even when the agent forgets.
 
 **Claude Code plugin** (hook + skill + MCP server in one step):
 
@@ -122,7 +127,7 @@ or `/plugin marketplace add foster-oss/foster` then `/plugin install foster@fost
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "Bash|PowerShell",
         "hooks": [{ "type": "command", "command": "npx -y foster-oss guard --hook claude", "timeout": 60 }]
       }
     ]

@@ -21,18 +21,24 @@ Before you run **any** command that installs, adds or executes a package, run Fo
 exact command, from the directory the command will run in:
 
 ```bash
-npx -y foster-oss@latest guard -- <the exact command>
+foster-oss guard -- <the exact command>               # when foster-oss is installed (npm i -g foster-oss)
+npx -y foster-oss@latest guard -- <the exact command> # when it is not
 ```
 
-If `foster-oss` is installed (`npm i -g foster-oss`), call `foster-oss guard -- <command>` instead: it
-skips npx's download check and starts about 1.5 s faster. Put all the packages in one command rather than
-guarding them one by one.
+Use the installed `foster-oss` whenever there is one: it starts about 1.5 s faster, and permission systems
+that refuse `npx -y …@latest` (Claude Code's auto mode does) let it run. Find out once per session with
+`foster-oss --version`, which works the same in bash, zsh, PowerShell and cmd. Put all the packages in one
+command rather than guarding them one by one.
 
 ```bash
-npx -y foster-oss@latest guard -- npm create vite@latest my-app -- --template react
-npx -y foster-oss@latest guard -- pnpm add zod @tanstack/react-query
-npx -y foster-oss@latest guard -- pip install -r requirements.txt
+foster-oss guard -- npm create vite@latest my-app -- --template react
+foster-oss guard -- pnpm add -D zod @tanstack/react-query
+foster-oss guard -- pip install -r requirements.txt
 ```
+
+The same line works in PowerShell and cmd on Windows. Read the exit code with `$?` in bash and zsh,
+`$LASTEXITCODE` in PowerShell, `%ERRORLEVEL%` in cmd. When the command has quotes, pipes or `&&` in it,
+pass it as one string instead: `foster-oss guard --command "cd web && npm install"`.
 
 Then act on the exit code:
 
@@ -47,9 +53,11 @@ Then act on the exit code:
 allow, `--json` gives a machine-readable result. If the Foster MCP server is available,
 `foster_check_install_command` does the same check without a shell.
 
-If your own permission system stops the check itself (for example Claude Code's auto mode, which blocks
-`npx -y …@latest`), do not install without it: ask the user to allow `foster-oss guard` and `foster-oss check`.
-`npx foster-oss skill install` adds those rules to `.claude/settings.json`; they only read, never install.
+If your own permission system stops the check itself, do not install without it. When `foster-oss` is
+installed, use it instead of npx. When it is not, ask the user to run `npm i -g foster-oss` once (in Claude
+Code, the Foster plugin is the other way: `/plugin install foster --marketplace foster-oss/foster`), or to
+approve the check. `foster-oss skill install` lets Claude Code run `foster-oss guard` and `foster-oss check`
+without a prompt; they only read, never install.
 
 ## No network, no check
 
@@ -71,7 +79,7 @@ command exactly as you will run it: keep `cd packages/web && …`, `--prefix`, `
 2. Before the first `npm install` (or `pnpm install`, `pip install -r`, …) in the new project, guard
    it again: Foster reads the generated package.json and lockfile.
 3. When you add a dependency by editing a manifest instead of running a command, check each new name
-   first: `npx -y foster-oss@latest check <name>@<version>` (add `--ecosystem pypi|cargo|go|rubygems|packagist`
+   first: `foster-oss check <name>@<version>` (add `--ecosystem pypi|cargo|go|rubygems|packagist`
    outside npm). "not found" means the name does not exist: never invent a replacement name, ask the user.
 
 ## Never work around a block
@@ -84,10 +92,12 @@ command exactly as you will run it: keep `cd packages/web && …`, `--prefix`, `
 
 ## Auditing an existing project
 
+Without an installed foster-oss, write `npx -y foster-oss@latest` in place of `foster-oss`.
+
 ```bash
-npx -y foster-oss@latest scan <dir>            # known malware, unfixable vulnerabilities, abandoned dependencies
-npx -y foster-oss@latest fund <dir>            # at-risk dependencies and where to fund their maintainers
-npx -y foster-oss@latest fix <dir> --dry-run   # drop-in patches that exist; show first, ask before running without --dry-run
+foster-oss scan <dir>            # known malware, unfixable vulnerabilities, abandoned dependencies
+foster-oss fund <dir>            # at-risk dependencies and where to fund their maintainers
+foster-oss fix <dir> --dry-run   # drop-in patches that exist; show first, ask before running without --dry-run
 ```
 
 What each finding means and what to do about it: [references/findings.md](references/findings.md).

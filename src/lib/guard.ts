@@ -109,6 +109,18 @@ export function splitCommands(line: string): string[][] {
       pushCommand();
       continue;
     }
+    // a single "&" also starts a command: "a & b" (bash background, cmd), "& npm i x" (PowerShell's call
+    // operator); not in redirections such as 2>&1 or &>file
+    if (ch === "&" && !/[<>]$/.test(cur) && line[i + 1] !== ">") {
+      pushCommand();
+      continue;
+    }
+    // subshells and blocks: "(npm i x)", "$(npm i x)", "{ npm i x; }", PowerShell's "if ($c) { npm i x }";
+    // a brace inside a word (${VAR}, a={b}) stays part of it
+    if (ch === "(" || ch === ")" || (ch === "{" && !hasToken) || (ch === "}" && !cur.includes("{"))) {
+      pushCommand();
+      continue;
+    }
     if (ch === " " || ch === "\t" || ch === "\r") {
       pushToken();
       continue;
@@ -242,6 +254,28 @@ function composerSpec(spec: string): RequestedPackage | null {
  * ones that contain whitespace so they stay one word); `guard "npm i x"` arrives as one token that is
  * already the whole command line.
  */
+const GUARD_FLAGS = new Set(["--strict", "--quiet", "-q", "--json", "--help", "-h", "--include-staged"]);
+const GUARD_VALUE_FLAGS = new Set(["--hook", "--command"]);
+
+/**
+ * Split `guard …` arguments into guard's own options and the command to check. The command starts at
+ * "--" or at the first token that is not a guard option, so "--" is optional: PowerShell drops it on the
+ * way into npm's .ps1 shims, and "foster-oss guard -- npm i -D x" would otherwise reach the option parser
+ * as "-D". Returns null when argv is not a guard call.
+ */
+export function splitGuardArgs(argv: string[]): { own: string[]; command: string[] } | null {
+  if (argv[0] !== "guard") return null;
+  const own: string[] = [];
+  for (let i = 1; i < argv.length; i++) {
+    const t = argv[i]!;
+    if (t === "--") return { own, command: argv.slice(i + 1) };
+    if (GUARD_FLAGS.has(t) || /^--(hook|command)=/.test(t)) { own.push(t); continue; }
+    if (GUARD_VALUE_FLAGS.has(t)) { own.push(t, ...argv.slice(i + 1, i + 2)); i++; continue; }
+    return { own, command: argv.slice(i) };
+  }
+  return { own, command: [] };
+}
+
 export function commandLineFrom(tokens: string[]): string {
   const [only] = tokens;
   if (tokens.length === 1 && only !== undefined) return only;
@@ -281,19 +315,59 @@ export function createPackage(spec: string): string | null {
 const NPM_INSTALL = ["install", "i", "in", "add", "isntall"];
 const NPM_LOCKED = ["ci", "clean-install", "ic", "install-clean", "isntall-clean", "install-test", "it", "install-ci-test", "cit"];
 
+/** Words a command may follow: wrappers (sudo, env, …) and shell keywords (bash's then/do, PowerShell's &). */
+const LEADING_WORDS = ["sudo", "env", "time", "exec", "command", "nohup", "if", "then", "else", "elif", "while", "until", "do", "!", "wsl"];
+
+/** The command line a shell is told to run, when tokens hand one to bash/sh/zsh, cmd, PowerShell, eval or iex. */
+function innerScript(tokens: string[]): string | null {
+  const [first, ...rest] = tokens;
+  if (!first) return null;
+  const cmd = first.replace(/^.*[\\/]/, "").replace(/\.exe$/i, "").toLowerCase();
+  if (["bash", "sh", "zsh", "dash", "ksh", "fish"].includes(cmd)) {
+    const i = rest.findIndex((t) => /^-[a-z]*c[a-z]*$/.test(t)); // -c, -lc, -ec, …
+    return i >= 0 && rest[i + 1] !== undefined ? rest[i + 1]! : null;
+  }
+  if (cmd === "cmd") {
+    const i = rest.findIndex((t) => /^\/[ck]$/i.test(t));
+    return i >= 0 ? rest.slice(i + 1).join(" ") : null;
+  }
+  if (cmd === "powershell" || cmd === "pwsh") {
+    const enc = rest.findIndex((t) => /^-(e|ec|en|enc|encodedcommand)$/i.test(t));
+    if (enc >= 0 && rest[enc + 1]) {
+      try {
+        return Buffer.from(rest[enc + 1]!, "base64").toString("utf16le");
+      } catch {
+        return null;
+      }
+    }
+    const i = rest.findIndex((t) => /^-c(o(m(m(a(n(d)?)?)?)?)?)?$/i.test(t));
+    return i >= 0 ? rest.slice(i + 1).join(" ") : null;
+  }
+  if (cmd === "eval" || cmd === "iex" || cmd === "invoke-expression") return rest.join(" ") || null;
+  return null;
+}
+
 /**
  * Everything a command line would install: packages named on it, and installs that take their list
  * from a lockfile (`npm ci`, `npm install` with no names, `pip install -r`, `bundle install`, …).
  * `cd dir &&` and `--prefix`/`--dir`/`--cwd` style flags move where the lockfile is looked for.
  */
-export function parseCommand(line: string, cwd: string = process.cwd()): { packages: RequestedPackage[]; lockfiles: LockfileInstall[] } {
+export function parseCommand(line: string, cwd: string = process.cwd(), depth = 0): { packages: RequestedPackage[]; lockfiles: LockfileInstall[] } {
   const found: RequestedPackage[] = [];
   const locked: LockfileInstall[] = [];
   let dir = cwd;
   for (let tokens of splitCommands(line)) {
-    // strip env assignments and wrappers
-    while (tokens.length && (/^[A-Za-z_][A-Za-z0-9_]*=/.test(tokens[0]!) || ["sudo", "env", "time", "exec", "command", "nohup"].includes(tokens[0]!))) {
+    // strip env assignments, wrappers and the shell keywords a command can follow
+    while (tokens.length && (/^[A-Za-z_][A-Za-z0-9_]*=/.test(tokens[0]!) || LEADING_WORDS.includes(tokens[0]!))) {
       tokens = tokens.slice(1);
+    }
+    // a command line handed to another shell: bash -c "…", cmd /c …, powershell -Command "…", eval, iex
+    const script = depth < 4 ? innerScript(tokens) : null;
+    if (script !== null) {
+      const inner = parseCommand(script, dir, depth + 1);
+      found.push(...inner.packages);
+      locked.push(...inner.lockfiles);
+      continue;
     }
     // corepack runs the package manager a project pins: "corepack pnpm install", "corepack yarn@4.1.0 add x"
     if (/^corepack(\.cmd|\.exe)?$/i.test(tokens[0] ?? "") && /^(npm|npx|pnpm|pnpx|yarn)(@[^\s]+)?$/.test(tokens[1] ?? "")) tokens = tokens.slice(1);
@@ -301,8 +375,10 @@ export function parseCommand(line: string, cwd: string = process.cwd()): { packa
     if (!cmd0) continue;
     // "pnpm@9.1.0" (the corepack form) is pnpm
     const cmd = cmd0.replace(/^.*[\\/]/, "").replace(/\.(exe|cmd)$/i, "").replace(/^(npm|npx|pnpm|pnpx|yarn)@.*$/, "$1");
-    if ((cmd === "cd" || cmd === "pushd") && rest[0] && rest[0] !== "-" && !rest[0].startsWith("~")) {
-      dir = resolve(dir, rest[0]);
+    if (["cd", "pushd", "chdir", "set-location", "sl", "push-location"].includes(cmd.toLowerCase())) {
+      // PowerShell: Set-Location -Path web; cmd: cd /d D:\web
+      const to = rest.filter((a) => !/^-(path|literalpath)$/i.test(a) && !/^\/d$/i.test(a))[0];
+      if (to && to !== "-" && !to.startsWith("~")) dir = resolve(dir, to);
       continue;
     }
     // Global options may come before the subcommand: "npm --prefix app ci", "pnpm -C app i", "yarn --cwd app".

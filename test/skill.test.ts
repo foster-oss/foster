@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { CHECK_RULES, installSkill, skillText } from "../src/lib/skill.js";
+import { CHECK_RULES, fosterOnPath, installSkill, skillText } from "../src/lib/skill.js";
 
 const dirs: string[] = [];
 const tmp = () => { const d = mkdtempSync(join(tmpdir(), "foster-skill-")); dirs.push(d); return d; };
@@ -62,7 +62,10 @@ describe("skill", () => {
     const again = JSON.parse(readFileSync(join(dir, ".claude", "settings.json"), "utf8"));
     expect(again.permissions.allow).toHaveLength(1 + CHECK_RULES.length);
     // the rules only cover the read-only check, never an install
-    expect(CHECK_RULES.every((r) => / (guard|check):\*\)$/.test(r))).toBe(true);
+    expect(CHECK_RULES.every((r) => / (guard|check)(:\*| \*)\)$/.test(r))).toBe(true);
+    // Bash for macOS and Linux, PowerShell for Claude Code on Windows
+    expect(CHECK_RULES).toContain("Bash(foster-oss guard:*)");
+    expect(CHECK_RULES).toContain("PowerShell(foster-oss guard *)");
   });
 
   it("leaves settings it cannot parse alone, and skips them on request or without Claude Code", () => {
@@ -76,6 +79,20 @@ describe("skill", () => {
     expect(existsSync(join(d2, ".claude", "settings.json"))).toBe(false);
     const d3 = tmp();
     expect(installSkill(d3, { home: tmp(), agents: ["cursor"] }).permissions.updated).toEqual([]);
+  });
+
+  it("finds an installed foster-oss on PATH, but not npx's temporary copy or node_modules/.bin", () => {
+    // npm puts a plain script on macOS and Linux, .cmd and .ps1 shims on Windows
+    const win = process.platform === "win32";
+    const sep = win ? ";" : ":", name = win ? "foster-oss.cmd" : "foster-oss";
+    const bin = tmp(), npx = join(tmp(), "_npx", "abc", "node_modules", ".bin");
+    mkdirSync(npx, { recursive: true });
+    writeFileSync(join(npx, name), "");
+    expect(fosterOnPath({ PATH: npx })).toBe(false);
+    writeFileSync(join(bin, name), "");
+    expect(fosterOnPath({ PATH: [npx, bin].join(sep) })).toBe(true);
+    expect(fosterOnPath({ Path: [join(bin, "nope"), bin].join(sep) })).toBe(true);
+    expect(fosterOnPath({ PATH: "" })).toBe(false);
   });
 
   it("installs for named agents and reports unknown ones", () => {
