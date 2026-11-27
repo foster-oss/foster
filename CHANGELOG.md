@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.8.2
+
+From a third outside review: two monorepo paths, `npm exec`, and noise that could stop CI.
+
+- **Monorepo roots without a lockfile** check every workspace: `npm install`, `pnpm install`, `yarn install`
+  and `npm i --workspace a` in a root whose `package.json` has `workspaces` (or that has a
+  `pnpm-workspace.yaml`) now read each workspace's `package.json`. Globs (`apps/*`, `packages/**`) and
+  exclusions (`!apps/old`) are understood; dependencies on other workspaces are skipped.
+- **`npm exec` and `npm x`** are checked like `npx`.
+- **Unmaintained packages no longer stop installs.** A dead or dormant package with no known vulnerability
+  (for example `cross-env`, whose repository is archived) is allowed with a "Note (not blocking)" line and
+  maintained alternatives, instead of an ask that a non-interactive shell or CI would cancel. Vulnerable or
+  malicious packages are unchanged.
+- The look-alike check in lockfiles looks up to 60 names (was 20), and says so when a lockfile has more.
+
 ## 0.8.1
 
 Three more ways past `guard`, from a second outside review, and one false positive it uncovered.

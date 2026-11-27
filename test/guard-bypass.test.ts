@@ -238,3 +238,64 @@ describe("look-alikes that are simply new and huge", () => {
     expect(lookAlike("npm", "lodahs", 0, 40)).toBeDefined();
   });
 });
+
+describe("found in the 0.8.1 review", () => {
+  function mono(): string {
+    const root = mkdtempSync(join(tmpdir(), "foster-mono-"));
+    writeFileSync(join(root, "package.json"), JSON.stringify({ name: "root", private: true, workspaces: ["apps/*", "!apps/ignored"] }));
+    for (const [dir, pkg] of [
+      ["apps/a", { name: "a", dependencies: { crossenv: "0.0.2-security", b: "workspace:*", c: "^1.0.0" } }],
+      ["apps/c", { name: "c", dependencies: { lodash: "^4.17.0" } }],
+      ["apps/ignored", { name: "ignored", dependencies: { "left-pad": "1.3.0" } }],
+    ] as const) {
+      mkdirSync(join(root, dir), { recursive: true });
+      writeFileSync(join(root, dir, "package.json"), JSON.stringify(pkg));
+    }
+    return root;
+  }
+
+  it("includes every workspace's dependencies in a monorepo root install without a lockfile", async () => {
+    const { manifestPackages } = await import("../src/lib/guard.js");
+    const specs = manifestPackages(mono()).map((p) => p.spec).sort();
+    // c is another workspace (internal), b uses workspace:, apps/ignored is excluded
+    expect(specs).toEqual(["crossenv@0.0.2-security (apps/a/package.json, no lockfile)", "lodash@^4.17.0 (apps/c/package.json, no lockfile)"]);
+  });
+
+  it("reads pnpm-workspace.yaml", async () => {
+    const { manifestPackages } = await import("../src/lib/guard.js");
+    const root = mono();
+    writeFileSync(join(root, "package.json"), JSON.stringify({ name: "root", private: true }));
+    writeFileSync(join(root, "pnpm-workspace.yaml"), "packages:\n  - 'apps/*'\n  # comment\n  - '!apps/ignored'\n");
+    expect(manifestPackages(root).map((p) => p.name).sort()).toEqual(["crossenv", "lodash"]);
+  });
+
+  for (const line of ["npm install", "pnpm install", "yarn install", "npm i --workspace a", "npm i -w a"]) {
+    it(`denies malware in a workspace: ${line}`, async () => {
+      const r = await guardCommand(line, healthy, async () => true, {
+        ...quiet,
+        cwd: mono(),
+        malware: async (_e, name) => (name === "crossenv" ? [{ id: "GHSA-c2m4-w5hm-vqjw", url: "", title: "crossenv is malware", wholePackage: true }] : []),
+      });
+      expect(r.decision).toBe("deny");
+      expect(r.message).toMatch(/crossenv@0\.0\.2-security \(npm\) is known malware/);
+    });
+  }
+
+  it("treats npm exec and npm x like npx", () => {
+    const names = (line: string) => parseInstallCommand(line).map((p) => p.name);
+    expect(names("npm exec crossenv")).toEqual(["crossenv"]);
+    expect(names("npm x -- cowsay hi")).toEqual(["cowsay"]);
+    expect(names("npm exec --package=create-vite@5 -- create-vite app")).toEqual(["create-vite"]);
+    expect(shellInit("bash")).toMatch(/^npm\(\) \{ case "\$\{1:-\}" in [^)]*\|exec\|x\)/m);
+  });
+
+  it("notes unmaintained packages without stopping the install", async () => {
+    const dead = async (ecosystem: Ecosystem, name: string, version?: string): Promise<CheckResult> => {
+      const base = await healthy(ecosystem, name, version);
+      return { ...base, record: { ...base.record!, status: "dead", reasons: ["source repository is archived"], downloadsLastMonth: 10_000_000 } };
+    };
+    const r = await guardCommand("npm i cross-env", dead, async () => true, quiet);
+    expect(r.decision).toBe("allow");
+    expect(r.message).toMatch(/nothing to flag\.\nNote \(not blocking\):\n- cross-env \(npm\) looks dead \(source repository is archived\)/);
+  });
+});

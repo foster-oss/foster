@@ -205,7 +205,7 @@ would install, before it runs:
 | npm: a fresh release that adds an install script the previous release did not have (how hijacked packages spread, as in the 2025 Shai-Hulud worm) | **ask**, suggesting the previous version |
 | A vulnerability that no release fixes | **deny**, with maintained alternatives |
 | Vulnerable version that a newer release fixes, or a drop-in patch exists | **ask** |
-| The package is dead or dormant | **ask**, with maintained alternatives |
+| The package is dead or dormant, with no known vulnerability | allowed, with a **note** and maintained alternatives (it does not stop CI) |
 | Everything else | allowed silently |
 
 Install-script checks cost one small request per npm package (its version manifest); the full
@@ -221,7 +221,9 @@ composer commands, including `cd app && npm i -D x` chains, and the less obvious
   are looked up too: a name that does not exist on the registry is a **deny** (slopsquat), an existing
   little-used look-alike an **ask**. Global options before the subcommand count (`npm --prefix app ci`).
 - **No lockfile yet** (a fresh clone, `bun.lockb`): `npm`/`pnpm`/`yarn`/`bun install` resolve `package.json`,
-  so guard checks those packages like ones named on the command line.
+  so guard checks those packages like ones named on the command line. In a monorepo root that includes
+  every workspace (`workspaces` in package.json, or `pnpm-workspace.yaml`).
+- **`npm exec` / `npm x`** are checked like `npx`, `pnpm dlx`, `yarn dlx` and `bunx`.
 - **Aliases** (`npm i tc@npm:@ctrl/tinycolor@4.1.1`): the real package is checked.
 - **Registry tarball URLs** (`https://registry.npmjs.org/x/-/x-1.0.0.tgz`): package and version are read from the URL.
 - **Other URLs and git** (`https://…/x.tgz`, `github:a/b`, `git+https://…`): **ask**, since no database covers them.

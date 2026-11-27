@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
-import { basename, dirname, join, resolve } from "node:path";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { basename, dirname, join, relative, resolve } from "node:path";
 import { checkPackage, type CheckResult } from "./check.js";
 import { mapLimit } from "./http.js";
 import { detectLockfiles, readDependencies, type LockfileInfo } from "./lockfile.js";
@@ -44,6 +44,8 @@ export interface PackageVerdict {
   requested: RequestedPackage;
   decision: Decision;
   reason: string;
+  /** Worth knowing, but not a reason to stop: an unmaintained package with no known vulnerability. */
+  note?: string;
 }
 
 export interface GuardResult {
@@ -324,7 +326,7 @@ export function parseCommand(line: string, cwd: string = process.cwd()): { packa
       lock("bundle install", "rubygems", gemfile ? dirname(gemfile) : undefined);
     } else if (cmd === "composer" && sub === "install") lock("composer install", "packagist", flagValue(args, "--working-dir", "-d"));
     else if (cmd === "cargo" && (sub === "build" || sub === "fetch")) lock(`cargo ${sub}`, "cargo");
-    else if (cmd === "npx" || cmd === "bunx" || (cmd === "pnpm" && sub === "dlx") || (cmd === "yarn" && sub === "dlx")) {
+    else if (cmd === "npx" || cmd === "bunx" || (cmd === "npm" && (sub === "exec" || sub === "x")) || (cmd === "pnpm" && sub === "dlx") || (cmd === "yarn" && sub === "dlx")) {
       const runArgs = cmd === "npx" || cmd === "bunx" ? rest : args;
       const pkgFlag = flagValue(runArgs, "-p", "--package");
       const first = pkgFlag ?? positional(runArgs.filter((a) => a !== "-y" && a !== "--yes"), "npm")[0];
@@ -417,7 +419,7 @@ export function verdictFor(requested: RequestedPackage, check: CheckResult, extr
   const base = baseVerdict(requested, check, extras, label);
   const risk = extras.installRisk;
   if (!risk || base.decision === "deny") return base;
-  return { requested, decision: "ask", reason: base.decision === "allow" ? risk.reason : `${base.reason} Also: ${risk.reason}` };
+  return { requested, decision: "ask", reason: base.decision === "allow" ? `${risk.reason}${base.note ? ` Also: ${base.note}` : ""}` : `${base.reason} Also: ${risk.reason}` };
 }
 
 function baseVerdict(requested: RequestedPackage, check: CheckResult, extras: VerdictExtras, label: string): PackageVerdict {
@@ -449,7 +451,9 @@ function baseVerdict(requested: RequestedPackage, check: CheckResult, extras: Ve
   }
   const status = check.record?.status;
   if (status === "dead" || status === "dormant") {
-    return { requested, decision: "ask", reason: `${label} looks ${status} (${check.record!.reasons.join("; ")}). Nobody may fix future security problems.${alt || " Prefer a maintained package if one exists."}` };
+    // Maintenance is not a security problem today: say so, but do not stop the install (CI has nobody to ask).
+    const note = `${label} looks ${status} (${check.record!.reasons.join("; ")}). Nobody may fix future security problems.${alt || " Prefer a maintained package if one exists."}`;
+    return { requested, decision: "allow", reason: note, note };
   }
   return { requested, decision: "allow", reason: `${label}: ok` };
 }
@@ -479,34 +483,119 @@ const LIVE_PROBES: GuardProbes = {
 /** npm replaces removed malware with an empty "0.0.1-security" placeholder. */
 const SECURITY_PLACEHOLDER = /^0\.0\.\d+-security(\.\d+)?$/;
 
-/**
- * What `npm install` (or pnpm, yarn, bun) resolves from package.json when there is no lockfile it can
- * read: a fresh clone, a new project, or bun's binary bun.lockb. Local folders and workspaces are skipped.
- */
-export function manifestPackages(dir: string): RequestedPackage[] {
-  let pkg: Record<string, unknown>;
+function readManifest(dir: string): Record<string, unknown> | null {
   try {
-    pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8").replace(/^﻿/, "")) as Record<string, unknown>;
+    return JSON.parse(readFileSync(join(dir, "package.json"), "utf8").replace(/^﻿/, "")) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+/** Workspace patterns of a monorepo root: package.json "workspaces" (npm, yarn, bun) and pnpm-workspace.yaml. */
+function workspacePatterns(dir: string, pkg: Record<string, unknown>): string[] {
+  const ws = pkg.workspaces;
+  const out: string[] = Array.isArray(ws) ? ws.filter((x): x is string => typeof x === "string") : [];
+  if (ws && typeof ws === "object" && !Array.isArray(ws) && Array.isArray((ws as { packages?: unknown }).packages)) {
+    out.push(...((ws as { packages: unknown[] }).packages.filter((x): x is string => typeof x === "string")));
+  }
+  try {
+    const yaml = readFileSync(join(dir, "pnpm-workspace.yaml"), "utf8");
+    // only the "packages:" list matters here; a full YAML parse is not needed
+    const block = yaml.match(/^packages:\s*\n((?:[ \t]*-.*\n?|[ \t]*#.*\n?|[ \t]*\n)*)/m)?.[1] ?? "";
+    for (const m of block.matchAll(/^[ \t]*-[ \t]*['"]?([^'"\n#]+?)['"]?[ \t]*(?:#.*)?$/gm)) out.push(m[1]!.trim());
+  } catch {
+    // no pnpm workspace file
+  }
+  return out;
+}
+
+/** Expand workspace globs ("apps/*", "packages/**", "tools/cli") to folders with a package.json. */
+export function workspaceDirs(root: string, patterns: string[]): string[] {
+  const excluded = patterns.filter((p) => p.startsWith("!")).map((p) => globRegex(p.slice(1)));
+  const found = new Set<string>();
+  const walk = (dir: string, parts: string[], depth: number) => {
+    if (depth > 6) return;
+    if (parts.length === 0) {
+      if (existsSync(join(dir, "package.json"))) found.add(dir);
+      return;
+    }
+    const [head, ...tail] = parts as [string, ...string[]];
+    if (head === "**") {
+      walk(dir, tail, depth);
+      for (const e of subdirs(dir)) walk(join(dir, e), parts, depth + 1);
+    } else if (head.includes("*")) {
+      const re = new RegExp(`^${head.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`);
+      for (const e of subdirs(dir)) if (re.test(e)) walk(join(dir, e), tail, depth + 1);
+    } else walk(join(dir, head), tail, depth + 1);
+  };
+  for (const p of patterns) if (!p.startsWith("!")) walk(root, p.replace(/^\.\//, "").replace(/\/$/, "").split("/").filter(Boolean), 0);
+  return [...found].filter((d) => {
+    const rel = relative(root, d).replace(/\\/g, "/");
+    return !excluded.some((re) => re.test(rel));
+  });
+}
+
+/** "packages/**" / "apps/*" / "tools/cli" as a regex over a relative folder path. */
+function globRegex(pattern: string): RegExp {
+  const p = pattern.replace(/^\.\//, "").replace(/\/$/, "");
+  let re = "";
+  for (let i = 0; i < p.length; i++) {
+    const ch = p[i]!;
+    if (ch === "*" && p[i + 1] === "*") {
+      re += p[i + 2] === "/" ? "(?:.*/)?" : ".*";
+      i += p[i + 2] === "/" ? 2 : 1;
+    } else if (ch === "*") re += "[^/]*";
+    else re += /[.+?^${}()|[\]\\]/.test(ch) ? `\\${ch}` : ch;
+  }
+  return new RegExp(`^${re}$`);
+}
+
+function subdirs(dir: string): string[] {
+  try {
+    return readdirSync(dir, { withFileTypes: true })
+      .filter((e) => e.isDirectory() && e.name !== "node_modules" && !e.name.startsWith("."))
+      .map((e) => e.name);
   } catch {
     return [];
   }
+}
+
+/**
+ * What `npm install` (or pnpm, yarn, bun) resolves from package.json when there is no lockfile it can
+ * read: a fresh clone, a new project, or bun's binary bun.lockb. In a monorepo root, every workspace's
+ * dependencies are installed too, so they are included. Local folders and the workspaces themselves
+ * (`workspace:*`, or a dependency on another workspace by name) are skipped.
+ */
+export function manifestPackages(dir: string): RequestedPackage[] {
+  const root = readManifest(dir);
+  if (!root) return [];
+  const manifests: { rel: string; pkg: Record<string, unknown> }[] = [{ rel: "package.json", pkg: root }];
+  for (const ws of workspaceDirs(dir, workspacePatterns(dir, root))) {
+    const pkg = readManifest(ws);
+    if (pkg) manifests.push({ rel: `${relative(dir, ws).replace(/\\/g, "/")}/package.json`, pkg });
+  }
+  const internal = new Set(manifests.map((m) => m.pkg.name).filter((n): n is string => typeof n === "string"));
   const out = new Map<string, RequestedPackage>();
-  for (const field of ["dependencies", "devDependencies", "optionalDependencies"]) {
-    const deps = pkg[field];
-    if (!deps || typeof deps !== "object") continue;
-    for (const [name, spec] of Object.entries(deps as Record<string, unknown>)) {
-      if (typeof spec !== "string" || out.has(name)) continue;
-      if (/^(file:|link:|workspace:|portal:|patch:|\.{0,2}\/|~\/)/.test(spec)) continue;
-      const remote = REMOTE.test(spec) || /^[\w.-]+\/[\w.-]+(#.*)?$/.test(spec);
-      const r: RequestedPackage | null = remote ? { ecosystem: "npm", name, remote: true, spec } : npmSpec(`${name}@${spec}`);
-      if (r) out.set(name, { ...r, spec: `${name}@${spec} (package.json, no lockfile)` });
+  for (const { rel, pkg } of manifests) {
+    for (const field of ["dependencies", "devDependencies", "optionalDependencies"]) {
+      const deps = pkg[field];
+      if (!deps || typeof deps !== "object") continue;
+      for (const [name, spec] of Object.entries(deps as Record<string, unknown>)) {
+        if (typeof spec !== "string" || internal.has(name)) continue;
+        if (/^(file:|link:|workspace:|portal:|patch:|\.{0,2}\/|~\/)/.test(spec)) continue;
+        const key = `${name}@${spec}`;
+        if (out.has(key)) continue;
+        const remote = REMOTE.test(spec) || /^[\w.-]+\/[\w.-]+(#.*)?$/.test(spec);
+        const r: RequestedPackage | null = remote ? { ecosystem: "npm", name, remote: true, spec } : npmSpec(key);
+        if (r) out.set(key, { ...r, spec: `${key} (${rel}, no lockfile)` });
+      }
     }
   }
   return [...out.values()];
 }
 
 /** At most this many look-alike names in one lockfile are confirmed online. */
-const MAX_LOCK_SUSPECTS = 20;
+const MAX_LOCK_SUSPECTS = 60;
 
 interface LockSquat {
   dependency: Dependency;
@@ -520,8 +609,9 @@ interface LockSquat {
  * Names in a lockfile that look like a typo of a popular package. The first pass is offline (the
  * popular-package list); only those few are looked up: does the name exist, and how widely is it used?
  */
-async function lockfileSquats(deps: Dependency[], check: Checker, exists: (e: Ecosystem, n: string) => Promise<boolean | null>): Promise<LockSquat[]> {
-  const suspects = [...new Map(deps.filter((d) => lookAlike(d.ecosystem, d.name)).map((d) => [`${d.ecosystem}:${d.name}`, d])).values()].slice(0, MAX_LOCK_SUSPECTS);
+async function lockfileSquats(deps: Dependency[], check: Checker, exists: (e: Ecosystem, n: string) => Promise<boolean | null>): Promise<{ squats: LockSquat[]; unchecked: number }> {
+  const all = [...new Map(deps.filter((d) => lookAlike(d.ecosystem, d.name)).map((d) => [`${d.ecosystem}:${d.name}`, d])).values()];
+  const suspects = all.slice(0, MAX_LOCK_SUSPECTS);
   const found = await mapLimit(suspects, 4, async (d): Promise<LockSquat | null> => {
     try {
       const res = await check(d.ecosystem, d.name);
@@ -537,7 +627,7 @@ async function lockfileSquats(deps: Dependency[], check: Checker, exists: (e: Ec
       return null; // fail open
     }
   });
-  return found.filter((x): x is LockSquat => x !== null);
+  return { squats: found.filter((x): x is LockSquat => x !== null), unchecked: all.length - suspects.length };
 }
 
 async function checkLockfileInstall(
@@ -551,7 +641,7 @@ async function checkLockfileInstall(
   const requested: RequestedPackage = { ecosystem: install.ecosystem, name: files.join(", "), spec: install.tool };
   const where = `${install.tool} (${files.join(", ")})`;
   let failed: string | null = null;
-  const [hits, squats] = await Promise.all([
+  const [hits, { squats, unchecked }] = await Promise.all([
     probe.lockfileMalware(deps).catch((err: Error) => ((failed = err.message), [] as LockedMalware[])),
     lockfileSquats(deps, check, exists),
   ]);
@@ -582,7 +672,8 @@ async function checkLockfileInstall(
   }
   if (decision !== "allow") return { verdict: { requested, decision, reason: reasons.join(" ") }, count: deps.length };
   const reason = failed ? `${where}: could not be checked for malware (${failed})` : `${where}: ${deps.length} locked packages, no known malware or look-alike names`;
-  return { verdict: { requested, decision: "allow", reason }, count: deps.length };
+  const note = unchecked ? `${where}: ${unchecked} more look-alike name(s) were not looked up (limit ${MAX_LOCK_SUSPECTS} per lockfile). Run \`npx foster-oss scan\` for the full picture.` : undefined;
+  return { verdict: { requested, decision: "allow", reason, ...(note ? { note } : {}) }, count: deps.length };
 }
 
 export async function guardCommand(
@@ -646,12 +737,15 @@ export async function guardCommand(
   const decision = verdicts.reduce<Decision>((d, v) => (RANK[v.decision] > RANK[d] ? v.decision : d), "allow");
   const flagged = verdicts.filter((v) => v.decision !== "allow");
   const checked = [requested.length ? `${requested.length} package(s) checked` : "", lockedCount ? `${lockedCount} locked package(s) checked for known malware and look-alike names` : ""].filter(Boolean);
-  const message =
+  const notes = verdicts.filter((v) => v.decision === "allow" && v.note).map((v) => `- ${v.note}`);
+  const head =
     flagged.length === 0
       ? checked.length
         ? `Foster guard: ${checked.join(", ")}, nothing to flag.`
         : "Foster guard: no package installs in this command."
       : `Foster guard ${decision === "deny" ? "blocked" : "flagged"} this install:\n${flagged.map((v) => `- ${v.reason}`).join("\n")}`;
+  // Notes do not stop the install; they say what is worth a look later.
+  const message = notes.length ? `${head}\nNote (not blocking):\n${notes.join("\n")}` : head;
   return { decision, verdicts, message };
 }
 

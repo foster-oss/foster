@@ -89,9 +89,9 @@ describe("verdicts", () => {
     expect(v.reason).toMatch(/GHSA-a/);
   });
 
-  it("asks for fixable vulnerabilities and unmaintained packages, allows healthy ones", () => {
+  it("asks for fixable vulnerabilities, notes unmaintained packages, allows healthy ones", () => {
     expect(verdictFor(req, result({ findings: [{ kind: "upgrade-available", dependency: { ecosystem: "npm", name: "x", version: "1.0.0", direct: true, source: "t" }, status: "active", severity: "LOW", advisories: [], fixedIn: "1.0.1", message: "" }] })).decision).toBe("ask");
-    expect(verdictFor(req, result({ record: { ecosystem: "npm", name: "x", status: "dormant", reasons: ["no release for 3 years"], downloadsLastMonth: 1, dependentRepos: 1, dependentPackages: 1, latestVersion: "1.0.0", latestReleaseAt: null, repoUrl: null, archived: false, lastPushAt: null, publishers: 1, unpatchedAdvisories: [], priority: 1 } })).decision).toBe("ask");
+    expect(verdictFor(req, result({ record: { ecosystem: "npm", name: "x", status: "dormant", reasons: ["no release for 3 years"], downloadsLastMonth: 1, dependentRepos: 1, dependentPackages: 1, latestVersion: "1.0.0", latestReleaseAt: null, repoUrl: null, archived: false, lastPushAt: null, publishers: 1, unpatchedAdvisories: [], priority: 1 } }))).toMatchObject({ decision: "allow", note: expect.stringMatching(/looks dormant/) });
     expect(verdictFor(req, result()).decision).toBe("allow");
   });
 });

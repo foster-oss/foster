@@ -10,7 +10,7 @@ export type Shell = (typeof SHELLS)[number];
 
 /** Subcommands worth checking, per tool. "" means the tool run with no subcommand (`yarn`, `bundle`). */
 const WRAPPED: Record<string, string[] | "all"> = {
-  npm: ["install", "i", "in", "add", "isntall", "ci", "clean-install", "ic", "install-clean", "it", "cit", "install-test", "install-ci-test"],
+  npm: ["install", "i", "in", "add", "isntall", "ci", "clean-install", "ic", "install-clean", "it", "cit", "install-test", "install-ci-test", "exec", "x"],
   npx: "all",
   pnpm: ["add", "install", "i", "dlx"],
   yarn: ["", "add", "install", "dlx", "global"],
