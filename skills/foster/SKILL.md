@@ -52,7 +52,7 @@ If the MCP server is configured (`npx -y foster-oss mcp`), prefer its tools:
 ## Before running an install command
 
 Run `npx -y foster-oss guard -- <the exact command>` (or the MCP tool `foster_check_install_command`).
-If it says **deny**, do not run the command: tell the user why and offer the suggested alternative or a
+It also catches look-alike names of popular packages (typosquats). If it says **deny**, do not run the command: tell the user why and offer the suggested alternative or a
 fixed version. If it says **ask**, show the user the reason and let them decide.
 
 ## Rules

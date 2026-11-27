@@ -121,6 +121,11 @@ writeFileSync(join(dataDir, "orphans.json"), JSON.stringify({ ...meta, records: 
 const min = unique.filter((r) => r.status !== "active" || r.unpatchedAdvisories.length > 0);
 writeFileSync(join(dataDir, "orphans.min.json"), JSON.stringify({ ...meta, records: min }));
 writeFileSync(join(dataDir, "orphans.csv"), toCsv(unique));
+// Names people rely on, for look-alike (typosquat) detection in foster-oss guard.
+const popular = {};
+for (const r of unique) if ((r.dependentRepos ?? 0) >= 1000) (popular[r.ecosystem] ??= []).push([r.name, r.dependentRepos]);
+for (const l of Object.values(popular)) l.sort((a, b) => b[1] - a[1]);
+writeFileSync(join(dataDir, "popular.json"), JSON.stringify({ version: 1, generatedAt: meta.generatedAt, packages: popular }));
 writeFileSync(join(dataDir, "stats.json"), JSON.stringify({ generatedAt: meta.generatedAt, ...stats }, null, 2));
 
 for (const f of ["orphans.json", "orphans.csv", "stats.json", "history.json"]) copyFileSync(join(dataDir, f), join(siteDir, "data", f));

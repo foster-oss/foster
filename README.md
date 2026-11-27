@@ -154,7 +154,9 @@ would install, before it runs:
 
 | Situation | Decision |
 |---|---|
-| The name does not exist on the registry | **deny** |
+| The name does not exist on the registry (checked against the real registry, not just an index) | **deny**, with "did you mean …?" |
+| The name is a look-alike of a far more popular package (`lodahs` → `lodash`, `reqeusts` → `requests`) | **ask** |
+| Brand-new package that no index tracks yet | **ask** |
 | A vulnerability that no release fixes | **deny**, with maintained alternatives |
 | Vulnerable version that a newer release fixes, or a drop-in patch exists | **ask** |
 | The package is dead or dormant | **ask**, with maintained alternatives |
@@ -180,8 +182,18 @@ composer commands, including `cd app && npm i -D x` chains.
 
 The hook answers with Claude Code's `deny` / `ask` permission decisions and stays silent for commands
 that install nothing. It fails open: if the registry or OSV can't be reached, the normal permission flow
-continues. **Other agents and shells**: `npx foster-oss guard -- <command>` exits 1 when it would deny
-(`--strict` also fails on ask), or call the MCP tool `foster_check_install_command`.
+continues.
+
+**Other agents (Codex, Cursor, Gemini CLI, Copilot, …)**: add the MCP server (below) and this rule to your
+`AGENTS.md` (or `.cursorrules`, `GEMINI.md`, `.github/copilot-instructions.md`):
+
+```markdown
+Before running any command that installs packages, call the `foster_check_install_command` tool
+(or run `npx -y foster-oss guard -- <the exact command>`). If it says DENY, do not run the command:
+explain why and suggest the alternative it names. If it says ASK, show the reason and let the user decide.
+```
+
+**Shells and CI**: `npx foster-oss guard -- <command>` exits 1 when it would deny (`--strict` also fails on ask).
 
 **MCP** (Claude Code, Codex, Cursor, …). Listed in the official [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.foster-oss/foster`, or configure it directly:
 

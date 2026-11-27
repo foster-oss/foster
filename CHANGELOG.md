@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.0
+
+- Guard catches **look-alike names** of popular packages in all six ecosystems (`lodahs` → `lodash`,
+  `expresss` → `express`, `reqeusts` → `requests`), using the critical-package list shipped as
+  `data/popular.json` (rebuilt weekly with the Orphan Index). Widely used neighbours such as
+  `preact`/`react` or `ulid`/`uuid` are not flagged.
+- Before calling a name hallucinated, guard confirms with the real registry (npm, PyPI, crates.io, the Go
+  proxy, RubyGems, Packagist); brand-new packages no index knows yet get **ask**, not deny.
+- Unknown names come with "did you mean …?".
+- README: setup for Codex, Cursor, Gemini CLI and Copilot through AGENTS.md-style rules.
+
 ## 0.3.0
 
 - **`foster-oss guard`**: checks every package a shell command would install, before it runs.
