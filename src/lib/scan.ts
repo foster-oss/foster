@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { readdirSync, type Dirent } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { readSbom } from "./sbom.js";
@@ -25,6 +26,8 @@ export interface ScanOptions {
   records?: Map<string, OrphanRecord>;
   /** Also scan lockfiles in subfolders (monorepos), skipping node_modules, vendor, target, etc. */
   recursive?: boolean;
+  /** Only check dependencies added or changed since this git ref (e.g. the base of a pull request). */
+  since?: string;
 }
 
 const KIND_ORDER: Finding["kind"][] = ["patch-available", "orphaned-vulnerable", "unpatched-vulnerable", "upgrade-available", "orphaned"];
@@ -60,12 +63,24 @@ export async function scanProject(dirInput: string, opts: ScanOptions = {}): Pro
   const projectDirs = opts.recursive ? findProjectDirs(dir) : [dir];
   const lockfiles: string[] = [];
   const all: Dependency[] = [];
+  let unchanged = 0;
   for (const pd of projectDirs) {
     for (const lock of detectLockfiles(pd)) {
       const prefix = relative(dir, pd).replace(/\\/g, "/");
       const source = prefix ? `${prefix}/${lock.file}` : lock.file;
       lockfiles.push(source);
-      for (const d of readDependencies(pd, lock)) all.push({ ...d, source });
+      let current = readDependencies(pd, lock);
+      if (opts.since) {
+        const before = lockfileAt(pd, lock.file, opts.since);
+        if (before.error) warnings.push(`--since ${opts.since}: ${before.error}; checking every dependency in ${source}`);
+        else {
+          const old = new Set(before.text === null ? [] : readDependencies(pd, lock, before.text).map(depKey));
+          const kept = current.filter((d) => !old.has(depKey(d)));
+          unchanged += current.length - kept.length;
+          current = kept;
+        }
+      }
+      for (const d of current) all.push({ ...d, source });
     }
   }
   if (lockfiles.length === 0) {
@@ -90,7 +105,30 @@ export async function scanProject(dirInput: string, opts: ScanOptions = {}): Pro
     dependencyCount: deps.length,
     findings,
     warnings,
+    ...(opts.since ? { since: opts.since, unchangedCount: unchanged } : {}),
   };
+}
+
+function depKey(d: Dependency): string {
+  return `${d.ecosystem}:${d.name}@${d.version}`;
+}
+
+/**
+ * The lockfile's content at a git ref: text, null when the file did not exist then (everything is new),
+ * or an error when git is unavailable or the ref is unknown.
+ */
+export function lockfileAt(dir: string, file: string, ref: string): { text: string | null; error?: string } {
+  try {
+    execFileSync("git", ["-C", dir, "rev-parse", "--verify", "--quiet", `${ref}^{commit}`], { stdio: "pipe" });
+  } catch {
+    return { text: null, error: `git ref "${ref}" not found here (shallow clone? fetch it first)` };
+  }
+  try {
+    const out = execFileSync("git", ["-C", dir, "show", `${ref}:./${file}`], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 1 << 28 }).toString("utf8");
+    return { text: out.charCodeAt(0) === 0xfeff ? out.slice(1) : out };
+  } catch {
+    return { text: null }; // the file did not exist at that ref
+  }
 }
 
 /** Scan an SBOM (CycloneDX or SPDX JSON) instead of lockfiles. */

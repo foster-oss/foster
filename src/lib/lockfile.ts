@@ -67,8 +67,8 @@ export function directNpmNames(dir: string): Set<string> {
   }
 }
 
-export function readDependencies(dir: string, lock: LockfileInfo): Dependency[] {
-  const text = readText(join(dir, lock.file));
+export function readDependencies(dir: string, lock: LockfileInfo, textOverride?: string): Dependency[] {
+  const text = textOverride ?? readText(join(dir, lock.file));
   // null = the lockfile format does not tell direct from transitive; report all as direct.
   let direct: Set<string> | null = null;
   let pairs: [string, string][];

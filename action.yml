@@ -12,6 +12,12 @@ inputs:
   recursive:
     description: Also scan lockfiles in subfolders (monorepos).
     default: "true"
+  only-new:
+    description: On pull requests, only check dependencies the PR adds or changes (compared with the base branch).
+    default: "true"
+  since:
+    description: Git ref to compare against instead (overrides only-new). Empty = check everything.
+    default: ""
   fail-on:
     description: "Fail the job at this level: none | patch-available | orphaned-vulnerable | unpatched | any"
     default: orphaned-vulnerable
@@ -57,12 +63,18 @@ runs:
         FOSTER_STAGED: ${{ inputs.include-staged }}
         FOSTER_VERSION: ${{ inputs.version }}
         FOSTER_RECURSIVE: ${{ inputs.recursive }}
+        FOSTER_SINCE: ${{ inputs.since || (inputs.only-new == 'true' && github.event.pull_request.base.sha) || '' }}
       run: |
         report="$RUNNER_TEMP/foster-report.md"
         sarif="$RUNNER_TEMP/foster.sarif"
         flags=""
         if [ "$FOSTER_STAGED" = "true" ]; then flags="--include-staged"; fi
         if [ "$FOSTER_RECURSIVE" = "true" ]; then flags="$flags --recursive"; fi
+        if [ -n "$FOSTER_SINCE" ]; then
+          # actions/checkout is shallow by default: make sure the base commit is available
+          git -C "$FOSTER_PATH" cat-file -e "$FOSTER_SINCE^{commit}" 2>/dev/null || git -C "$FOSTER_PATH" fetch --no-tags --depth=1 origin "$FOSTER_SINCE" || true
+          flags="$flags --since $FOSTER_SINCE"
+        fi
         set +e
         npx --yes "foster-oss@${FOSTER_VERSION}" scan "$FOSTER_PATH" --markdown $flags --fail-on "$FOSTER_FAIL_ON" --sarif "$sarif" > "$report"
         code=$?

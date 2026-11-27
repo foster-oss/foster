@@ -115,4 +115,8 @@ export interface ScanResult {
   findings: Finding[];
   /** Data sources that could not be reached; results may be incomplete. */
   warnings: string[];
+  /** When set, only dependencies added or changed since this git ref were checked. */
+  since?: string;
+  /** Packages skipped because they were already present at `since`. */
+  unchangedCount?: number;
 }
