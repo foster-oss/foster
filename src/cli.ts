@@ -6,6 +6,7 @@ import { applyFixes, installCommand } from "./lib/fix.js";
 import { fosterVersion } from "./lib/http.js";
 import { formatFix, formatMarkdown, formatRecord, formatSarif, formatText } from "./lib/report.js";
 import { describeAlternatives } from "./lib/replacements.js";
+import { guardCommand, parseInstallCommand } from "./lib/guard.js";
 import { scanProject, scanSbom, shouldFail, type FailOn } from "./lib/scan.js";
 import { ECOSYSTEMS, type Ecosystem } from "./lib/types.js";
 
@@ -17,6 +18,8 @@ Usage:
   foster-oss fix [dir]             Point dependencies at released drop-in patches (edits package.json)
   foster-oss check <name[@ver]>    Look up one package
   foster-oss mcp                   Start the MCP server (stdio) for AI agents
+  foster-oss guard -- <command>    Check the packages a shell command would install
+  foster-oss guard --hook claude   Same, as a Claude Code PreToolUse hook (reads the hook JSON on stdin)
 
 Options:
   --json                 Machine-readable output (scan, check)
@@ -60,6 +63,9 @@ async function main(argv: string[]): Promise<number> {
       ecosystem: { type: "string", default: "npm" },
       version: { type: "boolean", short: "v", default: false },
       help: { type: "boolean", short: "h", default: false },
+      hook: { type: "string" },
+      command: { type: "string" },
+      strict: { type: "boolean", default: false },
     },
   });
 
@@ -115,6 +121,19 @@ ${name}@${version}: no known vulnerabilities.`);
 Maintained alternatives: ${describeAlternatives(result.alternatives)}`);
       return 0;
     }
+    case "guard": {
+      if (values.hook !== undefined) {
+        if (values.hook !== "claude") throw new UsageError('--hook supports "claude"');
+        await runClaudeHook();
+        return 0;
+      }
+      const line = values.command ?? positionals.slice(1).map((t) => (/s/.test(t) ? JSON.stringify(t) : t)).join(" ");
+      if (!line.trim()) throw new UsageError("guard needs a command, e.g. foster-oss guard -- npm install left-pad");
+      const result = await guardCommand(line);
+      if (values.json) console.log(JSON.stringify(result, null, 2));
+      else console.log(result.message);
+      return result.decision === "deny" || (values.strict && result.decision === "ask") ? 1 : 0;
+    }
     case "mcp": {
       const { startMcpServer } = await import("./mcp.js");
       await startMcpServer();
@@ -126,6 +145,47 @@ Maintained alternatives: ${describeAlternatives(result.alternatives)}`);
 }
 
 class UsageError extends Error {}
+
+/**
+ * Claude Code PreToolUse hook: read the hook JSON from stdin, and for Bash commands that install
+ * packages, answer with permissionDecision "deny" or "ask". Silent (no output, exit 0) otherwise.
+ * Fails open: any error or a slow network leaves the normal permission flow untouched.
+ */
+async function runClaudeHook(): Promise<void> {
+  try {
+    const raw = await new Promise<string>((resolve, reject) => {
+      let data = "";
+      process.stdin.setEncoding("utf8");
+      process.stdin.on("data", (c) => (data += c));
+      process.stdin.on("end", () => resolve(data));
+      process.stdin.on("error", reject);
+    });
+    const input = JSON.parse(raw || "{}") as { hook_event_name?: string; tool_name?: string; tool_input?: { command?: string } };
+    if (input.tool_name !== "Bash" || (input.hook_event_name && input.hook_event_name !== "PreToolUse")) return;
+    const line = input.tool_input?.command ?? "";
+    if (parseInstallCommand(line).length === 0) return;
+    const result = await Promise.race([
+      guardCommand(line),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 25_000).unref()),
+    ]);
+    if (!result || result.decision === "allow") return;
+    process.stdout.write(
+      JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          permissionDecision: result.decision,
+          permissionDecisionReason:
+            result.decision === "deny"
+              ? `${result.message}
+Do not install it. Tell the user why, and suggest a maintained alternative or a fixed version.`
+              : result.message,
+        },
+      }),
+    );
+  } catch {
+    // fail open
+  }
+}
 
 main(process.argv.slice(2)).then(
   (code) => {
