@@ -224,9 +224,14 @@ composer commands, including `cd app && npm i -D x` chains, and the less obvious
   so guard checks those packages like ones named on the command line. In a monorepo root that includes
   every workspace (`workspaces` in package.json, or `pnpm-workspace.yaml`). A fixable vulnerability read
   from your own package.json is a note, not a question on every install (`scan` reports it).
-- **A stale lockfile** (a merge added a dependency the lockfile does not have yet): a plain `npm install`,
-  `pnpm install`, `yarn` or `bun install` rewrites the lockfile from package.json, so the dependencies it would
-  add are checked too. `npm ci`, `--frozen-lockfile` and `--immutable` install the lockfile as it is.
+- **A stale lockfile** (a merge added a dependency the lockfile does not have yet, or changed a version): a
+  plain `npm install`, `pnpm install`, `yarn` or `bun install` rewrites the lockfile from package.json, so the
+  dependencies it would add or change are checked too, and so does `npm install <name>`, which installs the
+  rest of the project along with `<name>`. `npm ci`, `--frozen-lockfile` and `--immutable` install the lockfile
+  as it is.
+
+Known malware is a **deny** however it is reached: by name, through `npx`/`dlx`/`npm exec`, from package.json or
+from a lockfile. CI runs these cases against the live registries and OSV on every change.
 - **`npm exec` / `npm x`** are checked like `npx`, `pnpm dlx`, `yarn dlx` and `bunx`.
 - **Aliases** (`npm i tc@npm:@ctrl/tinycolor@4.1.1`): the real package is checked.
 - **Registry tarball URLs** (`https://registry.npmjs.org/x/-/x-1.0.0.tgz`): package and version are read from the URL.

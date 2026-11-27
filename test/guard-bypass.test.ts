@@ -366,3 +366,63 @@ describe("malware found by the version check itself", () => {
     expect(v.reason).toMatch(/known malware \(MAL-1: Malicious code in evil\).*rotate.*Details: https:\/\/osv\.dev/);
   });
 });
+
+describe("found in the 0.8.3 review", () => {
+  it("denies malware even when the name also looks like a popular package (crossenv vs cross-env)", async () => {
+    const { verdictFor } = await import("../src/lib/guard.js");
+    const base = await healthy("npm", "crossenv", "0.0.2-security");
+    const v = verdictFor(
+      { ecosystem: "npm", name: "crossenv", spec: "crossenv" },
+      {
+        ...base,
+        record: { ...base.record!, dependentRepos: 76 },
+        findings: [{ kind: "malicious", dependency: { ecosystem: "npm", name: "crossenv", version: "0.0.2-security", direct: true, source: "t" }, status: "unknown", severity: "CRITICAL", advisories: [{ id: "GHSA-c2m4-w5hm-vqjw", url: "https://github.com/advisories/GHSA-c2m4-w5hm-vqjw", severity: "CRITICAL", title: "crossenv is malware" }], message: "" }],
+      },
+      // exactly what the live path computes for crossenv: a look-alike, version known, no separate malware probe hit
+      { lookAlike: { name: "cross-env", dependentRepos: 573_000, distance: 1 }, versionKnown: true, malware: [] },
+    );
+    expect(v.decision).toBe("deny");
+    expect(v.reason).toMatch(/crossenv \(npm\) is known malware \(GHSA-c2m4-w5hm-vqjw: crossenv is malware\)/);
+  });
+
+  function staleProject(): string {
+    const root = lockDir({ lodash: "4.17.21", ms: "2.1.3" });
+    writeFileSync(join(root, "package.json"), JSON.stringify({ name: "root", private: true, workspaces: ["apps/*"], dependencies: { lodash: "^4.17.0", ms: "^3.0.0" } }));
+    mkdirSync(join(root, "apps/a"), { recursive: true });
+    writeFileSync(join(root, "apps/a/package.json"), JSON.stringify({ name: "a", dependencies: { crossenv: "0.0.2-security" } }));
+    return root;
+  }
+
+  it("checks what a named install brings along from a stale lockfile", async () => {
+    const asked: string[] = [];
+    const r = await guardCommand("npm install express", healthy, async () => true, {
+      ...quiet,
+      cwd: staleProject(),
+      lockfileMalware: async () => {
+        throw new Error("the lockfile itself is not rescanned for a named install");
+      },
+      malware: async (_e, name) => {
+        asked.push(name);
+        return name === "crossenv" ? [{ id: "GHSA-c2m4-w5hm-vqjw", url: "", title: "crossenv is malware", wholePackage: true }] : [];
+      },
+    });
+    expect(r.decision).toBe("deny");
+    // express (named), crossenv (not in the lock), ms (the lock has 2.1.3, package.json wants ^3)
+    expect(asked.sort()).toEqual(["crossenv", "express", "ms"]);
+  });
+
+  it("leaves global installs alone", () => {
+    expect(parseCommand("npm i -g typescript", resolve("/p")).lockfiles).toEqual([]);
+    expect(parseCommand("npm i typescript", resolve("/p")).lockfiles.map((l) => l.named)).toEqual([true]);
+  });
+
+  it("compares versions, not only names", async () => {
+    const { unlocked } = await import("../src/lib/guard.js");
+    const dep = (name: string, version: string) => ({ ecosystem: "npm" as const, name, version, direct: true, source: "t" });
+    const pkg = (name: string, extra: Record<string, unknown>) => ({ ecosystem: "npm" as const, name, spec: name, ...extra });
+    const locked = [dep("a", "1.2.0"), dep("b", "4.1.0"), dep("c", "1.0.0")];
+    expect(
+      unlocked([pkg("a", { range: "^1.0.0" }), pkg("b", { version: "4.1.1" }), pkg("c", { range: "^2" }), pkg("d", { range: "*" }), pkg("a", { range: "latest" })], locked).map((p) => p.name),
+    ).toEqual(["b", "c", "d"]);
+  });
+});

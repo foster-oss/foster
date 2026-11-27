@@ -1,4 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
+import semver from "semver";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { checkPackage, type CheckResult } from "./check.js";
 import { mapLimit } from "./http.js";
@@ -40,6 +41,11 @@ export interface LockfileInstall {
   file?: string;
   /** Installs exactly what the lockfile says (`npm ci`, `--frozen-lockfile`, `--immutable`). */
   frozen?: boolean;
+  /**
+   * The command also names packages ("npm install x"): only what package.json would add beyond the
+   * lockfile is checked here (the named packages are checked on their own), not the whole lockfile again.
+   */
+  named?: boolean;
 }
 
 export type Decision = "allow" | "ask" | "deny";
@@ -298,24 +304,35 @@ export function parseCommand(line: string, cwd: string = process.cwd()): { packa
     const add = (r: RequestedPackage | null) => r && found.push(r);
     // npm ci and --frozen-lockfile / --immutable installs use the lockfile as it is; others may rewrite it
     const frozen = (cmd === "npm" && !!sub && NPM_LOCKED.includes(sub)) || args.some((a) => ["--frozen-lockfile", "--immutable", "--immutable-cache"].includes(a));
-    const lock = (tool: string, ecosystem: Ecosystem, at?: string, file?: string) =>
-      locked.push({ tool, dir: at ? resolve(dir, at) : dir, ecosystem, ...(file ? { file } : {}), ...(frozen ? { frozen } : {}) });
+    const lock = (tool: string, ecosystem: Ecosystem, at?: string, file?: string, named = false) =>
+      locked.push({ tool, dir: at ? resolve(dir, at) : dir, ecosystem, ...(file ? { file } : {}), ...(frozen ? { frozen } : {}), ...(named ? { named } : {}) });
+    // "npm install x" in a project installs the whole project too: whatever package.json adds that the
+    // lockfile lacks comes along. A global install (-g) has no project.
+    const global = args.includes("-g") || args.includes("--global") || args.includes("--location=global");
 
     if (cmd === "npm" && sub && NPM_LOCKED.includes(sub)) lock(`npm ${sub}`, "npm", flagValue(args, "--prefix", "-C"));
     else if (cmd === "npm" && sub && NPM_INSTALL.includes(sub)) {
       const specs = positional(args, "npm");
-      if (specs.length) specs.forEach((s) => add(npmSpec(s)));
-      else if (sub !== "add") lock(`npm ${sub}`, "npm", flagValue(args, "--prefix", "-C"));
+      if (specs.length) {
+        specs.forEach((s) => add(npmSpec(s)));
+        if (!global) lock(`npm ${sub}`, "npm", flagValue(args, "--prefix", "-C"), undefined, true);
+      } else if (sub !== "add") lock(`npm ${sub}`, "npm", flagValue(args, "--prefix", "-C"));
     } else if (cmd === "pnpm" && sub && ["add", "install", "i"].includes(sub)) {
       const specs = positional(args, "pnpm");
-      if (specs.length) specs.forEach((s) => add(npmSpec(s)));
-      else if (sub !== "add") lock(`pnpm ${sub}`, "npm", flagValue(args, "--dir", "-C"));
-    } else if (cmd === "yarn" && (sub === "add" || (sub === "global" && args[0] === "add"))) positional(sub === "global" ? args.slice(1) : args, "yarn").forEach((s) => add(npmSpec(s)));
-    else if (cmd === "yarn" && (sub === undefined || sub === "install" || sub.startsWith("-"))) lock("yarn install", "npm", flagValue(args, "--cwd"));
+      if (specs.length) {
+        specs.forEach((s) => add(npmSpec(s)));
+        if (!global) lock(`pnpm ${sub}`, "npm", flagValue(args, "--dir", "-C"), undefined, true);
+      } else if (sub !== "add") lock(`pnpm ${sub}`, "npm", flagValue(args, "--dir", "-C"));
+    } else if (cmd === "yarn" && (sub === "add" || (sub === "global" && args[0] === "add"))) {
+      positional(sub === "global" ? args.slice(1) : args, "yarn").forEach((s) => add(npmSpec(s)));
+      if (sub === "add") lock("yarn add", "npm", flagValue(args, "--cwd"), undefined, true);
+    } else if (cmd === "yarn" && (sub === undefined || sub === "install" || sub.startsWith("-"))) lock("yarn install", "npm", flagValue(args, "--cwd"));
     else if (cmd === "bun" && sub && ["add", "install", "i"].includes(sub)) {
       const specs = positional(args, "bun");
-      if (specs.length) specs.forEach((s) => add(npmSpec(s)));
-      else if (sub !== "add") lock(`bun ${sub}`, "npm", flagValue(args, "--cwd"));
+      if (specs.length) {
+        specs.forEach((s) => add(npmSpec(s)));
+        if (!global) lock(`bun ${sub}`, "npm", flagValue(args, "--cwd"), undefined, true);
+      } else if (sub !== "add") lock(`bun ${sub}`, "npm", flagValue(args, "--cwd"));
     } else if (/^pip3?(\.\d+)?$/.test(cmd) && sub === "install" && flagValue(args, "-r", "--requirement")) {
       lock(`${cmd} install -r`, "pypi", undefined, flagValue(args, "-r", "--requirement"));
       positional(args, "pip").forEach((s) => add(pipSpec(s)));
@@ -422,6 +439,17 @@ export function verdictFor(requested: RequestedPackage, check: CheckResult, extr
     }
     return { requested, decision: "deny", reason: `${label} is known malware (${ids}: ${what}). Do not install it. If it is already installed, remove it and rotate any credentials and tokens this machine holds. Details: ${malware[0]!.url}` };
   }
+  // Malware found by the version check outranks everything else, look-alike names included: a known
+  // malicious package is a deny however it is reached (0.8.3 asked about crossenv as a cross-env typo).
+  const malicious = check.findings.find((f) => f.kind === "malicious");
+  if (malicious) {
+    const first = malicious.advisories[0];
+    return {
+      requested,
+      decision: "deny",
+      reason: `${label} is known malware (${malicious.advisories.map((a) => `${a.id}: ${a.title}`).join("; ")}). Do not install it. If it is already installed, remove it and rotate any credentials and tokens this machine holds.${first?.url ? ` Details: ${first.url}` : ""}`,
+    };
+  }
   const base = baseVerdict(requested, check, extras, label);
   const risk = extras.installRisk;
   if (!risk || base.decision === "deny") return base;
@@ -442,14 +470,6 @@ function baseVerdict(requested: RequestedPackage, check: CheckResult, extras: Ve
   }
   const alt = check.alternatives ? ` Maintained alternatives: ${describeAlternatives(check.alternatives)}.` : "";
   const finding = check.findings[0];
-  if (finding?.kind === "malicious") {
-    const first = finding.advisories[0];
-    return {
-      requested,
-      decision: "deny",
-      reason: `${label} is known malware (${finding.advisories.map((a) => `${a.id}: ${a.title}`).join("; ")}). Do not install it. If it is already installed, remove it and rotate any credentials and tokens this machine holds.${first?.url ? ` Details: ${first.url}` : ""}`,
-    };
-  }
   if (finding?.kind === "patch-available" && finding.patch) {
     return { requested, decision: "ask", reason: `${label} has ${finding.advisories.map((a) => a.id).join(", ")} with no upstream fix. A drop-in patch exists: ${finding.patch.replacement.name}@${finding.patch.replacement.version} (run \`npx foster-oss fix\` after installing).${alt}` };
   }
@@ -611,6 +631,23 @@ export function manifestPackages(dir: string, why = "no lockfile"): RequestedPac
   return [...out.values()];
 }
 
+/**
+ * Manifest packages the lockfile does not satisfy: the name is missing, or no locked copy has the
+ * pinned version or one inside the requested range. These are what a non-frozen install would fetch.
+ */
+export function unlocked(pkgs: RequestedPackage[], deps: Dependency[]): RequestedPackage[] {
+  const versions = new Map<string, string[]>();
+  for (const d of deps) versions.set(d.name, [...(versions.get(d.name) ?? []), d.version]);
+  return pkgs.filter((p) => {
+    const have = versions.get(p.name);
+    if (!have) return true;
+    if (p.remote) return false;
+    if (p.version) return !have.includes(p.version);
+    if (p.range && semver.validRange(p.range)) return !have.some((v) => semver.valid(v) && semver.satisfies(v, p.range!, { includePrerelease: true }));
+    return false; // a dist-tag or something npm resolves itself: the locked copy stays
+  });
+}
+
 /** At most this many look-alike names in one lockfile are confirmed online. */
 const MAX_LOCK_SUSPECTS = 60;
 
@@ -704,20 +741,21 @@ export async function guardCommand(
   const parsed = parseCommand(line, cwd);
   const requested = [...parsed.packages];
   const lockfiles: LockfileInstall[] = [];
+  // Packages named on the command line are checked as such; the project's own copy of them is not.
+  const named = new Set(parsed.packages.map((p) => `${p.ecosystem}:${p.name}`));
+  const notNamed = (p: RequestedPackage) => !named.has(`${p.ecosystem}:${p.name}`);
   for (const install of parsed.lockfiles) {
     const lockedNpm = install.ecosystem === "npm" && !install.file ? lockedDependencies(install) : null;
     // No lockfile npm/pnpm/yarn/bun can read: they resolve package.json instead, so check those packages.
     if (lockedNpm && lockedNpm.files.length === 0) {
-      requested.push(...manifestPackages(install.dir));
+      requested.push(...manifestPackages(install.dir).filter(notNamed));
       continue;
     }
-    lockfiles.push(install);
+    // "npm install x" is checked for x; the lockfile it keeps needs no second malware scan.
+    if (!install.named) lockfiles.push(install);
     // A plain install rewrites a stale lockfile from package.json (a merge that added a dependency, a new
-    // workspace): check what it would add, the dependencies the lockfile does not have yet.
-    if (lockedNpm && !install.frozen) {
-      const have = new Set(lockedNpm.deps.map((d) => d.name));
-      requested.push(...manifestPackages(install.dir, "not in the lockfile yet").filter((p) => !have.has(p.name)));
-    }
+    // workspace, a version bump): check what it would add or change.
+    if (lockedNpm && !install.frozen) requested.push(...unlocked(manifestPackages(install.dir, "not in the lockfile yet"), lockedNpm.deps).filter(notNamed));
   }
   // Packages are checked in parallel (a few at a time): guard runs before every install.
   const width = requested.length > 30 ? 16 : requested.length > 8 ? 8 : 4;

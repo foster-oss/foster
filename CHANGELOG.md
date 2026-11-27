@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.8.4
+
+Fixes a regression in 0.8.3 found by the fifth outside review, and the last two gaps it found.
+
+- **Regression: known malware was an ask, not a deny, when its name also looks like a popular package.**
+  0.8.3 stopped asking OSV a second time per package (the version check already reports malware), but the
+  decision looked at look-alike names before that malware finding. `crossenv` (malware, and one letter
+  from `cross-env`) became an ask on `npm i`, `npx`, `pnpm dlx`, `yarn dlx`, `bunx`, `npm exec` and installs
+  from package.json. Malware now outranks every other rule again.
+- **A new CI job runs guard against real malware** on the live registries and OSV, with no stubs: `crossenv`,
+  `@ctrl/tinycolor@4.1.1`, an alias of it, `ua-parser-js@0.7.29`, a workspace install, and clean packages.
+  The unit tests stub the network, so a change in how the pieces fit together only shows there.
+- **`npm install <name>`** (and `pnpm add`, `yarn add`, `bun add`) in a project also checks what package.json
+  brings along that the lockfile does not have: npm installs the whole project, not only `<name>`. Global
+  installs (`-g`) are left alone.
+- **Stale lockfiles are compared by version too**, not only by name: a dependency whose pinned version or
+  range no locked copy satisfies (lockfile has `ms@2.1.3`, package.json wants `^3`) is checked.
+
 ## 0.8.3
 
 From a fourth outside review: the last way past guard it found, and speed on big monorepos.

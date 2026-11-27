@@ -30,6 +30,42 @@ jobs:
       - name: CLI smoke test (offline)
         run: node dist/cli.js scan test/fixtures/npm-v3 --offline --include-staged
 
+  guard-live:
+    # Real malware against the real registries and OSV, no stubs: the unit tests stub the network, and a
+    # change in how the pieces fit (0.8.3 asked about crossenv instead of blocking it) only shows here.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Known malware is denied however it is reached
+        shell: bash
+        run: |
+          set +e
+          CLI="$PWD/dist/cli.js"
+          check_guard() {
+            want=$1; shift
+            out=$(node "$CLI" guard "$@"); got=$?
+            if [ "$got" != "$want" ]; then echo "::error::guard $* exited $got, expected $want"; echo "$out"; exit 1; fi
+            echo "ok ($got): $*"
+          }
+          check_guard 1 "npm i crossenv"
+          check_guard 1 "npx crossenv"
+          check_guard 1 "npm exec crossenv"
+          check_guard 1 "npm i @ctrl/tinycolor@4.1.1"
+          check_guard 1 "npm i tc@npm:@ctrl/tinycolor@4.1.1"
+          check_guard 1 "npm i ua-parser-js@0.7.29"
+          check_guard 0 "npm i react lodash express"
+          check_guard 10 "npm i https://example.com/x.tgz"
+          d=$(mktemp -d)
+          echo '{"name":"root","private":true,"workspaces":["apps/*"]}' > "$d/package.json"
+          mkdir -p "$d/apps/a" && echo '{"name":"a","dependencies":{"crossenv":"0.0.2-security"}}' > "$d/apps/a/package.json"
+          (cd "$d" && check_guard 1 "npm install" && check_guard 1 "npm install express")
+
   patches:
     # Every patch is rebuilt from the upstream release and re-verified on every change.
     runs-on: ubuntu-latest
