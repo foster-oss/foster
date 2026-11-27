@@ -426,3 +426,63 @@ describe("found in the 0.8.3 review", () => {
     ).toEqual(["b", "c", "d"]);
   });
 });
+
+describe("found in the 0.8.4 review", () => {
+  it("reads npm overrides, yarn resolutions and pnpm overrides", async () => {
+    const { overrideEntries } = await import("../src/lib/guard.js");
+    expect(
+      overrideEntries({
+        overrides: { ms: "npm:crossenv@0.0.2-security", "foo@1.x": "1.2.3", express: { ".": "4.21.2", "body-parser": "1.20.3" }, debug: "$debug" },
+        resolutions: { "**/left-pad": "1.3.0", "a/@scope/b": "2.0.0", "c@^1": "1.0.1" },
+        pnpm: { overrides: { "x>y": "npm:crossenv@0.0.2-security", "z@<2": "2.0.0", gone: "-" } },
+      }),
+    ).toEqual([
+      ["ms", "npm:crossenv@0.0.2-security", "overrides"],
+      ["foo", "1.2.3", "overrides"],
+      ["express", "4.21.2", "overrides"],
+      ["body-parser", "1.20.3", "overrides"],
+      ["debug", "$debug", "overrides"],
+      ["left-pad", "1.3.0", "resolutions"],
+      ["@scope/b", "2.0.0", "resolutions"],
+      ["c", "1.0.1", "resolutions"],
+      ["y", "npm:crossenv@0.0.2-security", "pnpm.overrides"],
+      ["z", "2.0.0", "pnpm.overrides"],
+      ["gone", "-", "pnpm.overrides"],
+    ]);
+  });
+
+  for (const [field, value] of [
+    ["overrides", { ms: "npm:crossenv@0.0.2-security" }],
+    ["resolutions", { "**/ms": "npm:crossenv@0.0.2-security" }],
+    ["pnpm", { overrides: { ms: "npm:crossenv@0.0.2-security" } }],
+  ] as const) {
+    it(`denies malware brought in through ${field}`, async () => {
+      const dir = mkdtempSync(join(tmpdir(), "foster-guard-"));
+      writeFileSync(join(dir, "package.json"), JSON.stringify({ dependencies: { express: "4.21.2" }, [field]: value }));
+      const r = await guardCommand("npm install", healthy, async () => true, {
+        ...quiet,
+        cwd: dir,
+        malware: async (_e, name) => (name === "crossenv" ? [{ id: "GHSA-c2m4-w5hm-vqjw", url: "", title: "crossenv is malware", wholePackage: true }] : []),
+      });
+      expect(r.decision).toBe("deny");
+      expect(r.message).toMatch(/crossenv@0\.0\.2-security \(npm\) is known malware/);
+    });
+  }
+
+  it("skips override references and removals", async () => {
+    const { manifestPackages } = await import("../src/lib/guard.js");
+    const dir = mkdtempSync(join(tmpdir(), "foster-guard-"));
+    writeFileSync(join(dir, "package.json"), JSON.stringify({ dependencies: { debug: "^4" }, overrides: { debug: "$debug" }, pnpm: { overrides: { foo: "-" } } }));
+    expect(manifestPackages(dir).map((p) => p.spec)).toEqual(["debug@^4 (package.json, no lockfile)"]);
+  });
+
+  it("understands corepack", () => {
+    const cwd = resolve("/p");
+    expect(parseCommand("corepack pnpm install", cwd).lockfiles.map((l) => l.tool)).toEqual(["pnpm install"]);
+    expect(parseCommand("corepack yarn@4.1.0 install", cwd).lockfiles.map((l) => l.tool)).toEqual(["yarn install"]);
+    expect(parseCommand("corepack pnpm@9.1.0 add crossenv", cwd).packages.map((p) => p.name)).toEqual(["crossenv"]);
+    expect(parseCommand("pnpx crossenv", cwd).packages.map((p) => p.name)).toEqual(["crossenv"]);
+    expect(parseCommand("corepack enable", cwd)).toEqual({ packages: [], lockfiles: [] });
+    expect(shellInit("bash")).toMatch(/^corepack\(\) \{ case "\$\{1:-\}" in npm\|npx\|pnpm\|pnpx\|yarn\)/m);
+  });
+});

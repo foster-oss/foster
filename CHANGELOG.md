@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.8.5
+
+The two gaps from the sixth outside review, and a hole in the live CI check itself.
+
+- **Overrides are checked.** npm `overrides`, yarn `resolutions` and `pnpm.overrides` replace what a dependency
+  installs: `"overrides": {"ms": "npm:crossenv@0.0.2-security"}` makes `npm install` put crossenv on disk under
+  the name `ms`, and guard saw only the direct dependencies. Every override target (nested npm overrides,
+  yarn path keys like `**/ms`, pnpm `a>b` keys) is now checked like a dependency; `$ref` values and pnpm's
+  `-` removals are skipped. Lockfiles were already safe: they record the real package behind an alias.
+- **corepack** is understood: `corepack pnpm install`, `corepack yarn@4.1.0 add x`, `corepack npm …`, and `pnpx`.
+  `shell-init` wraps `corepack` and `pnpx` too.
+- The `guard-live` CI job did not fail when a check inside a subshell failed (the workspace cases); it does now,
+  and it also covers overrides, resolutions and corepack.
+
 ## 0.8.4
 
 Fixes a regression in 0.8.3 found by the fifth outside review, and the last two gaps it found.

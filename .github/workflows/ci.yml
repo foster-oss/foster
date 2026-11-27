@@ -64,7 +64,13 @@ jobs:
           d=$(mktemp -d)
           echo '{"name":"root","private":true,"workspaces":["apps/*"]}' > "$d/package.json"
           mkdir -p "$d/apps/a" && echo '{"name":"a","dependencies":{"crossenv":"0.0.2-security"}}' > "$d/apps/a/package.json"
-          (cd "$d" && check_guard 1 "npm install" && check_guard 1 "npm install express")
+          # a failure inside ( … ) only leaves the subshell: pass it on
+          (cd "$d" && check_guard 1 "npm install" && check_guard 1 "npm install express" && check_guard 1 "corepack pnpm install" && check_guard 1 "corepack yarn install") || exit 1
+          o=$(mktemp -d)
+          echo '{"dependencies":{"express":"4.21.2"},"overrides":{"ms":"npm:crossenv@0.0.2-security"}}' > "$o/package.json"
+          (cd "$o" && check_guard 1 "npm install") || exit 1
+          echo '{"dependencies":{"express":"4.21.2"},"resolutions":{"**/ms":"npm:crossenv@0.0.2-security"}}' > "$o/package.json"
+          (cd "$o" && check_guard 1 "yarn install") || exit 1
 
   patches:
     # Every patch is rebuilt from the upstream release and re-verified on every change.

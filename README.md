@@ -230,10 +230,13 @@ composer commands, including `cd app && npm i -D x` chains, and the less obvious
   rest of the project along with `<name>`. `npm ci`, `--frozen-lockfile` and `--immutable` install the lockfile
   as it is.
 
-Known malware is a **deny** however it is reached: by name, through `npx`/`dlx`/`npm exec`, from package.json or
-from a lockfile. CI runs these cases against the live registries and OSV on every change.
-- **`npm exec` / `npm x`** are checked like `npx`, `pnpm dlx`, `yarn dlx` and `bunx`.
+- **`npm exec` / `npm x` / `pnpx`** are checked like `npx`, `pnpm dlx`, `yarn dlx` and `bunx`; **`corepack pnpm …`**,
+  `corepack yarn@4 …` like pnpm and yarn.
 - **Aliases** (`npm i tc@npm:@ctrl/tinycolor@4.1.1`): the real package is checked.
+- **Overrides** (npm `overrides`, yarn `resolutions`, `pnpm.overrides`) replace what a dependency installs;
+  `"ms": "npm:crossenv@0.0.2-security"` installs crossenv under the name ms. The replacement is checked.
+- **Known malware is a deny however it is reached**: by name, through `npx`/`dlx`/`npm exec`, an alias, an override,
+  package.json or a lockfile. CI runs these cases against the live registries and OSV on every change.
 - **Registry tarball URLs** (`https://registry.npmjs.org/x/-/x-1.0.0.tgz`): package and version are read from the URL.
 - **Other URLs and git** (`https://…/x.tgz`, `github:a/b`, `git+https://…`): **ask**, since no database covers them.
 - **Ranges and dist-tags** (`x@^4.1.0`, `x@next`): the version npm would pick is checked, not just the latest.

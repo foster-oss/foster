@@ -3,7 +3,7 @@
   "name": "io.github.foster-oss/foster",
   "title": "Foster",
   "description": "Check if a dependency is maintained, has unfixed vulnerabilities, or has a drop-in patch.",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "websiteUrl": "https://foster-oss.github.io/foster/",
   "repository": {
     "url": "https://github.com/foster-oss/foster",
@@ -22,7 +22,7 @@
     {
       "registryType": "npm",
       "identifier": "foster-oss",
-      "version": "0.8.4",
+      "version": "0.8.5",
       "transport": {
         "type": "stdio"
       },

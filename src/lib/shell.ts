@@ -16,6 +16,8 @@ const WRAPPED: Record<string, string[] | "all"> = {
   yarn: ["", "add", "install", "dlx", "global"],
   bun: ["add", "install", "i"],
   bunx: "all",
+  pnpx: "all",
+  corepack: ["npm", "npx", "pnpm", "pnpx", "yarn"],
   pip: ["install"],
   pip3: ["install"],
   uv: ["add", "sync", "pip", "tool"],

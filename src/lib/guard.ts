@@ -282,9 +282,12 @@ export function parseCommand(line: string, cwd: string = process.cwd()): { packa
     while (tokens.length && (/^[A-Za-z_][A-Za-z0-9_]*=/.test(tokens[0]!) || ["sudo", "env", "time", "exec", "command", "nohup"].includes(tokens[0]!))) {
       tokens = tokens.slice(1);
     }
+    // corepack runs the package manager a project pins: "corepack pnpm install", "corepack yarn@4.1.0 add x"
+    if (/^corepack(\.cmd|\.exe)?$/i.test(tokens[0] ?? "") && /^(npm|npx|pnpm|pnpx|yarn)(@[^\s]+)?$/.test(tokens[1] ?? "")) tokens = tokens.slice(1);
     const [cmd0, ...rest] = tokens;
     if (!cmd0) continue;
-    const cmd = cmd0.replace(/^.*[\\/]/, "").replace(/\.(exe|cmd)$/i, "");
+    // "pnpm@9.1.0" (the corepack form) is pnpm
+    const cmd = cmd0.replace(/^.*[\\/]/, "").replace(/\.(exe|cmd)$/i, "").replace(/^(npm|npx|pnpm|pnpx|yarn)@.*$/, "$1");
     if ((cmd === "cd" || cmd === "pushd") && rest[0] && rest[0] !== "-" && !rest[0].startsWith("~")) {
       dir = resolve(dir, rest[0]);
       continue;
@@ -349,8 +352,8 @@ export function parseCommand(line: string, cwd: string = process.cwd()): { packa
       lock("bundle install", "rubygems", gemfile ? dirname(gemfile) : undefined);
     } else if (cmd === "composer" && sub === "install") lock("composer install", "packagist", flagValue(args, "--working-dir", "-d"));
     else if (cmd === "cargo" && (sub === "build" || sub === "fetch")) lock(`cargo ${sub}`, "cargo");
-    else if (cmd === "npx" || cmd === "bunx" || (cmd === "npm" && (sub === "exec" || sub === "x")) || (cmd === "pnpm" && sub === "dlx") || (cmd === "yarn" && sub === "dlx")) {
-      const runArgs = cmd === "npx" || cmd === "bunx" ? rest : args;
+    else if (cmd === "npx" || cmd === "bunx" || cmd === "pnpx" || (cmd === "npm" && (sub === "exec" || sub === "x")) || (cmd === "pnpm" && sub === "dlx") || (cmd === "yarn" && sub === "dlx")) {
+      const runArgs = cmd === "npx" || cmd === "bunx" || cmd === "pnpx" ? rest : args;
       const pkgFlag = flagValue(runArgs, "-p", "--package");
       const first = pkgFlag ?? positional(runArgs.filter((a) => a !== "-y" && a !== "--yes"), "npm")[0];
       if (first) add(npmSpec(first));
@@ -613,22 +616,64 @@ export function manifestPackages(dir: string, why = "no lockfile"): RequestedPac
   }
   const internal = new Set(manifests.map((m) => m.pkg.name).filter((n): n is string => typeof n === "string"));
   const out = new Map<string, RequestedPackage>();
+  const addDep = (name: string, spec: string, where: string) => {
+    if (internal.has(name)) return;
+    if (/^(file:|link:|workspace:|portal:|patch:|\.{0,2}\/|~\/|\$|-$)/.test(spec)) return;
+    const key = `${name}@${spec}`;
+    if (out.has(key)) return;
+    const remote = REMOTE.test(spec) || /^[\w.-]+\/[\w.-]+(#.*)?$/.test(spec);
+    const r: RequestedPackage | null = remote ? { ecosystem: "npm", name, remote: true, spec } : npmSpec(key);
+    if (r) out.set(key, { ...r, fromManifest: true, spec: `${key} (${where}, ${why})` });
+  };
   for (const { rel, pkg } of manifests) {
     for (const field of ["dependencies", "devDependencies", "optionalDependencies"]) {
       const deps = pkg[field];
       if (!deps || typeof deps !== "object") continue;
-      for (const [name, spec] of Object.entries(deps as Record<string, unknown>)) {
-        if (typeof spec !== "string" || internal.has(name)) continue;
-        if (/^(file:|link:|workspace:|portal:|patch:|\.{0,2}\/|~\/)/.test(spec)) continue;
-        const key = `${name}@${spec}`;
-        if (out.has(key)) continue;
-        const remote = REMOTE.test(spec) || /^[\w.-]+\/[\w.-]+(#.*)?$/.test(spec);
-        const r: RequestedPackage | null = remote ? { ecosystem: "npm", name, remote: true, spec } : npmSpec(key);
-        if (r) out.set(key, { ...r, fromManifest: true, spec: `${key} (${rel}, ${why})` });
-      }
+      for (const [name, spec] of Object.entries(deps as Record<string, unknown>)) if (typeof spec === "string") addDep(name, spec, rel);
     }
   }
+  // Overrides replace what a dependency installs, and only the root's count: "ms": "npm:crossenv@…"
+  // installs crossenv under the name ms. Check the replacement like any other dependency.
+  for (const [name, spec, field] of overrideEntries(root)) addDep(name, spec, `package.json ${field}`);
   return [...out.values()];
+}
+
+/** The package a key of npm overrides, yarn resolutions or pnpm overrides applies to ("**\/a/ms@^1" → ms). */
+function overrideTarget(key: string, style: "npm" | "yarn" | "pnpm"): string {
+  let k = key;
+  if (style === "pnpm") k = k.split(">").pop()!;
+  if (style === "yarn") {
+    const parts = k.split("/");
+    k = parts.length >= 2 && parts[parts.length - 2]!.startsWith("@") ? parts.slice(-2).join("/") : parts[parts.length - 1]!;
+  }
+  const at = k.lastIndexOf("@");
+  return at > 0 ? k.slice(0, at) : k;
+}
+
+/** [package, replacement spec, field] for every override in a root package.json. */
+export function overrideEntries(pkg: Record<string, unknown>): [string, string, string][] {
+  const out: [string, string, string][] = [];
+  const npm = (obj: unknown, parent?: string) => {
+    if (!obj || typeof obj !== "object") return;
+    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+      if (k === ".") {
+        if (parent && typeof v === "string") out.push([parent, v, "overrides"]);
+        continue;
+      }
+      const name = overrideTarget(k, "npm");
+      if (typeof v === "string") out.push([name, v, "overrides"]);
+      else npm(v, name); // nested: overrides that apply below this package
+    }
+  };
+  npm(pkg.overrides);
+  const flat = (obj: unknown, style: "yarn" | "pnpm", field: string) => {
+    if (!obj || typeof obj !== "object") return;
+    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) if (typeof v === "string") out.push([overrideTarget(k, style), v, field]);
+  };
+  flat(pkg.resolutions, "yarn", "resolutions");
+  const pnpm = pkg.pnpm as { overrides?: unknown } | undefined;
+  flat(pnpm?.overrides, "pnpm", "pnpm.overrides");
+  return out;
 }
 
 /**
