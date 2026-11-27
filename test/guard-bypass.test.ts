@@ -170,8 +170,9 @@ describe("shell-init", () => {
 describe("Windows paths in commands", () => {
   it("keeps backslashes in cd targets, quoted or not", () => {
     const base = resolve("/work");
-    expect(parseCommand(String.raw`cd "C:\Users\me\app" && npm ci`, base).lockfiles[0]?.dir).toBe(resolve(String.raw`C:\Users\me\app`));
-    expect(parseCommand(String.raw`cd C:\proj\web; npm ci`, base).lockfiles[0]?.dir).toBe(resolve(String.raw`C:\proj\web`));
+    // resolve(base, …): an absolute C:\ path on Windows, a (strange but harmless) relative one elsewhere
+    expect(parseCommand(String.raw`cd "C:\Users\me\app" && npm ci`, base).lockfiles[0]?.dir).toBe(resolve(base, String.raw`C:\Users\me\app`));
+    expect(parseCommand(String.raw`cd C:\proj\web; npm ci`, base).lockfiles[0]?.dir).toBe(resolve(base, String.raw`C:\proj\web`));
   });
 
   it("still honours POSIX escapes", async () => {
