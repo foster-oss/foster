@@ -4,7 +4,9 @@
 
 - Fix: `foster-oss guard "npm install x"` (the whole command as one quoted argument) now checks the
   install instead of reporting "no package installs". `guard -- npm install x` was not affected.
-- CI runs the GitHub Action itself on a fixture, using the released package.
+- **Fix: the GitHub Action did not load** (`action.yml` had a YAML error since 0.2, in the `comment` and
+  `sarif` input descriptions). CI now runs the Action itself on a fixture, and a test parses every YAML
+  file in the repository.
 
 ## 0.5.0
 

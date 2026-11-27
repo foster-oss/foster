@@ -28,10 +28,10 @@ inputs:
     description: foster-oss version to run (npm dist-tag or exact version).
     default: latest
   comment:
-    description: Post (or update) a pull request comment with the report. Needs `pull-requests: write`.
+    description: "Post (or update) a pull request comment with the report. Needs `pull-requests: write`."
     default: "false"
   sarif:
-    description: Upload findings to GitHub code scanning (Security tab). Needs `security-events: write`.
+    description: "Upload findings to GitHub code scanning (Security tab). Needs `security-events: write`."
     default: "false"
   github-token:
     description: Token used for the pull request comment and the SARIF upload.
