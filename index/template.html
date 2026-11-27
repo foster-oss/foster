@@ -6,7 +6,10 @@
 <title>The Orphan Index · Foster</title>
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="alternate" type="application/atom+xml" title="Foster Orphan Index: weekly changes" href="feed.xml">
-<meta name="description" content="Which of the world's most depended-on open source packages has nobody maintaining them, and which have security holes with no fix.">
+<meta name="description" content="Which of the world's most depended-on open source packages has nobody maintaining them, and which have security holes with no fix. Plus Foster guard: stop AI agents installing malware, hallucinated names and abandoned packages.">
+<meta property="og:title" content="The Orphan Index · Foster">
+<meta property="og:description" content="28% of the world's most depended-on open source packages are unmaintained. Foster finds them in your project, and stops AI agents installing malware before it lands.">
+<meta property="og:type" content="website">
 <style>
   :root {
     --bg: #fbfaf7; --fg: #1d1c1a; --muted: #6b675f; --line: #e6e2d9; --card: #ffffff;
@@ -50,6 +53,16 @@
   .tablewrap { overflow-x: auto; }
   footer { margin-top: 64px; color: var(--muted); font-size: .88rem; }
   .why { font-size: .8rem; color: var(--muted); }
+  .guard { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 28px; align-items: start; }
+  @media (max-width: 860px) { .guard { grid-template-columns: 1fr; } }
+  .guard ul { margin: 10px 0 0; padding-left: 1.1rem; }
+  .guard li { margin: 4px 0; }
+  .term { background: #171513; color: #e6e1d7; border: 1px solid #2d2b27; border-radius: 10px; padding: 16px 18px; font-size: .84rem; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+  .term .p { color: #ff8a4c; } .term .c { color: #8b867c; } .term .bad { color: #ef7a6f; } .term .ok { color: #6fc08f; }
+  .setup { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 18px; }
+  .setup div { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; font-size: .92rem; }
+  .setup b { display: block; margin-bottom: 4px; }
+  .setup code { font-size: .82rem; overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
@@ -64,6 +77,43 @@
   <div class="stats" id="stats"></div>
   <div class="bar" id="bar" aria-hidden="true"></div>
   <div class="legend" id="legend"></div>
+
+  <section id="guard">
+    <h2>Before your agent installs anything</h2>
+    <div class="guard">
+      <div>
+        <p class="muted" style="margin-top:0">Coding agents run <code>npm install</code> and <code>pip install</code> on their own. <b>Foster guard</b> checks every package a command
+          would install, before it runs, and blocks:</p>
+        <ul class="muted">
+          <li><b>known malware</b> (OSV and the OpenSSF malicious-packages database),</li>
+          <li><b>names that don't exist</b>, which anyone can register ("slopsquatting"),</li>
+          <li><b>vulnerabilities no release fixes</b>, with maintained alternatives.</li>
+        </ul>
+        <p class="muted">It asks about look-alikes of popular packages and brand-new packages that run install scripts, and reads what a command
+          really installs: lockfiles (<code>npm ci</code>), package.json, monorepo workspaces, overrides, aliases, <code>npx</code> and <code>corepack</code>.
+          Six ecosystems, no account, and it fails open if the network is down.</p>
+      </div>
+<pre class="term" aria-label="Real output of foster-oss guard"><span class="c"># an AI agent wants to run:</span>
+<span class="p">$</span> npm install lodahs react-pdf-renderer-utils request
+
+<span class="bad">Foster guard blocked this install:</span>
+<span class="c">-</span> <span class="bad">lodahs</span> is known malware (MAL-2025-25502: Malicious code
+  in lodahs). Do not install it.
+<span class="c">-</span> <span class="bad">react-pdf-renderer-utils</span> does not exist on the registry.
+  It may be a hallucinated name; attackers register such names.
+<span class="c">-</span> <span class="bad">request</span> has security advisories that no release fixes;
+  maintenance: dead. Alternatives: <span class="ok">fetch, ofetch, ky</span>
+
+<span class="c"># lodahs was picked as a made-up typo for this demo.
+# It turned out to be real, reported malware.</span></pre>
+    </div>
+    <div class="setup">
+      <div><b>Claude Code</b>A PreToolUse hook: <code>npx -y foster-oss guard --hook claude</code> (<a href="https://github.com/foster-oss/foster#set-it-up">settings</a>)</div>
+      <div><b>Other agents</b>MCP server <code>io.github.foster-oss/foster</code> with a <code>foster_check_install_command</code> tool</div>
+      <div><b>Your shell</b><code>eval "$(foster-oss shell-init bash)"</code>, also zsh and PowerShell</div>
+      <div><b>Scripts and CI</b><code>npx foster-oss guard -- &lt;command&gt;</code> exits 0 allow, 1 deny, 10 ask</div>
+    </div>
+  </section>
 
   <section>
     <h2>By ecosystem</h2>
@@ -86,10 +136,13 @@
 
   <section>
     <h2>Check your own project</h2>
-    <p class="muted">Foster reads your lockfile and tells you which dependencies are orphaned, which have security holes with no fix, and which have a published drop-in security patch you can switch to in one command.</p>
-<pre>npx foster-oss scan          # what in my lockfile is orphaned or unpatched?
+    <p class="muted">Foster reads your lockfile and tells you which dependencies are malware, orphaned, or have security holes with no fix, which direct dependency brings each one in, who to fund, and which have a published drop-in security patch you can switch to in one command.</p>
+<pre>npx foster-oss guard -- npm install some-package   # check an install before it runs
+npx foster-oss scan          # what in my lockfile is orphaned or unpatched?
+npx foster-oss fund          # which at-risk dependencies I rely on, and who to sponsor
 npx foster-oss fix           # switch to published drop-in patches (edits package.json)
 npx foster-oss check ip@2.0.1</pre>
+    <p class="muted">Also as a <a href="https://github.com/foster-oss/foster#github-action">GitHub Action</a> that checks only what a pull request adds, with SARIF for the Security tab.</p>
   </section>
 
   <section>
@@ -128,7 +181,7 @@ npx foster-oss check ip@2.0.1</pre>
   <footer>
     Foster is an open project. <a href="https://github.com/foster-oss/foster">Code, patches and governance on GitHub</a> ·
     <a href="https://github.com/foster-oss/foster/issues/new?template=adopt.yml">Nominate a package for adoption</a> ·
-    Data: ecosyste.ms (CC BY-SA 4.0), GitHub Advisory Database, OSV. <span id="gen"></span>
+    Data: ecosyste.ms (CC BY-SA 4.0), GitHub Advisory Database, OSV, OpenSSF malicious-packages. <span id="gen"></span>
   </footer>
 </main>
 <script>

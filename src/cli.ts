@@ -12,19 +12,27 @@ import { formatFund, fundProject } from "./lib/fund.js";
 import { scanProject, scanSbom, shouldFail, type FailOn } from "./lib/scan.js";
 import { ECOSYSTEMS, type Ecosystem } from "./lib/types.js";
 
-const HELP = `foster-oss ${fosterVersion()}: find dependencies nobody maintains, swap in reviewed patches.
+const HELP = `foster-oss ${fosterVersion()}: stop installs of malware, hallucinated and abandoned packages,
+and find the dependencies nobody maintains, with the fixes that exist for them.
 
 Usage:
-  foster-oss scan [dir]            Check a project's lockfiles
-  foster-oss scan --sbom <file>    Check a CycloneDX or SPDX JSON SBOM instead
-  foster-oss fix [dir]             Point dependencies at released drop-in patches (edits package.json)
-  foster-oss check <name[@ver]>    Look up one package
-  foster-oss fund [dir]            Which at-risk dependencies you rely on, and where to fund their maintainers
-  foster-oss mcp                   Start the MCP server (stdio) for AI agents
-  foster-oss guard -- <command>    Check the packages a shell command would install
+  foster-oss guard -- <command>    Check what a shell command would install, before it runs: known malware,
+                                   names that don't exist, look-alikes, unfixed vulnerabilities, and what
+                                   lockfiles, package.json, workspaces and overrides bring along
   foster-oss guard --hook claude   Same, as a Claude Code PreToolUse hook (reads the hook JSON on stdin)
                                    guard exits 0 (allow), 1 (deny) or 10 (ask: a person should decide)
   foster-oss shell-init <shell>    Print shell functions that guard npm, pip, … installs (bash, zsh, powershell)
+  foster-oss scan [dir]            Check a project's lockfiles
+  foster-oss scan --sbom <file>    Check a CycloneDX or SPDX JSON SBOM instead
+  foster-oss fund [dir]            Which at-risk dependencies you rely on, and where to fund their maintainers
+  foster-oss fix [dir]             Point dependencies at released drop-in patches (edits package.json)
+  foster-oss check <name[@ver]>    Look up one package
+  foster-oss mcp                   Start the MCP server (stdio) for AI agents
+
+Examples:
+  npx foster-oss guard -- npm install left-pad
+  npx foster-oss guard -- npm ci
+  npx foster-oss scan --since main
 
 Options:
   --json                 Machine-readable output (scan, check)

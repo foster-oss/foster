@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.8.7
+
+No change in behaviour: Foster now says what it does.
+
+- `foster-oss --help` leads with guard and shows examples; the npm description, the MCP Registry
+  description and the GitHub Action description mention malware and the pre-install check.
+- The README leads with guard (what it decides, what it reads, how to set it up, how it is tested), with
+  demos regenerated from real output; SECURITY.md says how to report a way past guard.
+- The Orphan Index site has a "Before your agent installs anything" section.
+
 ## 0.8.6
 
 - **Peer dependencies are checked.** npm 7+ and pnpm 8+ install `peerDependencies` automatically, so a
