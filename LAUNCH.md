@@ -73,13 +73,23 @@ Aku tidak mengirim pesan apa pun ke upstream, karena issue `ip` sudah punya tiga
 
    **Title** (maks 80 karakter):
 
+   > Show HN: Foster – stop AI agents installing hallucinated or abandoned packages
+
+   Alternatif judul (kalau ingin menonjolkan data):
+
    > Show HN: Foster – 28% of the most depended-on open source packages are unmaintained
 
    **URL:** `https://github.com/foster-oss/foster`
 
    **Komentar pertama:**
 
-   > I classified the 5,797 most depended-on packages across npm, PyPI, Cargo, Go, RubyGems and
+   > Coding agents run `npm install` / `pip install` on their own now, and sometimes the package they
+   > pick doesn't exist (a hallucinated name an attacker can register), is a look-alike of a popular one
+   > (lodahs, reqeusts), or was abandoned years ago with unfixed vulnerabilities. `foster-oss guard`
+   > checks every package a command would install before it runs; in Claude Code it's a 6-line hook,
+   > elsewhere an MCP tool or a CLI. It covers npm, PyPI, Cargo, Go, RubyGems and Packagist.
+   >
+   > The data behind it: I classified the 5,797 most depended-on packages across npm, PyPI, Cargo, Go, RubyGems and
    > Packagist (the ecosyste.ms critical set). 28% are dead or dormant; Go is worst at 45%. Ten of
    > those unmaintained packages have security advisories that no upstream release fixes, e.g. npm
    > ip (SSRF), extract-zip (path traversal), Go's dgrijalva/jwt-go.

@@ -1,6 +1,6 @@
 {
   "name": "foster-oss",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "mcpName": "io.github.foster-oss/foster",
   "description": "Find dependencies nobody maintains anymore (npm, PyPI, Cargo, Go, RubyGems, Packagist), and switch to published drop-in security patches without changing your imports.",
   "keywords": [
@@ -23,7 +23,8 @@
     "guard",
     "hallucination",
     "slopsquatting",
-    "claude-code"
+    "claude-code",
+    "typosquatting"
   ],
   "license": "Apache-2.0",
   "type": "module",
@@ -43,7 +44,8 @@
     "data/orphans.min.json",
     "registry/patches.json",
     "skills",
-    "registry/alternatives.json"
+    "registry/alternatives.json",
+    "data/popular.json"
   ],
   "engines": {
     "node": ">=20"

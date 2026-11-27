@@ -1,6 +1,7 @@
 import { checkPackage, type CheckResult } from "./check.js";
 import { describeAlternatives } from "./replacements.js";
 import type { Ecosystem } from "./types.js";
+import { existsOnRegistry, lookAlike, type LookAlike } from "./typosquat.js";
 
 /**
  * `foster-oss guard`: inspect a shell command before it runs and stop installs of packages that
@@ -247,11 +248,30 @@ const RANK: Record<Decision, number> = { allow: 0, ask: 1, deny: 2 };
 
 export type Checker = (ecosystem: Ecosystem, name: string, version?: string) => Promise<CheckResult>;
 
+export interface VerdictExtras {
+  /** Answer from the real registry when the package index did not know the name. */
+  existsOnRegistry?: boolean | null;
+  /** A far more popular package this name closely resembles. */
+  lookAlike?: LookAlike;
+}
+
+function fmtRepos(n: number): string {
+  return Intl.NumberFormat("en", { notation: "compact" }).format(n);
+}
+
 /** Decide about one package from a live check. */
-export function verdictFor(requested: RequestedPackage, check: CheckResult): PackageVerdict {
+export function verdictFor(requested: RequestedPackage, check: CheckResult, extras: VerdictExtras = {}): PackageVerdict {
   const label = `${requested.name}${requested.version ? `@${requested.version}` : ""} (${requested.ecosystem})`;
+  const like = extras.lookAlike;
+  const didYouMean = like ? ` Did you mean ${like.name} (used by ${fmtRepos(like.dependentRepos)} repositories)?` : "";
   if (check.notFound) {
-    return { requested, decision: "deny", reason: `${label} does not exist on the registry. It may be a misspelled or hallucinated name; attackers register such names ("slopsquatting"). Check the exact package name first.` };
+    if (extras.existsOnRegistry === true) {
+      return { requested, decision: "ask", reason: `${label} exists but is brand new or almost unused: no package index tracks it yet. Make sure it is the package you mean.${didYouMean}` };
+    }
+    return { requested, decision: "deny", reason: `${label} does not exist on the registry. It may be a misspelled or hallucinated name; attackers register such names ("slopsquatting").${didYouMean || " Check the exact package name first."}` };
+  }
+  if (like) {
+    return { requested, decision: "ask", reason: `${label} looks like a typo of a much more popular package: ${like.name} (used by ${fmtRepos(like.dependentRepos)} repositories; this one by ${fmtRepos(check.record?.dependentRepos ?? 0)}). Look-alike names are a common way to slip in malware. Install it only if this is really the package you want.` };
   }
   const alt = check.alternatives ? ` Maintained alternatives: ${describeAlternatives(check.alternatives)}.` : "";
   const finding = check.findings[0];
@@ -272,7 +292,11 @@ export function verdictFor(requested: RequestedPackage, check: CheckResult): Pac
   return { requested, decision: "allow", reason: `${label}: ok` };
 }
 
-export async function guardCommand(line: string, check: Checker = checkPackage): Promise<GuardResult> {
+export async function guardCommand(
+  line: string,
+  check: Checker = checkPackage,
+  exists: (ecosystem: Ecosystem, name: string) => Promise<boolean | null> = existsOnRegistry,
+): Promise<GuardResult> {
   const requested = parseInstallCommand(line);
   const verdicts: PackageVerdict[] = [];
   for (const r of requested) {
@@ -282,7 +306,9 @@ export async function guardCommand(line: string, check: Checker = checkPackage):
       if (!r.version && result.record?.latestVersion && !result.notFound) {
         result = await check(r.ecosystem, r.name, result.record.latestVersion);
       }
-      verdicts.push(verdictFor(r, result));
+      const extras: VerdictExtras = { lookAlike: lookAlike(r.ecosystem, r.name, result.record?.dependentRepos) };
+      if (result.notFound) extras.existsOnRegistry = await exists(r.ecosystem, r.name);
+      verdicts.push(verdictFor(r, result, extras));
     } catch (err) {
       // Fail open: a network problem must not block development, but say so.
       verdicts.push({ requested: r, decision: "allow", reason: `${r.name} (${r.ecosystem}): could not be checked (${(err as Error).message})` });

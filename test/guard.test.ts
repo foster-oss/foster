@@ -89,21 +89,59 @@ describe("guardCommand", () => {
       if (name === "ghost") return result({ notFound: true, name });
       return result({ name, record: { ecosystem, name, status: "active", reasons: [], downloadsLastMonth: 1, dependentRepos: 1, dependentPackages: 1, latestVersion: "2.0.0", latestReleaseAt: null, repoUrl: null, archived: false, lastPushAt: null, publishers: 1, unpatchedAdvisories: [], priority: 0 } });
     };
-    const r = await guardCommand("npm i good ghost", check);
+    const r = await guardCommand("npm i good ghost", check, async () => false);
     expect(r.decision).toBe("deny");
     expect(seen).toEqual(["good@", "good@2.0.0", "ghost@"]);
     expect(r.message).toMatch(/ghost/);
   });
 
   it("fails open when the check itself fails", async () => {
-    const r = await guardCommand("npm i x", async () => {
-      throw new Error("offline");
-    });
+    const r = await guardCommand(
+      "npm i x",
+      async () => {
+        throw new Error("offline");
+      },
+      async () => null,
+    );
     expect(r.decision).toBe("allow");
     expect(r.verdicts[0]?.reason).toMatch(/could not be checked/);
   });
 
   it("says when a command installs nothing", async () => {
     expect((await guardCommand("echo hi")).message).toMatch(/no package installs/);
+  });
+});
+
+describe("look-alike (typosquat) detection", () => {
+  it("measures edit distance with transpositions", async () => {
+    const { editDistance } = await import("../src/lib/typosquat.js");
+    expect(editDistance("lodahs", "lodash")).toBe(1);
+    expect(editDistance("expresss", "express")).toBe(1);
+    expect(editDistance("abc", "xyz", 2)).toBe(3);
+  });
+
+  it("flags rarely used names next to very popular packages, not real neighbours", async () => {
+    const { lookAlike } = await import("../src/lib/typosquat.js");
+    expect(lookAlike("npm", "lodahs", 3)?.name).toBe("lodash");
+    expect(lookAlike("pypi", "reqeusts", 0)?.name).toBe("requests");
+    expect(lookAlike("npm", "preact", 78_992)).toBeUndefined(); // popular in its own right
+    expect(lookAlike("npm", "lodash", 1_900_000)).toBeUndefined(); // is the popular package
+    expect(lookAlike("npm", "ws", 0)).toBeUndefined(); // too short to judge
+  });
+
+  it("asks about look-alikes and adds 'did you mean' to unknown names", () => {
+    const req = { ecosystem: "npm" as Ecosystem, name: "lodahs", spec: "lodahs" };
+    const like = { name: "lodash", dependentRepos: 1_900_000, distance: 1 };
+    const ask = verdictFor(req, result({ record: null }), { lookAlike: like });
+    expect(ask.decision).toBe("ask");
+    expect(ask.reason).toMatch(/typo of a much more popular package: lodash/);
+    const deny = verdictFor(req, result({ notFound: true }), { lookAlike: like, existsOnRegistry: false });
+    expect(deny.decision).toBe("deny");
+    expect(deny.reason).toMatch(/Did you mean lodash/);
+  });
+
+  it("asks (not denies) for brand-new packages the index does not know yet", () => {
+    const req = { ecosystem: "npm" as Ecosystem, name: "brand-new-thing", spec: "brand-new-thing" };
+    expect(verdictFor(req, result({ notFound: true }), { existsOnRegistry: true }).decision).toBe("ask");
   });
 });
