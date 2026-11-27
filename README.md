@@ -221,7 +221,8 @@ composer commands, including `cd app && npm i -D x` chains, and the less obvious
   are looked up too: a name that does not exist on the registry is a **deny** (slopsquat), an existing
   little-used look-alike an **ask**. Global options before the subcommand count (`npm --prefix app ci`).
 - **No lockfile yet** (a fresh clone, `bun.lockb`): `npm`/`pnpm`/`yarn`/`bun install` resolve `package.json`,
-  so guard checks those packages like ones named on the command line. In a monorepo root that includes
+  so guard checks those packages like ones named on the command line: dependencies, dev, optional, and peer
+  dependencies (npm 7+ installs them; the ones `peerDependenciesMeta` marks optional are skipped). In a monorepo root that includes
   every workspace (`workspaces` in package.json, or `pnpm-workspace.yaml`). A fixable vulnerability read
   from your own package.json is a note, not a question on every install (`scan` reports it).
 - **A stale lockfile** (a merge added a dependency the lockfile does not have yet, or changed a version): a

@@ -71,6 +71,8 @@ jobs:
           (cd "$o" && check_guard 1 "npm install") || exit 1
           echo '{"dependencies":{"express":"4.21.2"},"resolutions":{"**/ms":"npm:crossenv@0.0.2-security"}}' > "$o/package.json"
           (cd "$o" && check_guard 1 "yarn install") || exit 1
+          echo '{"peerDependencies":{"crossenv":"0.0.2-security"}}' > "$o/package.json"
+          (cd "$o" && check_guard 1 "npm install") || exit 1
 
   patches:
     # Every patch is rebuilt from the upstream release and re-verified on every change.

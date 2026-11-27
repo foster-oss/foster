@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.6
+
+- **Peer dependencies are checked.** npm 7+ and pnpm 8+ install `peerDependencies` automatically, so a
+  package.json with `"peerDependencies": {"crossenv": "0.0.2-security"}` put malware on disk while guard saw
+  nothing. They are now checked like the other dependency fields; peers that `peerDependenciesMeta` marks
+  `optional` are skipped, because npm does not install those. Found by the seventh outside review, which
+  also confirmed overrides, corepack, `npm-shrinkwrap.json` and manifest aliases are covered.
+
 ## 0.8.5
 
 The two gaps from the sixth outside review, and a hole in the live CI check itself.

@@ -486,3 +486,21 @@ describe("found in the 0.8.4 review", () => {
     expect(shellInit("bash")).toMatch(/^corepack\(\) \{ case "\$\{1:-\}" in npm\|npx\|pnpm\|pnpx\|yarn\)/m);
   });
 });
+
+describe("found in the 0.8.5 review", () => {
+  it("checks peer dependencies, which npm 7+ installs, but not optional ones", async () => {
+    const { manifestPackages } = await import("../src/lib/guard.js");
+    const dir = mkdtempSync(join(tmpdir(), "foster-guard-"));
+    writeFileSync(
+      join(dir, "package.json"),
+      JSON.stringify({ peerDependencies: { crossenv: "0.0.2-security", react: "^18 || ^19", "react-dom": "^19" }, peerDependenciesMeta: { "react-dom": { optional: true } } }),
+    );
+    expect(manifestPackages(dir).map((p) => p.name).sort()).toEqual(["crossenv", "react"]);
+    const r = await guardCommand("npm install", healthy, async () => true, {
+      ...quiet,
+      cwd: dir,
+      malware: async (_e, name) => (name === "crossenv" ? [{ id: "GHSA-c2m4-w5hm-vqjw", url: "", title: "crossenv is malware", wholePackage: true }] : []),
+    });
+    expect(r.decision).toBe("deny");
+  });
+});

@@ -1,6 +1,6 @@
 {
   "name": "foster-oss",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "mcpName": "io.github.foster-oss/foster",
   "description": "Find dependencies nobody maintains anymore (npm, PyPI, Cargo, Go, RubyGems, Packagist), and switch to published drop-in security patches without changing your imports.",
   "keywords": [

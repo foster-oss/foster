@@ -626,10 +626,19 @@ export function manifestPackages(dir: string, why = "no lockfile"): RequestedPac
     if (r) out.set(key, { ...r, fromManifest: true, spec: `${key} (${where}, ${why})` });
   };
   for (const { rel, pkg } of manifests) {
-    for (const field of ["dependencies", "devDependencies", "optionalDependencies"]) {
+    // npm 7+ and pnpm 8+ install peer dependencies too, except the ones peerDependenciesMeta marks optional
+    const optionalPeers = new Set(
+      Object.entries((pkg.peerDependenciesMeta ?? {}) as Record<string, { optional?: boolean } | undefined>)
+        .filter(([, meta]) => meta?.optional === true)
+        .map(([name]) => name),
+    );
+    for (const field of ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]) {
       const deps = pkg[field];
       if (!deps || typeof deps !== "object") continue;
-      for (const [name, spec] of Object.entries(deps as Record<string, unknown>)) if (typeof spec === "string") addDep(name, spec, rel);
+      for (const [name, spec] of Object.entries(deps as Record<string, unknown>)) {
+        if (typeof spec !== "string" || (field === "peerDependencies" && optionalPeers.has(name))) continue;
+        addDep(name, spec, rel);
+      }
     }
   }
   // Overrides replace what a dependency installs, and only the root's count: "ms": "npm:crossenv@…"
