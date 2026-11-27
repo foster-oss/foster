@@ -26,8 +26,13 @@ npx foster-oss skill install                       # teach your coding agent to 
 npx foster-oss guard -- npm install some-package   # check an install before it runs
 npx foster-oss scan                                # what in my lockfile is orphaned, or vulnerable with no fix?
 npx foster-oss fund                                # which at-risk dependencies I rely on, and who to sponsor
-npx foster-oss fix                                 # switch to published drop-in patches (edits package.json)
+npx foster-oss fix                                 # switch to published drop-in patches (edits dependency configuration)
 ```
+
+`fix` updates direct dependencies in `package.json`. For pnpm transitive dependencies, it uses
+`overrides` in `pnpm-workspace.yaml` when that field already exists; otherwise it uses
+`pnpm.overrides` in `package.json`. Existing overrides are kept unless you pass `--force`.
+Run with `--dry-run` to inspect the changes first; `fix` never installs packages.
 
 <p align="center"><img src="brand/guard-demo.svg" alt="foster-oss guard blocking known malware (lodahs), a hallucinated name and an abandoned vulnerable package (request)" width="820"></p>
 <p align="center"><sub>Real output. <code>lodahs</code> was picked as a made-up typo of lodash for this demo; it turned out to be reported malware.</sub></p>
