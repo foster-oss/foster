@@ -8,6 +8,11 @@ Please do not open public issues for vulnerabilities in Foster's code, workflows
 
 We aim to acknowledge within 3 days and to publish a fix or mitigation within 30 days.
 
+**A way past `foster-oss guard` counts as a vulnerability in Foster**: a command, manifest or lockfile that
+puts known malware on disk while guard allows it. Report it privately at the link above with the exact
+command, the files involved (package.json, lockfile) and the package, and we will credit you in the
+changelog. False positives (a legitimate package that guard blocks or asks about) are fine as public issues.
+
 ## Reporting a problem in an orphaned package
 
 If the package is unmaintained and the issue is already public (a published advisory), nominate it
