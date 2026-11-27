@@ -6,11 +6,11 @@ import { maxSeverity, toOrphanRecord } from "./classify.js";
 import { findPatch, indexByName, indexKey, loadOrphanIndex, loadRegistry, type PatchRegistry } from "./data.js";
 import { getPackage } from "./ecosystems.js";
 import { mapLimit } from "./http.js";
-import { detectLockfiles, readDependencies } from "./lockfile.js";
+import { detectLockfiles, mergeInto, readDependencies } from "./lockfile.js";
 import { describeForDependency, getVulns, lowestFixAbove, newerReleaseEscapes, queryBatch, type OsvVuln, type VulnForDependency } from "./osv.js";
 import { compareVersions, rangeIncludes } from "./versions.js";
 import { alternativesFor } from "./replacements.js";
-import type { AdvisorySummary, Dependency, Finding, MaintenanceStatus, OrphanRecord, ScanResult, Severity } from "./types.js";
+import type { AdvisorySummary, Dependency, Finding, FindingSummary, MaintenanceStatus, OrphanRecord, ScanResult, Severity } from "./types.js";
 
 export interface ScanOptions {
   /** Use only data bundled with this release: no OSV, no ecosyste.ms, no remote registry. */
@@ -94,7 +94,7 @@ export async function scanProject(dirInput: string, opts: ScanOptions = {}): Pro
     const key = `${d.ecosystem}:${d.name}@${d.version}`;
     const prev = merged.get(key);
     if (!prev) merged.set(key, { ...d });
-    else if (d.direct) prev.direct = true; // direct in any sub-project counts
+    else mergeInto(prev, d); // direct in any sub-project counts
   }
   const deps = [...merged.values()];
   const findings = await analyzeDependencies(deps, opts, warnings);
@@ -104,6 +104,7 @@ export async function scanProject(dirInput: string, opts: ScanOptions = {}): Pro
     lockfiles,
     dependencyCount: deps.length,
     findings,
+    summary: summarize(findings),
     warnings,
     ...(opts.since ? { since: opts.since, unchangedCount: unchanged } : {}),
   };
@@ -146,6 +147,7 @@ export async function scanSbom(file: string, opts: ScanOptions = {}): Promise<Sc
     lockfiles: [basename(path)],
     dependencyCount: sbom.dependencies.length,
     findings,
+    summary: summarize(findings),
     warnings,
   };
 }
@@ -321,8 +323,19 @@ export function sortFindings(findings: Finding[]): Finding[] {
     (a, b) =>
       KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) ||
       SEVERITY_ORDER.indexOf(a.severity) - SEVERITY_ORDER.indexOf(b.severity) ||
+      Number(b.dependency.direct) - Number(a.dependency.direct) || // what you can change yourself first
       a.dependency.name.localeCompare(b.dependency.name),
   );
+}
+
+/** Findings per kind, and how many of them are direct dependencies (the ones the project declares itself). */
+export function summarize(findings: Finding[]): FindingSummary {
+  const s = Object.fromEntries(KIND_ORDER.map((k) => [k, { total: 0, direct: 0 }])) as FindingSummary;
+  for (const f of findings) {
+    s[f.kind].total++;
+    if (f.dependency.direct) s[f.kind].direct++;
+  }
+  return s;
 }
 
 export type FailOn = "none" | "patch-available" | "orphaned-vulnerable" | "unpatched" | "any";

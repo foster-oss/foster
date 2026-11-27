@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 import { join, relative } from "node:path";
+import { MAX_VIA } from "./graph.js";
 import { describeAlternatives } from "./replacements.js";
 import type { FixResult } from "./fix.js";
-import type { Finding, FindingKind, OrphanRecord, ScanResult } from "./types.js";
+import type { Dependency, Finding, FindingKind, OrphanRecord, ScanResult } from "./types.js";
 
 const KIND_LABEL: Record<FindingKind, string> = {
   "patch-available": "PATCH READY",
@@ -20,10 +21,46 @@ const KIND_TITLE: Record<FindingKind, string> = {
   orphaned: "Widely used but unmaintained",
 };
 
-function counts(findings: Finding[]): Record<FindingKind, number> {
-  const c: Record<FindingKind, number> = { "patch-available": 0, "orphaned-vulnerable": 0, "unpatched-vulnerable": 0, "upgrade-available": 0, orphaned: 0 };
-  for (const f of findings) c[f.kind]++;
+function counts(findings: Finding[]): Record<FindingKind, { total: number; direct: number }> {
+  const c = Object.fromEntries(Object.keys(KIND_LABEL).map((k) => [k, { total: 0, direct: 0 }])) as Record<FindingKind, { total: number; direct: number }>;
+  for (const f of findings) {
+    c[f.kind].total++;
+    if (f.dependency.direct) c[f.kind].direct++;
+  }
   return c;
+}
+
+/** "transitive, via astro" / "transitive, via a, b, c +2 more" / "transitive"; empty for a direct dependency. */
+export function relationNote(d: Dependency): string {
+  if (d.direct) return "";
+  if (!d.via?.length) return "transitive";
+  const more = d.via.length >= MAX_VIA ? " and many more" : d.via.length > 3 ? ` +${d.via.length - 3} more` : "";
+  return `transitive, via ${d.via.slice(0, 3).join(", ")}${more}`;
+}
+
+/** The direct dependencies that bring in most of these transitive findings: "request (40), astro (12)". */
+function topVia(findings: Finding[], limit = 3): string {
+  const n = new Map<string, number>();
+  for (const f of findings) for (const v of f.dependency.via ?? []) n.set(v, (n.get(v) ?? 0) + 1);
+  return [...n.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, limit)
+    .map(([name, count]) => `${name} (${count})`)
+    .join(", ");
+}
+
+const nameList = (list: Finding[], max = 6) => list.slice(0, max).map((f) => f.dependency.name).join(", ") + (list.length > max ? ", …" : "");
+
+/**
+ * A vulnerable transitive package that comes in only through direct dependencies nobody maintains:
+ * those will never ship the fix, so the way out is replacing them. Returns their names, or null.
+ */
+export function stuckBehind(f: Finding, findings: Finding[]): string[] | null {
+  if (f.dependency.direct || !f.dependency.via?.length || f.kind === "orphaned" || f.kind === "patch-available") return null;
+  const unmaintained = new Set(
+    findings.filter((x) => x.dependency.direct && (x.status === "dead" || x.status === "dormant")).map((x) => x.dependency.name),
+  );
+  return f.dependency.via.every((v) => unmaintained.has(v)) ? f.dependency.via : null;
 }
 
 export function formatText(result: ScanResult, color = false, showAll = false): string {
@@ -40,26 +77,50 @@ export function formatText(result: ScanResult, color = false, showAll = false): 
   }
   const quiet = result.findings.filter((f) => f.kind === "orphaned");
   const shown = showAll ? result.findings : result.findings.filter((f) => f.kind !== "orphaned");
+  const stuckGroups = new Map<string, Finding[]>();
   for (const f of shown) {
     const tagColor = f.kind === "patch-available" ? 36 : f.kind === "orphaned-vulnerable" ? 31 : f.kind === "unpatched-vulnerable" ? 33 : 90;
     const tag = c(tagColor, KIND_LABEL[f.kind].padEnd(14));
     const sev = f.severity === "UNKNOWN" ? "" : ` [${f.severity}]`;
-    lines.push(`${tag} ${f.dependency.name}@${f.dependency.version}${sev}${f.dependency.direct ? "" : c(90, " (transitive)")}`);
-    lines.push(`               ${f.message.replace(/^[^:]+: /, "")}`);
+    const stuck = stuckBehind(f, result.findings);
+    if (stuck) stuckGroups.set(stuck.join(", "), [...(stuckGroups.get(stuck.join(", ")) ?? []), f]);
+    const note = f.dependency.direct ? "" : ` (${relationNote(f.dependency).replace(/^transitive, via /, stuck ? "transitive, via unmaintained " : "$&")})`;
+    lines.push(`${tag} ${f.dependency.name}@${f.dependency.version}${sev}${c(90, note)}`);
+    // "Upgrade normally" does not hold when the only parent will never update (see the line under the list)
+    lines.push(`               ${f.message.replace(/^[^:]+: /, "").replace(stuck ? / Upgrade normally; no patch needed\.$/ : /$^/, "")}`);
     for (const a of f.advisories.slice(0, 3)) lines.push(c(90, `               - ${a.id}: ${a.title}`));
     if (f.advisories.length > 3) lines.push(c(90, `               - ...and ${f.advisories.length - 3} more`));
     if (f.alternatives) lines.push(c(32, `               consider: ${describeAlternatives(f.alternatives)}`));
   }
-  if (!showAll && quiet.length > 0) {
-    const names = quiet.slice(0, 6).map((f) => f.dependency.name).join(", ");
-    lines.push(
-      c(90, `ORPHANED       ${quiet.length} widely used dependencies nobody maintains, with no known vulnerability today: ${names}${quiet.length > 6 ? ", …" : ""}`),
-      c(90, `               Run with --all to list them.`),
+  // One line per unmaintained direct dependency that holds fixes back, instead of one per finding.
+  const stuckLines: string[] = [];
+  for (const [parents, group] of stuckGroups) {
+    const many = parents.includes(",");
+    const force = group[0]!.dependency.ecosystem === "npm" ? "an npm override" : "pinning the fixed versions in your own manifest";
+    stuckLines.push(
+      c(
+        33,
+        `${group.length} vulnerable package${group.length > 1 ? "s come" : " comes"} in only through ${parents}, which nobody maintains, so ${many ? "they" : "it"} will not move to the fixed version${group.length > 1 ? "s" : ""}: replace ${parents}, or force the fix${group.length > 1 ? "es" : ""} with ${force}.`,
+      ),
     );
   }
+  if (!showAll && quiet.length > 0) {
+    const direct = quiet.filter((f) => f.dependency.direct);
+    const transitive = quiet.filter((f) => !f.dependency.direct);
+    lines.push(c(90, `ORPHANED       ${quiet.length} widely used dependencies nobody maintains, with no known vulnerability today`));
+    if (direct.length) lines.push(c(90, `               ${direct.length} you depend on directly: ${nameList(direct)}`));
+    if (transitive.length) {
+      const top = topVia(transitive);
+      lines.push(c(90, `               ${transitive.length} come in through other packages${top ? `, mostly via ${top}` : `: ${nameList(transitive)}`}`));
+    }
+    lines.push(c(90, `               Run with --all to list them.`));
+  }
   lines.push("");
+  if (stuckLines.length) lines.push(...stuckLines, "");
   lines.push(summaryLine(result.findings));
   if (result.findings.some((f) => f.kind === "patch-available")) lines.push(c(36, "Run `npx foster-oss fix` to switch to the patched packages."));
+  if (shown.some((f) => f.kind !== "patch-available" && f.kind !== "orphaned" && f.dependency.via?.length))
+    lines.push(c(90, "A transitive package is fixed by upgrading (or replacing) the direct dependency named after \"via\"."));
   if (result.findings.some((f) => f.kind === "orphaned-vulnerable"))
     lines.push("Orphaned + vulnerable packages can be nominated for adoption: https://github.com/foster-oss/foster/issues/new?template=adopt.yml");
   return lines.join("\n");
@@ -67,7 +128,9 @@ export function formatText(result: ScanResult, color = false, showAll = false): 
 
 function summaryLine(findings: Finding[]): string {
   const n = counts(findings);
-  return `Summary: ${n["patch-available"]} patch available · ${n["orphaned-vulnerable"]} orphaned+vulnerable · ${n["unpatched-vulnerable"]} no fix yet · ${n["upgrade-available"]} upgrade · ${n.orphaned} orphaned`;
+  // "(2 direct)" only when some of them are transitive: the direct ones are what the project can change itself
+  const part = (k: FindingKind, label: string) => `${n[k].total} ${label}${n[k].direct < n[k].total ? ` (${n[k].direct} direct)` : ""}`;
+  return `Summary: ${part("patch-available", "patch available")} · ${part("orphaned-vulnerable", "orphaned+vulnerable")} · ${part("unpatched-vulnerable", "no fix yet")} · ${part("upgrade-available", "upgrade")} · ${part("orphaned", "orphaned")}`;
 }
 
 /** Markdown for PR comments and GitHub job summaries. */
@@ -81,13 +144,17 @@ export function formatMarkdown(result: ScanResult): string {
       const group = result.findings.filter((f) => f.kind === kind);
       if (group.length === 0) continue;
       const collapse = kind === "orphaned";
-      if (collapse) out.push(`<details><summary><b>${KIND_TITLE[kind]} (${group.length})</b>: no known vulnerability today</summary>`, "");
-      else out.push(`### ${KIND_TITLE[kind]} (${group.length})`, "");
+      const direct = group.filter((f) => f.dependency.direct).length;
+      const count = direct < group.length ? `${group.length}: ${direct} direct, ${group.length - direct} transitive` : `${group.length}`;
+      if (collapse) out.push(`<details><summary><b>${KIND_TITLE[kind]} (${count})</b>: no known vulnerability today</summary>`, "");
+      else out.push(`### ${KIND_TITLE[kind]} (${count})`, "");
       out.push("| Package | Severity | Maintenance | Advisories | Action |", "|---|---|---|---|---|");
       for (const f of group) {
         const adv = f.advisories.slice(0, 3).map((a) => `[${a.id}](${a.url})`).join(", ") || "-";
-        const action =
-          f.kind === "patch-available"
+        const stuck = stuckBehind(f, result.findings);
+        const action = stuck
+          ? `replace ${stuck.map((n) => `\`${n}\``).join(", ")} (unmaintained, will not move to the fix)${f.fixedIn ? `, or force ${f.fixedIn}` : ""}`
+          : f.kind === "patch-available"
             ? `\`npx foster-oss fix\` → \`${f.patch!.replacement.name}@${f.patch!.replacement.version}\``
             : f.kind === "upgrade-available"
               ? `upgrade${f.fixedIn ? ` to ${f.fixedIn}` : ""}`
@@ -96,7 +163,7 @@ export function formatMarkdown(result: ScanResult): string {
                 : f.kind === "orphaned-vulnerable"
                   ? "[nominate for adoption](https://github.com/foster-oss/foster/issues/new?template=adopt.yml)"
                   : "watch";
-        out.push(`| \`${f.dependency.name}@${f.dependency.version}\`${f.dependency.direct ? "" : " (transitive)"} | ${f.severity} | ${f.status} | ${adv} | ${action} |`);
+        out.push(`| \`${f.dependency.name}@${f.dependency.version}\`${f.dependency.direct ? "" : ` <sub>${relationNote(f.dependency)}</sub>`} | ${f.severity} | ${f.status} | ${adv} | ${action} |`);
       }
       out.push("");
       if (collapse) out.push("</details>", "");
@@ -209,7 +276,7 @@ export function formatSarif(result: ScanResult, version: string, baseDir: string
           const rel = relative(baseDir, join(result.dir, f.dependency.source)).replace(/\\/g, "/");
           // Another drive (Windows) or outside the checkout: fall back to an absolute file URI.
           const uri = /^[A-Za-z]:\//.test(rel) || rel.startsWith("/") ? `file:///${rel.replace(/^\//, "")}` : rel;
-          const extra = f.alternatives ? ` Consider: ${describeAlternatives(f.alternatives)}.` : "";
+          const extra = (f.alternatives ? ` Consider: ${describeAlternatives(f.alternatives)}.` : "") + (f.dependency.direct ? "" : ` (${relationNote(f.dependency)})`);
           return {
             ruleId: `foster/${f.kind}`,
             level: SARIF_LEVEL[f.kind],
@@ -221,6 +288,8 @@ export function formatSarif(result: ScanResult, version: string, baseDir: string
               ecosystem: f.dependency.ecosystem,
               package: f.dependency.name,
               version: f.dependency.version,
+              direct: f.dependency.direct,
+              ...(f.dependency.via ? { via: f.dependency.via } : {}),
               maintenance: f.status,
               advisories: f.advisories.map((a) => a.id),
             },

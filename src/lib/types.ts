@@ -21,6 +21,11 @@ export interface Dependency {
   version: string;
   /** True when the package is listed directly in the project manifest. */
   direct: boolean;
+  /**
+   * For a transitive dependency: the direct dependencies that bring it in (upgrade or replace those).
+   * Present only when the lockfile records the dependency graph.
+   */
+  via?: string[];
   /** Lockfile the dependency was read from (relative to the scanned dir). */
   source: string;
 }
@@ -119,4 +124,8 @@ export interface ScanResult {
   since?: string;
   /** Packages skipped because they were already present at `since`. */
   unchangedCount?: number;
+  /** Findings per kind, with how many are direct dependencies. */
+  summary?: FindingSummary;
 }
+
+export type FindingSummary = Record<FindingKind, { total: number; direct: number }>;

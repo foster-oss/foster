@@ -1,6 +1,19 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import YAML from "yaml";
+import {
+  cargoLockGraph,
+  composerLockGraph,
+  type DepGraph,
+  gemfileLockGraph,
+  introducedBy,
+  nodeKey,
+  packageLockGraph,
+  pnpmLockGraph,
+  poetryLockGraph,
+  uvLockGraph,
+  yarnLockGraph,
+} from "./graph.js";
 import { normalizePyName } from "./osv.js";
 import type { Dependency, Ecosystem } from "./types.js";
 
@@ -51,55 +64,133 @@ export function readText(path: string): string {
   return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
 }
 
-/** Names listed directly in package.json, used to mark direct dependencies. */
-export function directNpmNames(dir: string): Set<string> {
+/** Names and version ranges listed directly in package.json. */
+export function npmSpecs(dir: string): Record<string, string> {
   const path = join(dir, "package.json");
-  if (!existsSync(path)) return new Set();
+  if (!existsSync(path)) return {};
   try {
     const pkg = JSON.parse(readText(path)) as Record<string, Record<string, string> | undefined>;
-    const names = new Set<string>();
-    for (const field of ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]) {
-      for (const n of Object.keys(pkg[field] ?? {})) names.add(n);
+    const specs: Record<string, string> = {};
+    for (const field of ["peerDependencies", "optionalDependencies", "devDependencies", "dependencies"]) {
+      Object.assign(specs, pkg[field] ?? {});
     }
-    return names;
+    return specs;
   } catch {
-    return new Set();
+    return {};
   }
+}
+
+/** Names listed directly in package.json, used to mark direct dependencies. */
+export function directNpmNames(dir: string): Set<string> {
+  return new Set(Object.keys(npmSpecs(dir)));
+}
+
+/** The text inside `key = [ … ]`, honouring quotes (so "uvicorn[standard]" does not end the array). */
+function tomlArray(body: string, key: string): string | undefined {
+  const start = body.match(new RegExp(`^${key}\\s*=\\s*\\[`, "m"));
+  if (start?.index === undefined) return undefined;
+  let depth = 0;
+  let quote: string | null = null;
+  const from = start.index + start[0].length - 1;
+  for (let i = from; i < body.length; i++) {
+    const ch = body[i]!;
+    if (quote) {
+      if (ch === quote) quote = null;
+    } else if (ch === '"' || ch === "'") quote = ch;
+    else if (ch === "#") i = body.indexOf("\n", i) === -1 ? body.length : body.indexOf("\n", i);
+    else if (ch === "[") depth++;
+    else if (ch === "]" && --depth === 0) return body.slice(from + 1, i);
+  }
+  return undefined;
+}
+
+const pyName = (spec: string) => spec.trim().match(/^([A-Za-z0-9][A-Za-z0-9._-]*)/)?.[1];
+
+/**
+ * Python packages the project declares itself: pyproject.toml (PEP 621 [project] dependencies and
+ * optional-dependencies, PEP 735 [dependency-groups], [tool.uv] dev-dependencies, Poetry's
+ * dependency tables) and Pipfile ([packages], [dev-packages]).
+ */
+export function directPythonNames(dir: string): Set<string> {
+  const names = new Set<string>();
+  const add = (n: string | undefined) => {
+    if (n && n.toLowerCase() !== "python") names.add(normalizePyName(n));
+  };
+  // String items of TOML arrays, skipping inline tables such as { include-group = "docs" }.
+  const strings = (text: string) =>
+    [...text.replace(/\{[^}]*\}/g, "").matchAll(/"([^"]*)"|'([^']*)'/g)].map((m) => m[1] ?? m[2] ?? "");
+  const tables = (text: string) =>
+    text.split(/^(?=\[)/m).map((sec) => ({ header: sec.match(/^\[([^\]]+)\]/)?.[1]?.trim() ?? "", body: sec.slice(sec.indexOf("\n") + 1) }));
+  const keys = (body: string) => [...body.matchAll(/^\s*"?([A-Za-z0-9][A-Za-z0-9._-]*)"?\s*=/gm)].map((m) => m[1]);
+
+  const pyproject = join(dir, "pyproject.toml");
+  if (existsSync(pyproject)) {
+    for (const { header, body } of tables(readText(pyproject))) {
+      if (header === "project" || header === "tool.uv") {
+        const arr = tomlArray(body, header === "project" ? "dependencies" : "dev-dependencies");
+        if (arr) for (const s of strings(arr)) add(pyName(s));
+      } else if (header === "project.optional-dependencies" || header === "dependency-groups") {
+        for (const s of strings(body)) add(pyName(s));
+      } else if (/^tool\.poetry\.(dependencies|dev-dependencies|group\.[^.]+\.dependencies)$/.test(header)) {
+        for (const k of keys(body)) add(k);
+      }
+    }
+  }
+  const pipfile = join(dir, "Pipfile");
+  if (existsSync(pipfile)) {
+    for (const { header, body } of tables(readText(pipfile))) {
+      if (header === "packages" || header === "dev-packages") for (const k of keys(body)) add(k);
+    }
+  }
+  return names;
 }
 
 export function readDependencies(dir: string, lock: LockfileInfo, textOverride?: string): Dependency[] {
   const text = textOverride ?? readText(join(dir, lock.file));
   // null = the lockfile format does not tell direct from transitive; report all as direct.
   let direct: Set<string> | null = null;
+  // Who depends on whom, when the lockfile records it: names the direct dependency that brings each
+  // transitive one in, and (when the lockfile lists the project's own dependencies) marks direct ones
+  // exactly, by version.
+  let graph: DepGraph | null = null;
   let pairs: [string, string][];
   switch (lock.kind) {
     case "package-lock":
       pairs = parsePackageLock(text);
       direct = directNpmNames(dir);
+      graph = packageLockGraph(text);
       break;
     case "pnpm-lock":
       pairs = parsePnpmLock(text);
       direct = directNpmNames(dir);
+      graph = pnpmLockGraph(text);
       break;
     case "yarn-lock":
       pairs = parseYarnLock(text);
       direct = directNpmNames(dir);
+      graph = yarnLockGraph(text, npmSpecs(dir));
       break;
     case "requirements":
       pairs = parseRequirements(text);
       break;
     case "uv-lock":
       pairs = parseUvLock(text);
+      direct = directPythonNames(dir);
+      graph = uvLockGraph(text);
       break;
     case "poetry-lock":
       pairs = parsePoetryLock(text);
+      direct = directPythonNames(dir);
+      graph = poetryLockGraph(text);
       break;
     case "pipfile-lock":
       pairs = parsePipfileLock(text);
+      direct = directPythonNames(dir);
       break;
     case "cargo-lock":
       pairs = parseCargoLock(text);
       direct = directCargoNames(dir);
+      graph = cargoLockGraph(text);
       break;
     case "go-mod": {
       const mod = parseGoMod(text);
@@ -111,22 +202,36 @@ export function readDependencies(dir: string, lock: LockfileInfo, textOverride?:
       const gems = parseGemfileLock(text);
       pairs = gems.pairs;
       direct = gems.direct;
+      graph = gemfileLockGraph(text);
       break;
     }
     case "composer-lock":
       pairs = parseComposerLock(text);
       direct = directComposerNames(dir);
+      graph = composerLockGraph(text);
       break;
   }
   const ecosystem = lock.ecosystem;
+  const norm = (name: string) => (ecosystem === "pypi" ? normalizePyName(name) : name);
+  const declared = direct && direct.size > 0 ? new Set([...direct].map(norm)) : null;
+  // Exact roots from the lockfile win over manifest names (they also tell two versions of one name apart).
+  const roots = graph?.roots && graph.roots.size > 0 ? graph.roots : null;
+  const isDirect = (name: string, version: string) =>
+    roots ? roots.has(nodeKey(name, version)) : declared === null ? true : declared.has(norm(name));
+  const via = graph ? introducedBy(graph, roots ?? pairs.filter(([n, v]) => isDirect(n, v)).map(([n, v]) => nodeKey(n, v))) : null;
   return dedupe(
-    pairs.map(([name, version]) => ({
-      ecosystem,
-      name: ecosystem === "pypi" ? normalizePyName(name) : name,
-      version,
-      direct: direct === null || direct.size === 0 ? true : direct.has(name),
-      source: lock.file,
-    })),
+    pairs.map(([name, version]): Dependency => {
+      const isRoot = isDirect(name, version);
+      const by = isRoot ? undefined : via?.get(nodeKey(name, version));
+      return {
+        ecosystem,
+        name: norm(name),
+        version,
+        direct: isRoot,
+        ...(by && by.size > 0 ? { via: [...new Set([...by].map(norm))].sort() } : {}),
+        source: lock.file,
+      };
+    }),
   );
 }
 
@@ -320,13 +425,20 @@ function tomlPackages(text: string): [string, string][] {
   return out;
 }
 
+/** Combine two sightings of the same package version: direct anywhere wins, "via" lists are joined. */
+export function mergeInto(prev: Dependency, d: Dependency): void {
+  if (d.direct) prev.direct = true;
+  if (prev.direct) delete prev.via;
+  else if (d.via) prev.via = [...new Set([...(prev.via ?? []), ...d.via])].sort();
+}
+
 function dedupe(deps: Dependency[]): Dependency[] {
   const map = new Map<string, Dependency>();
   for (const d of deps) {
     const key = `${d.ecosystem}:${d.name}@${d.version}`;
     const prev = map.get(key);
     if (!prev) map.set(key, d);
-    else if (d.direct && !prev.direct) prev.direct = true;
+    else mergeInto(prev, d);
   }
   return [...map.values()];
 }

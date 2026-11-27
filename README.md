@@ -122,6 +122,31 @@ What the findings mean:
 | `UPGRADE` | Fixed upstream. Just upgrade. |
 | `ORPHANED` | Widely used and unmaintained, no known vulnerability. Shown with `--all`. |
 
+**Direct or transitive, and through what.** Foster reads the dependency graph from the lockfile (npm,
+pnpm, yarn, uv, Poetry, Cargo, Bundler, Composer, and CycloneDX/SPDX SBOMs that record it), so every
+transitive finding names the direct dependency that brings it in, the one you can actually upgrade or
+replace:
+
+```
+UPGRADE        form-data@2.3.3 [CRITICAL] (transitive, via unmaintained request)
+               fixed upstream in 2.5.6.
+UPGRADE        body-parser@1.20.1 [HIGH] (transitive, via express)
+               fixed upstream in 1.20.9. Upgrade normally; no patch needed.
+…
+ORPHANED       49 widely used dependencies nobody maintains, with no known vulnerability today
+               49 come in through other packages, mostly via request (34), express (17)
+
+4 vulnerable packages come in only through request, which nobody maintains, so it will not move to the
+fixed versions: replace request, or force the fixes with an npm override.
+
+Summary: 1 patch available · 1 orphaned+vulnerable · 0 no fix yet · 11 upgrade (1 direct) · 49 orphaned (0 direct)
+```
+
+(A project depending on `request`, `express@4.18.2` and `ip@2.0.1`.) A direct dependency that nobody
+maintains will never move to a fixed version of what it pulls in, so Foster says so instead of "just upgrade".
+
+`--json` carries the same: `dependency.direct`, `dependency.via` and a `summary` with direct counts per kind.
+
 Findings also name **maintained replacements** (`consider: fetch (built in), ofetch, ky`): for npm from
 the e18e community's [module-replacements](https://github.com/e18e/module-replacements) dataset, and for
 every ecosystem from Foster's reviewed list in [`registry/alternatives.json`](registry/alternatives.json)

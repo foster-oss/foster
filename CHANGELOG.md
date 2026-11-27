@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.6.0
+
+- **Direct or transitive, and through what.** Foster now reads the dependency graph from the lockfile
+  (package-lock v2/v3, pnpm v5/v6/v9, yarn classic and berry, uv, Poetry, Cargo, Gemfile.lock,
+  composer.lock) and from CycloneDX/SPDX SBOMs that record it. Every transitive finding names the direct
+  dependency that brings it in: `devalue@5.9.2 (transitive, via astro)`.
+- The summary counts direct findings (`10 upgrade (4 direct)`), and the quiet orphan line splits what you
+  depend on directly from what comes in through other packages, with the parents responsible for most of
+  them (`mostly via request (34), express (17)`). Findings in direct dependencies sort first.
+- When a vulnerable package comes in only through a direct dependency that nobody maintains, Foster says
+  that it will never move to the fix (replace the parent, or force the fix with an override) instead of
+  "upgrade normally".
+- Direct dependencies are now exact where the lockfile lists the project's own dependencies (npm, pnpm,
+  yarn, uv, Cargo, SBOMs): a second, nested copy of a direct package is reported as transitive, and an npm
+  alias (`"ip": "npm:@keep-lts/ip@2.0.2"`) counts as direct.
+- Python direct dependencies are read from `pyproject.toml` (PEP 621, PEP 735 dependency groups,
+  `[tool.uv]`, Poetry tables) and `Pipfile`, for `poetry.lock`, `uv.lock` and `Pipfile.lock`.
+- JSON output: `dependency.via` and a `summary` (`{ kind: { total, direct } }`); SARIF results carry
+  `direct` and `via`.
+
 ## 0.5.1
 
 - Fix: `foster-oss guard "npm install x"` (the whole command as one quoted argument) now checks the
