@@ -16,6 +16,11 @@ Foster checks every package a command would install *before* it runs, and scans 
 already have. Open source, no account or API key, six ecosystems: npm, PyPI, Cargo, Go, RubyGems and
 Packagist.
 
+**Works in the coding agent you already use.** One [Agent Skill](https://agentskills.io) teaches Claude Code,
+Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode, Hermes, Windsurf and 20+ other agents to check every
+install first, including the `npm create` that starts a new project. Also a Claude Code plugin (hook, skill
+and MCP server in one step), an MCP server in the official registry, a CLI and a GitHub Action.
+
 ```bash
 npx foster-oss skill install                       # teach your coding agent to check every install first
 npx foster-oss guard -- npm install some-package   # check an install before it runs

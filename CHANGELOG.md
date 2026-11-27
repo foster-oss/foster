@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.2
+
+No change in behaviour: the README, the npm description and the Orphan Index site now say up front that
+Foster is an Agent Skill for the coding agent you already use (Claude Code, Codex, Cursor, Gemini CLI,
+GitHub Copilot, OpenCode, Hermes, Windsurf and more), next to the plugin, MCP server, CLI and Action.
+
 ## 0.9.1
 
 From the first outside review of the skill (it was also confirmed to load in Hermes as is).

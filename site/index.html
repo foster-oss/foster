@@ -8,7 +8,7 @@
 <link rel="alternate" type="application/atom+xml" title="Foster Orphan Index: weekly changes" href="feed.xml">
 <meta name="description" content="Which of the world's most depended-on open source packages has nobody maintaining them, and which have security holes with no fix. Plus Foster guard: stop AI agents installing malware, hallucinated names and abandoned packages.">
 <meta property="og:title" content="The Orphan Index · Foster">
-<meta property="og:description" content="28% of the world's most depended-on open source packages are unmaintained. Foster finds them in your project, and stops AI agents installing malware before it lands.">
+<meta property="og:description" content="28% of the world's most depended-on open source packages are unmaintained. Foster finds them in your project, and, as an Agent Skill for Claude Code, Codex, Cursor and other coding agents, stops installs of malware before it lands.">
 <meta property="og:type" content="website">
 <style>
   :root {
@@ -92,6 +92,9 @@
         <p class="muted">It asks about look-alikes of popular packages and brand-new packages that run install scripts, and reads what a command
           really installs: lockfiles (<code>npm ci</code>), package.json, monorepo workspaces, overrides, aliases, <code>npx</code> and <code>corepack</code>.
           Six ecosystems, no account, and it fails open if the network is down.</p>
+        <p class="muted"><b>Works in your coding agent</b>: <code>npx foster-oss skill install</code> adds the Foster
+          <a href="https://agentskills.io">Agent Skill</a> for Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot,
+          OpenCode, Hermes and 20+ more, so the agent checks every install itself, including <code>npm create</code>.</p>
       </div>
 <pre class="term" aria-label="Real output of foster-oss guard"><span class="c"># an AI agent wants to run:</span>
 <span class="p">$</span> npm install lodahs react-pdf-renderer-utils request

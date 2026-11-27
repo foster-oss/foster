@@ -1,8 +1,8 @@
 {
   "name": "foster-oss",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "mcpName": "io.github.foster-oss/foster",
-  "description": "Stop AI agents and people installing malware, hallucinated or abandoned packages, and find the dependencies nobody maintains (npm, PyPI, Cargo, Go, RubyGems, Packagist).",
+  "description": "Agent Skill, MCP server and CLI that stop AI coding agents installing malware, hallucinated or abandoned packages. Works in Claude Code, Codex, Cursor, Gemini CLI, Copilot and more; npm, PyPI, Cargo, Go, RubyGems, Packagist.",
   "keywords": [
     "security",
     "supply-chain",
