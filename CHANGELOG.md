@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.8.1
+
+Three more ways past `guard`, from a second outside review, and one false positive it uncovered.
+
+- **Global options before the subcommand** are read: `npm --prefix apps/a ci`, `npm -C apps/a ci`,
+  `npm --prefix=apps/a ci`, `pnpm -C dir install`, `yarn --cwd dir`, `pip -q install x`. Before, these looked
+  like no install at all.
+- **Installs with no lockfile** (`npm install`, `pnpm install`, `yarn`, `bun install` in a fresh clone, or with
+  only `bun.lockb`) check the packages in `package.json`, as if they were named on the command line:
+  malware, names that do not exist, look-alikes, install scripts. Local folders and workspaces are skipped.
+- **Lockfile installs check names, not only advisories.** Locked packages whose names look like a popular
+  package are looked up (at most 20 per lockfile, everything else stays offline): a name that does not
+  exist on the registry is a deny (`colourama==1.0.0` in requirements.txt), a little-used look-alike an ask
+  (`expres` in package-lock.json).
+- **No more look-alike warnings for huge new packages.** `call-bound`, `get-proto`, `es-errors` and `obug`
+  have a billion downloads a month but "0 dependent repos" in ecosyste.ms; a look-alike name with 100k+
+  downloads a month is now trusted, on the command line and in lockfiles.
+
 ## 0.8.0
 
 Closes four ways past `guard` found in an outside review of 0.7.0, and brings guard to the shell.

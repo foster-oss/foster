@@ -1,4 +1,5 @@
-import { basename, dirname, resolve } from "node:path";
+import { readFileSync } from "node:fs";
+import { basename, dirname, join, resolve } from "node:path";
 import { checkPackage, type CheckResult } from "./check.js";
 import { mapLimit } from "./http.js";
 import { detectLockfiles, readDependencies, type LockfileInfo } from "./lockfile.js";
@@ -109,7 +110,7 @@ export function splitCommands(line: string): string[][] {
 
 /** Flags that take a value, per tool, so the value is not mistaken for a package name. */
 const VALUE_FLAGS: Record<string, string[]> = {
-  npm: ["--registry", "--prefix", "--tag", "--workspace", "-w", "--save-prefix", "--cache", "--userconfig", "--omit", "--include"],
+  npm: ["--registry", "--prefix", "-C", "--tag", "--workspace", "-w", "--save-prefix", "--cache", "--userconfig", "--omit", "--include"],
   pnpm: ["--filter", "-F", "--dir", "-C", "--registry", "--workspace"],
   yarn: ["--cwd", "--registry"],
   bun: ["--cwd", "--registry", "--backend"],
@@ -239,6 +240,19 @@ export function parseInstallCommand(line: string): RequestedPackage[] {
   return parseCommand(line).packages;
 }
 
+/** Options that may precede the subcommand and take a value, per tool. */
+const GLOBAL_VALUE_FLAGS: Record<string, string[]> = {
+  npm: ["--prefix", "-C", "--registry", "--userconfig", "--cache", "--workspace", "-w", "--loglevel"],
+  pnpm: ["-C", "--dir", "--filter", "-F", "--loglevel", "--reporter"],
+  yarn: ["--cwd", "--registry"],
+  bun: ["--cwd"],
+  pip: ["--python", "--log", "--cache-dir", "--proxy", "--timeout", "--retries", "--cert", "--client-cert"],
+  uv: ["--directory", "--project", "--cache-dir", "--config-file"],
+  poetry: ["-C", "--directory", "-P", "--project"],
+  cargo: ["-C", "--config", "-Z"],
+  composer: ["-d", "--working-dir"],
+};
+
 const NPM_INSTALL = ["install", "i", "in", "add", "isntall"];
 const NPM_LOCKED = ["ci", "clean-install", "ic", "install-clean", "isntall-clean", "install-test", "it", "install-ci-test", "cit"];
 
@@ -263,23 +277,33 @@ export function parseCommand(line: string, cwd: string = process.cwd()): { packa
       dir = resolve(dir, rest[0]);
       continue;
     }
-    const sub = rest[0];
-    const args = rest.slice(1);
+    // Global options may come before the subcommand: "npm --prefix app ci", "pnpm -C app i", "yarn --cwd app".
+    // They are moved after it, so the same flag lookups and positional parsing see them.
+    const globals = GLOBAL_VALUE_FLAGS[/^pip3?(\.\d+)?$/.test(cmd) ? "pip" : cmd];
+    const lead: string[] = [];
+    let k = 0;
+    while (globals && k < rest.length && rest[k]!.startsWith("-")) {
+      const a = rest[k++]!;
+      lead.push(a);
+      if (!a.includes("=") && globals.includes(a) && k < rest.length) lead.push(rest[k++]!);
+    }
+    const sub = rest[k];
+    const args = [...lead, ...rest.slice(k + 1)];
     const add = (r: RequestedPackage | null) => r && found.push(r);
     const lock = (tool: string, ecosystem: Ecosystem, at?: string, file?: string) =>
       locked.push({ tool, dir: at ? resolve(dir, at) : dir, ecosystem, ...(file ? { file } : {}) });
 
-    if (cmd === "npm" && sub && NPM_LOCKED.includes(sub)) lock(`npm ${sub}`, "npm", flagValue(args, "--prefix"));
+    if (cmd === "npm" && sub && NPM_LOCKED.includes(sub)) lock(`npm ${sub}`, "npm", flagValue(args, "--prefix", "-C"));
     else if (cmd === "npm" && sub && NPM_INSTALL.includes(sub)) {
       const specs = positional(args, "npm");
       if (specs.length) specs.forEach((s) => add(npmSpec(s)));
-      else if (sub !== "add") lock(`npm ${sub}`, "npm", flagValue(args, "--prefix"));
+      else if (sub !== "add") lock(`npm ${sub}`, "npm", flagValue(args, "--prefix", "-C"));
     } else if (cmd === "pnpm" && sub && ["add", "install", "i"].includes(sub)) {
       const specs = positional(args, "pnpm");
       if (specs.length) specs.forEach((s) => add(npmSpec(s)));
       else if (sub !== "add") lock(`pnpm ${sub}`, "npm", flagValue(args, "--dir", "-C"));
     } else if (cmd === "yarn" && (sub === "add" || (sub === "global" && args[0] === "add"))) positional(sub === "global" ? args.slice(1) : args, "yarn").forEach((s) => add(npmSpec(s)));
-    else if (cmd === "yarn" && (sub === undefined || sub === "install" || sub.startsWith("-"))) lock("yarn install", "npm", flagValue(rest, "--cwd"));
+    else if (cmd === "yarn" && (sub === undefined || sub === "install" || sub.startsWith("-"))) lock("yarn install", "npm", flagValue(args, "--cwd"));
     else if (cmd === "bun" && sub && ["add", "install", "i"].includes(sub)) {
       const specs = positional(args, "bun");
       if (specs.length) specs.forEach((s) => add(npmSpec(s)));
@@ -293,7 +317,7 @@ export function parseCommand(line: string, cwd: string = process.cwd()): { packa
       if (file) lock(`uv pip ${args[0]}`, "pypi", undefined, file);
       if (args[0] === "install") positional(args.slice(1), "uv").forEach((s) => add(pipSpec(s)));
     } else if ((cmd === "poetry" && sub === "install") || (cmd === "pipenv" && (sub === "sync" || (sub === "install" && positional(args, "pip").length === 0))))
-      lock(`${cmd} ${sub}`, "pypi", flagValue(args, "--directory", "-C"));
+      lock(`${cmd} ${sub}`, "pypi", flagValue(args, "--directory", "-C", "--project", "-P"));
     else if (cmd === "pipenv" && sub === "install") positional(args, "pip").forEach((s) => add(pipSpec(s)));
     else if (cmd === "bundle" && (sub === undefined || sub === "install")) {
       const gemfile = flagValue(args, "--gemfile");
@@ -455,30 +479,110 @@ const LIVE_PROBES: GuardProbes = {
 /** npm replaces removed malware with an empty "0.0.1-security" placeholder. */
 const SECURITY_PLACEHOLDER = /^0\.0\.\d+-security(\.\d+)?$/;
 
-async function checkLockfileInstall(install: LockfileInstall, probe: GuardProbes): Promise<{ verdict: PackageVerdict | null; count: number }> {
+/**
+ * What `npm install` (or pnpm, yarn, bun) resolves from package.json when there is no lockfile it can
+ * read: a fresh clone, a new project, or bun's binary bun.lockb. Local folders and workspaces are skipped.
+ */
+export function manifestPackages(dir: string): RequestedPackage[] {
+  let pkg: Record<string, unknown>;
+  try {
+    pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8").replace(/^﻿/, "")) as Record<string, unknown>;
+  } catch {
+    return [];
+  }
+  const out = new Map<string, RequestedPackage>();
+  for (const field of ["dependencies", "devDependencies", "optionalDependencies"]) {
+    const deps = pkg[field];
+    if (!deps || typeof deps !== "object") continue;
+    for (const [name, spec] of Object.entries(deps as Record<string, unknown>)) {
+      if (typeof spec !== "string" || out.has(name)) continue;
+      if (/^(file:|link:|workspace:|portal:|patch:|\.{0,2}\/|~\/)/.test(spec)) continue;
+      const remote = REMOTE.test(spec) || /^[\w.-]+\/[\w.-]+(#.*)?$/.test(spec);
+      const r: RequestedPackage | null = remote ? { ecosystem: "npm", name, remote: true, spec } : npmSpec(`${name}@${spec}`);
+      if (r) out.set(name, { ...r, spec: `${name}@${spec} (package.json, no lockfile)` });
+    }
+  }
+  return [...out.values()];
+}
+
+/** At most this many look-alike names in one lockfile are confirmed online. */
+const MAX_LOCK_SUSPECTS = 20;
+
+interface LockSquat {
+  dependency: Dependency;
+  /** The name does not exist on the registry at all. */
+  missing: boolean;
+  like?: LookAlike;
+  ownRepos?: number | null;
+}
+
+/**
+ * Names in a lockfile that look like a typo of a popular package. The first pass is offline (the
+ * popular-package list); only those few are looked up: does the name exist, and how widely is it used?
+ */
+async function lockfileSquats(deps: Dependency[], check: Checker, exists: (e: Ecosystem, n: string) => Promise<boolean | null>): Promise<LockSquat[]> {
+  const suspects = [...new Map(deps.filter((d) => lookAlike(d.ecosystem, d.name)).map((d) => [`${d.ecosystem}:${d.name}`, d])).values()].slice(0, MAX_LOCK_SUSPECTS);
+  const found = await mapLimit(suspects, 4, async (d): Promise<LockSquat | null> => {
+    try {
+      const res = await check(d.ecosystem, d.name);
+      if (res.notFound) {
+        const there = await exists(d.ecosystem, d.name);
+        if (there === false) return { dependency: d, missing: true, like: lookAlike(d.ecosystem, d.name) };
+        if (there === null) return null;
+      }
+      const ownRepos = res.notFound ? 0 : res.record?.dependentRepos;
+      const like = lookAlike(d.ecosystem, d.name, ownRepos, res.record?.downloadsLastMonth);
+      return like ? { dependency: d, missing: false, like, ownRepos } : null;
+    } catch {
+      return null; // fail open
+    }
+  });
+  return found.filter((x): x is LockSquat => x !== null);
+}
+
+async function checkLockfileInstall(
+  install: LockfileInstall,
+  probe: GuardProbes,
+  check: Checker,
+  exists: (e: Ecosystem, n: string) => Promise<boolean | null>,
+): Promise<{ verdict: PackageVerdict | null; count: number }> {
   const { files, deps } = lockedDependencies(install);
   if (deps.length === 0) return { verdict: null, count: 0 };
   const requested: RequestedPackage = { ecosystem: install.ecosystem, name: files.join(", "), spec: install.tool };
   const where = `${install.tool} (${files.join(", ")})`;
-  try {
-    const hits = await probe.lockfileMalware(deps);
-    if (hits.length === 0) return { verdict: { requested, decision: "allow", reason: `${where}: ${deps.length} locked packages, no known malware` }, count: deps.length };
+  let failed: string | null = null;
+  const [hits, squats] = await Promise.all([
+    probe.lockfileMalware(deps).catch((err: Error) => ((failed = err.message), [] as LockedMalware[])),
+    lockfileSquats(deps, check, exists),
+  ]);
+  const reasons: string[] = [];
+  let decision: Decision = "allow";
+  if (hits.length) {
+    decision = "deny";
     const list = [...new Map(hits.map((h) => [`${h.dependency.name}@${h.dependency.version}`, h])).values()];
     const shown = list
       .slice(0, 5)
       .map((h) => `${h.dependency.name}@${h.dependency.version} (${h.report.id}: ${h.report.title})${SECURITY_PLACEHOLDER.test(h.dependency.version) ? " [npm's empty security placeholder: the name itself was malware]" : ""}`)
       .join("; ");
-    return {
-      verdict: {
-        requested,
-        decision: "deny",
-        reason: `${where} would install known malware: ${shown}${list.length > 5 ? `; and ${list.length - 5} more` : ""}. Remove it from the manifest and the lockfile first, then rotate any credentials this machine or CI holds. \`npx foster-oss scan\` lists every finding.`,
-      },
-      count: deps.length,
-    };
-  } catch (err) {
-    return { verdict: { requested, decision: "allow", reason: `${where}: could not be checked (${(err as Error).message})` }, count: deps.length };
+    reasons.push(`${where} would install known malware: ${shown}${list.length > 5 ? `; and ${list.length - 5} more` : ""}. Remove it from the manifest and the lockfile first, then rotate any credentials this machine or CI holds. \`npx foster-oss scan\` lists every finding.`);
   }
+  const missing = squats.filter((s) => s.missing);
+  if (missing.length) {
+    decision = "deny";
+    const shown = missing.map((s) => `${s.dependency.name}@${s.dependency.version}${s.like ? ` (did you mean ${s.like.name}?)` : ""}`).join(", ");
+    reasons.push(`${where} pins package names that do not exist on the registry: ${shown}. Anyone can register such a name and ship malware under it ("slopsquatting"). Fix the name in the manifest and regenerate the lockfile.`);
+  }
+  const alike = squats.filter((s) => !s.missing && s.like);
+  if (alike.length) {
+    if (decision === "allow") decision = "ask";
+    const shown = alike
+      .map((s) => `${s.dependency.name}@${s.dependency.version} looks like ${s.like!.name} (used by ${fmtRepos(s.like!.dependentRepos)} repositories; this one by ${fmtRepos(s.ownRepos ?? 0)})`)
+      .join("; ");
+    reasons.push(`${where} pins look-alike names of popular packages: ${shown}. Make sure these are the packages you mean.`);
+  }
+  if (decision !== "allow") return { verdict: { requested, decision, reason: reasons.join(" ") }, count: deps.length };
+  const reason = failed ? `${where}: could not be checked for malware (${failed})` : `${where}: ${deps.length} locked packages, no known malware or look-alike names`;
+  return { verdict: { requested, decision: "allow", reason }, count: deps.length };
 }
 
 export async function guardCommand(
@@ -489,9 +593,16 @@ export async function guardCommand(
 ): Promise<GuardResult> {
   const { cwd, ...probes } = options;
   const probe: GuardProbes = { ...LIVE_PROBES, ...probes };
-  const { packages: requested, lockfiles } = parseCommand(line, cwd);
+  const parsed = parseCommand(line, cwd);
+  const requested = [...parsed.packages];
+  const lockfiles: LockfileInstall[] = [];
+  for (const install of parsed.lockfiles) {
+    // No lockfile npm/pnpm/yarn/bun can read: they resolve package.json instead, so check those packages.
+    if (install.ecosystem === "npm" && !install.file && lockedDependencies(install).deps.length === 0) requested.push(...manifestPackages(install.dir));
+    else lockfiles.push(install);
+  }
   // Packages are checked in parallel (a few at a time): guard runs before every install.
-  const verdicts = await mapLimit(requested, 4, async (r): Promise<PackageVerdict> => {
+  const verdicts = await mapLimit(requested, requested.length > 8 ? 8 : 4, async (r): Promise<PackageVerdict> => {
     if (r.remote) {
       return { requested: r, decision: "ask", reason: `${r.spec} is installed straight from a URL or git repository: no registry or advisory database covers it, so Foster cannot check it. Install it only from a source you trust.` };
     }
@@ -507,7 +618,7 @@ export async function guardCommand(
           version = target;
         }
       }
-      const extras: VerdictExtras = { lookAlike: lookAlike(r.ecosystem, r.name, result.record?.dependentRepos) };
+      const extras: VerdictExtras = { lookAlike: lookAlike(r.ecosystem, r.name, result.record?.dependentRepos, result.record?.downloadsLastMonth) };
       if (result.notFound) extras.existsOnRegistry = await exists(r.ecosystem, r.name);
       if (!(result.notFound && extras.existsOnRegistry === false)) {
         extras.versionKnown = version !== undefined;
@@ -528,13 +639,13 @@ export async function guardCommand(
   });
   let lockedCount = 0;
   for (const install of lockfiles) {
-    const { verdict, count } = await checkLockfileInstall(install, probe);
+    const { verdict, count } = await checkLockfileInstall(install, probe, check, exists);
     lockedCount += count;
     if (verdict) verdicts.push(verdict);
   }
   const decision = verdicts.reduce<Decision>((d, v) => (RANK[v.decision] > RANK[d] ? v.decision : d), "allow");
   const flagged = verdicts.filter((v) => v.decision !== "allow");
-  const checked = [requested.length ? `${requested.length} package(s) checked` : "", lockedCount ? `${lockedCount} locked package(s) checked for known malware` : ""].filter(Boolean);
+  const checked = [requested.length ? `${requested.length} package(s) checked` : "", lockedCount ? `${lockedCount} locked package(s) checked for known malware and look-alike names` : ""].filter(Boolean);
   const message =
     flagged.length === 0
       ? checked.length

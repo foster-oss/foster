@@ -63,12 +63,17 @@ export interface LookAlike {
 const MIN_TARGET_REPOS = 1000;
 /** A look-alike name already used by this many repositories is treated as legitimate. */
 const OWN_REPOS_TRUSTED = 1000;
+/** A look-alike name downloaded this often per month is treated as legitimate. */
+const DOWNLOADS_TRUSTED = 100_000;
 
 /**
  * The popular package `name` most likely imitates, or undefined. `ownRepos` is the requested
  * package's own dependent-repo count when known: a name that is itself widely used is not a squat.
  */
-export function lookAlike(ecosystem: Ecosystem, name: string, ownRepos?: number | null): LookAlike | undefined {
+export function lookAlike(ecosystem: Ecosystem, name: string, ownRepos?: number | null, ownDownloads?: number | null): LookAlike | undefined {
+  // Dependent-repo counts lag for packages that are new but huge (call-bound, get-proto: a billion
+  // downloads a month, "0 dependent repos"). Downloads at this level are not a squat.
+  if (ownDownloads !== undefined && ownDownloads !== null && ownDownloads >= DOWNLOADS_TRUSTED) return undefined;
   const list = loadPopular().get(ecosystem);
   if (!list) return undefined;
   const k = key(ecosystem, name);

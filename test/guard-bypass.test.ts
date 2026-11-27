@@ -180,3 +180,61 @@ describe("Windows paths in commands", () => {
     expect(splitCommands(String.raw`echo "a\"b" "c\$d" x\ y`)).toEqual([["echo", 'a"b', "c$d", "x y"]]);
   });
 });
+
+describe("found in the 0.8.0 review", () => {
+  it("reads global options before the subcommand", () => {
+    const cwd = resolve("/mono");
+    const dir = (line: string) => parseCommand(line, cwd).lockfiles.map((l) => l.dir);
+    for (const line of ["npm --prefix apps/a ci", "npm -C apps/a ci", "npm --prefix=apps/a ci", "npm ci --prefix apps/a", "pnpm -C apps/a install", "yarn --cwd apps/a install", "yarn --cwd apps/a"])
+      expect(dir(line), line).toEqual([resolve(cwd, "apps/a")]);
+    expect(parseCommand("npm --prefix apps/a i lodash", cwd).packages.map((p) => p.name)).toEqual(["lodash"]);
+    expect(parseCommand("pip --disable-pip-version-check -q install requests", cwd).packages.map((p) => p.name)).toEqual(["requests"]);
+  });
+
+  it("checks package.json when there is no lockfile to read", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "foster-guard-"));
+    writeFileSync(
+      join(dir, "package.json"),
+      JSON.stringify({ dependencies: { crossenv: "0.0.2-security", lodash: "^4.17.0", local: "file:../x", ws: "workspace:*" }, devDependencies: { tc: "npm:@ctrl/tinycolor@4.1.1", gh: "github:a/b" } }),
+    );
+    const seen: string[] = [];
+    const r = await guardCommand("npm install", healthy, async () => true, {
+      ...quiet,
+      cwd: dir,
+      malware: async (_e, name, version) => {
+        seen.push(`${name}@${version ?? ""}`);
+        return name === "crossenv" ? [{ id: "GHSA-c2m4-w5hm-vqjw", url: "", title: "crossenv is malware", wholePackage: true }] : [];
+      },
+    });
+    expect(seen.sort()).toEqual(["@ctrl/tinycolor@4.1.1", "crossenv@0.0.2-security", "lodash@4.3.2"]);
+    expect(r.decision).toBe("deny");
+    expect(r.message).toMatch(/crossenv@0\.0\.2-security \(npm\) is known malware/);
+    expect(r.message).toMatch(/gh@github:a\/b \(package\.json, no lockfile\) is installed straight from a URL or git/);
+  });
+
+  it("checks lockfile names for slopsquats and look-alikes", async () => {
+    const dir = lockDir({ expres: "4.18.2", lodash: "4.17.21", lodahs: "4.17.21" });
+    const lookups: string[] = [];
+    const check = async (ecosystem: Ecosystem, name: string, version?: string): Promise<CheckResult> => {
+      lookups.push(name);
+      if (name === "expres") return { ...(await healthy(ecosystem, name, version)), record: null, notFound: true };
+      const base = await healthy(ecosystem, name, version);
+      return { ...base, record: { ...base.record!, dependentRepos: 3 } };
+    };
+    const r = await guardCommand("npm ci", check, async (_e, name) => name !== "expres", { ...quiet, cwd: dir });
+    expect(lookups.sort()).toEqual(["expres", "lodahs"]); // only look-alikes are looked up, never lodash
+    expect(r.decision).toBe("deny");
+    expect(r.message).toMatch(/do not exist on the registry: expres@4\.18\.2 \(did you mean express\?\)/);
+    expect(r.message).toMatch(/lodahs@4\.17\.21 looks like lodash/);
+  });
+});
+
+describe("look-alikes that are simply new and huge", () => {
+  it("trusts names with heavy downloads even when dependent counts lag", async () => {
+    const { lookAlike } = await import("../src/lib/typosquat.js");
+    // call-bound vs call-bind: a billion downloads a month, but ecosyste.ms counts 0 dependent repos
+    expect(lookAlike("npm", "call-bound", 0)).toBeDefined();
+    expect(lookAlike("npm", "call-bound", 0, 1_000_000_000)).toBeUndefined();
+    expect(lookAlike("npm", "lodahs", 0, 40)).toBeDefined();
+  });
+});

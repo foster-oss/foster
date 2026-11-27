@@ -217,7 +217,11 @@ composer commands, including `cd app && npm i -D x` chains, and the less obvious
 
 - **Installs from a lockfile** (`npm ci`, `npm install` with no names, `pnpm install`, `yarn`, `pip install -r`,
   `uv sync`, `poetry install`, `bundle install`, `composer install`, `cargo fetch`): every locked package
-  is checked for known malware in one OSV query, and the install is denied if any is found.
+  is checked for known malware in one OSV query (**deny**). Locked names that look like a popular package
+  are looked up too: a name that does not exist on the registry is a **deny** (slopsquat), an existing
+  little-used look-alike an **ask**. Global options before the subcommand count (`npm --prefix app ci`).
+- **No lockfile yet** (a fresh clone, `bun.lockb`): `npm`/`pnpm`/`yarn`/`bun install` resolve `package.json`,
+  so guard checks those packages like ones named on the command line.
 - **Aliases** (`npm i tc@npm:@ctrl/tinycolor@4.1.1`): the real package is checked.
 - **Registry tarball URLs** (`https://registry.npmjs.org/x/-/x-1.0.0.tgz`): package and version are read from the URL.
 - **Other URLs and git** (`https://…/x.tgz`, `github:a/b`, `git+https://…`): **ask**, since no database covers them.
