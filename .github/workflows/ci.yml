@@ -135,6 +135,7 @@ jobs:
           call foster-oss guard -- npm i crossenv >nul
           if not errorlevel 1 exit /b 1
           echo cmd ok
+          exit /b 0
 
   patches:
     # Every patch is rebuilt from the upstream release and re-verified on every change.
