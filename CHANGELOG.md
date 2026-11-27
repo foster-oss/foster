@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.1
+
+- The CLI no longer lets a stale copy of the Orphan Index from the GitHub CDN replace the newer data
+  bundled in the release (it compares `generatedAt` and keeps the newest), so `fund` shows funding
+  links right after a release.
+
 ## 0.6.0
 
 - **`foster-oss fund`**: the dependencies you rely on that are unmaintained or at risk, ranked by how much

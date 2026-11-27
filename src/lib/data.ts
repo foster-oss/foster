@@ -43,14 +43,20 @@ export interface LoadOptions {
 
 async function load<T>(rel: string, remoteUrl: string, opts: LoadOptions, warnings: string[]): Promise<T | null> {
   if (opts.file) return JSON.parse(readFileSync(opts.file, "utf8")) as T;
+  const bundled = readBundled<T>(rel);
   if (!opts.offline) {
     try {
-      return await fetchJson<T>(remoteUrl, { timeoutMs: 10_000, retries: 0 });
+      const remote = await fetchJson<T>(remoteUrl, { timeoutMs: 10_000, retries: 0 });
+      // CDNs can serve a stale copy: never let an older remote file replace newer bundled data.
+      const stamp = (x: unknown) => (x && typeof (x as { generatedAt?: unknown }).generatedAt === "string" ? Date.parse((x as { generatedAt: string }).generatedAt) : NaN);
+      const r = stamp(remote);
+      const b = stamp(bundled);
+      if (!bundled || Number.isNaN(r) || Number.isNaN(b) || r >= b) return remote;
+      return bundled;
     } catch {
-      // Fall through to the bundled snapshot. Not a warning: before the repo is public this is expected.
+      // Fall through to the bundled snapshot. Not a warning: offline use is expected.
     }
   }
-  const bundled = readBundled<T>(rel);
   if (!bundled) warnings.push(`no ${rel} available`);
   return bundled;
 }
