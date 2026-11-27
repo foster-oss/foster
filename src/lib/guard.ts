@@ -193,6 +193,17 @@ function composerSpec(spec: string): RequestedPackage | null {
 }
 
 /** Package install requests found in a shell command line. Unknown commands yield nothing. */
+/**
+ * Rebuild a command line from CLI arguments. `guard -- npm i x` arrives as separate tokens (quote the
+ * ones that contain whitespace so they stay one word); `guard "npm i x"` arrives as one token that is
+ * already the whole command line.
+ */
+export function commandLineFrom(tokens: string[]): string {
+  const [only] = tokens;
+  if (tokens.length === 1 && only !== undefined) return only;
+  return tokens.map((t) => (/\s/.test(t) ? JSON.stringify(t) : t)).join(" ");
+}
+
 export function parseInstallCommand(line: string): RequestedPackage[] {
   const found: RequestedPackage[] = [];
   for (let tokens of splitCommands(line)) {

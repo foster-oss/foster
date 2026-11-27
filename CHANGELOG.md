@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Fix: `foster-oss guard "npm install x"` (the whole command as one quoted argument) now checks the
+  install instead of reporting "no package installs". `guard -- npm install x` was not affected.
+- CI runs the GitHub Action itself on a fixture, using the released package.
+
 ## 0.5.0
 
 - `scan --since <git-ref>`: only check dependencies added or changed since a ref, by comparing each

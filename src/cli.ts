@@ -6,7 +6,7 @@ import { applyFixes, installCommand } from "./lib/fix.js";
 import { fosterVersion } from "./lib/http.js";
 import { formatFix, formatMarkdown, formatRecord, formatSarif, formatText } from "./lib/report.js";
 import { describeAlternatives } from "./lib/replacements.js";
-import { guardCommand, parseInstallCommand } from "./lib/guard.js";
+import { commandLineFrom, guardCommand, parseInstallCommand } from "./lib/guard.js";
 import { scanProject, scanSbom, shouldFail, type FailOn } from "./lib/scan.js";
 import { ECOSYSTEMS, type Ecosystem } from "./lib/types.js";
 
@@ -129,7 +129,7 @@ Maintained alternatives: ${describeAlternatives(result.alternatives)}`);
         await runClaudeHook();
         return 0;
       }
-      const line = values.command ?? positionals.slice(1).map((t) => (/s/.test(t) ? JSON.stringify(t) : t)).join(" ");
+      const line = values.command ?? commandLineFrom(positionals.slice(1));
       if (!line.trim()) throw new UsageError("guard needs a command, e.g. foster-oss guard -- npm install left-pad");
       const result = await guardCommand(line);
       if (values.json) console.log(JSON.stringify(result, null, 2));

@@ -70,6 +70,34 @@ jobs:
             }
             process.exit(bad ? 1 : 0);'
 
+  action:
+    # Runs action.yml itself (with the released foster-oss) on a fixture that has a known patch.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - id: foster
+        uses: ./
+        continue-on-error: true
+        with:
+          path: test/fixtures/npm-v3
+          recursive: "false"
+          only-new: "false"
+          fail-on: patch-available
+      - name: The action found the ip patch and failed the step
+        env:
+          OUTCOME: ${{ steps.foster.outcome }}
+          CODE: ${{ steps.foster.outputs.exit-code }}
+          REPORT: ${{ steps.foster.outputs.report }}
+          SARIF: ${{ steps.foster.outputs.sarif }}
+        run: |
+          echo "outcome=$OUTCOME exit-code=$CODE"
+          test "$OUTCOME" = failure
+          test "$CODE" = 1
+          grep -q "@keep-lts/ip" "$REPORT"
+          node -e 'const s=JSON.parse(require("fs").readFileSync(process.env.SARIF,"utf8")); if (!s.runs[0].results.length) process.exit(1)'
+
   dogfood:
     # Foster scans itself, and its findings show up in this repository's Security tab.
     runs-on: ubuntu-latest

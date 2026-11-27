@@ -1,9 +1,19 @@
 import { describe, expect, it } from "vitest";
 import type { CheckResult } from "../src/lib/check.js";
-import { guardCommand, parseInstallCommand, splitCommands, verdictFor } from "../src/lib/guard.js";
+import { commandLineFrom, guardCommand, parseInstallCommand, splitCommands, verdictFor } from "../src/lib/guard.js";
 import type { Ecosystem } from "../src/lib/types.js";
 
 const names = (line: string) => parseInstallCommand(line).map((r) => `${r.ecosystem}:${r.name}${r.version ? `@${r.version}` : ""}`);
+
+describe("commandLineFrom", () => {
+  it("takes a single quoted argument as the whole command line", () => {
+    expect(names(commandLineFrom(["npm install lodahs"]))).toEqual(["npm:lodahs"]);
+  });
+  it("joins separate tokens and keeps tokens with spaces together", () => {
+    expect(commandLineFrom(["npm", "install", "lodahs"])).toBe("npm install lodahs");
+    expect(commandLineFrom(["sh", "-c", "npm i x"])).toBe(`sh -c "npm i x"`);
+  });
+});
 
 describe("splitCommands", () => {
   it("splits on operators and honours quotes", () => {
