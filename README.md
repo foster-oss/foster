@@ -152,6 +152,8 @@ sometimes install hallucinated package names (attackers register them: "slopsqua
 packages, or versions with known holes. `foster-oss guard` checks every package a shell command
 would install, before it runs:
 
+<p align="center"><img src="brand/guard-demo.svg" alt="foster-oss guard blocking a look-alike name (lodahs), a hallucinated name and an abandoned vulnerable package (request)" width="820"></p>
+
 | Situation | Decision |
 |---|---|
 | The name does not exist on the registry (checked against the real registry, not just an index) | **deny**, with "did you mean …?" |
