@@ -5,8 +5,15 @@
   <subtitle>Critical open source packages that became unmaintained, or gained security advisories no release fixes.</subtitle>
   <link href="https://foster-oss.github.io/foster/"/>
   <link rel="self" href="https://foster-oss.github.io/foster/feed.xml"/>
-  <updated>2026-11-26T00:22:31.487Z</updated>
+  <updated>2026-11-27T01:17:15.430Z</updated>
   <author><name>Foster</name></author>
+  <entry>
+    <id>https://foster-oss.github.io/foster/#2026-11-27</id>
+    <title>Orphan Index 2026-11-27: 1 newly unmaintained, 0 with new unfixed advisories, 0 maintained again</title>
+    <updated>2026-11-27T01:17:15.430Z</updated>
+    <link href="https://foster-oss.github.io/foster/"/>
+    <content type="html">&lt;h3&gt;Newly unmaintained&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;npm &lt;b&gt;core-util-is&lt;/b&gt; (1.7M dependent repos) → dormant&lt;/li&gt;&lt;/ul&gt;</content>
+  </entry>
   <entry>
     <id>https://foster-oss.github.io/foster/#2026-11-26</id>
     <title>Orphan Index 2026-11-26: 2 newly unmaintained, 0 with new unfixed advisories, 0 maintained again</title>

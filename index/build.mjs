@@ -51,6 +51,7 @@ for (const eco of ecosystems) {
         latest_release_published_at: p.latest_release_published_at,
         repository_url: p.repository_url,
         maintainers: Array.isArray(p.maintainers) ? p.maintainers.map(() => 1) : null,
+        funding_links: [...new Set(p.funding_links ?? [])],
         status: p.status,
         advisories: p.advisories,
         repo_metadata: p.repo_metadata
@@ -164,11 +165,18 @@ function buildStats(rows) {
       if (unmaintained) totals.orphanedWithUnpatchedAdvisories++;
     }
   }
+  // Unmaintained packages many projects rely on, whose maintainers accept support: where money helps most.
+  const fundable = rows
+    .filter((r) => (r.status === "dead" || r.status === "dormant") && r.funding?.length)
+    .sort((a, b) => (b.dependentRepos ?? 0) - (a.dependentRepos ?? 0))
+    .slice(0, 30)
+    .map((r) => ({ ecosystem: r.ecosystem, name: r.name, status: r.status, dependentRepos: r.dependentRepos, downloadsLastMonth: r.downloadsLastMonth, funding: r.funding, unpatched: r.unpatchedAdvisories.map((a) => a.id) }));
+  totals.unmaintainedWithFunding = rows.filter((r) => (r.status === "dead" || r.status === "dormant") && r.funding?.length).length;
   const top = rows
     .filter((r) => r.status !== "active")
     .slice(0, 25)
     .map((r) => ({ ecosystem: r.ecosystem, name: r.name, status: r.status, priority: r.priority, downloadsLastMonth: r.downloadsLastMonth, dependentRepos: r.dependentRepos, unpatched: r.unpatchedAdvisories.map((a) => a.id) }));
-  return { totals, byEcosystem: byEco, top };
+  return { totals, byEcosystem: byEco, top, fundable };
 }
 
 function toCsv(rows) {

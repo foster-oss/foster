@@ -66,6 +66,15 @@ community patches and services like [Keep LTS](https://keep-lts.com) publish dro
 nothing connects "this dependency of yours is orphaned and vulnerable" to "here is the fix someone
 already published". **Foster is that connection: an open, vendor-neutral index and scanner.**
 
+## What to do about an orphaned dependency, in order
+
+1. **Upstream first.** If anyone still answers, send the fix or report to the original project.
+2. **Fund the maintainers.** Orphaned packages are a funding problem before they are a security problem.
+   `npx foster-oss fund` lists the at-risk dependencies you rely on and who to sponsor; most of them come down
+   to a handful of people.
+3. **Move to a maintained alternative** when one exists (`consider:` in the scan output).
+4. **Use a drop-in patch** only as a stopgap while you do one of the above (`npx foster-oss fix`).
+
 ## How it works
 
 ```
@@ -110,6 +119,7 @@ Node 20+. Reads lockfiles from six ecosystems:
 | `foster-oss fix [dir]` | Point dependencies at published drop-in patches. `--dry-run`, `--force` |
 | `foster-oss check <name[@version]>` | Maintenance status, reach, unfixed advisories, patches and replacements for one package. `--ecosystem pypi\|cargo\|go\|rubygems\|packagist` |
 | `foster-oss guard -- <command>` | Check the packages a shell command would install, before it runs. `--hook claude` for Claude Code, `--strict`, `--json` |
+| `foster-oss fund [dir]` | At-risk dependencies you rely on, ranked, with their maintainers' sponsorship links (GitHub Sponsors, Open Collective, Tidelift, …) and the few people who cover most of them |
 | `foster-oss mcp` | Start the MCP server for AI agents |
 
 What the findings mean:

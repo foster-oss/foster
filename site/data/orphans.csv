@@ -37,7 +37,7 @@ npm,util-deprecate,dead,19.5,914574512,2198932,1985,1.0.2,2015-10-07T18:37:40.66
 npm,once,dead,19.5,898023903,2121111,3665,1.4.0,2016-09-06T21:11:09.367000Z,2025-10-25T19:07:40.000Z,false,1,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 13 months ago",https://github.com/isaacs/once
 npm,json-schema-traverse,dead,19.5,1976025589,1067963,1848,1.0.0,2020-12-13T10:56:54.719000Z,2021-07-26T06:52:21.000Z,false,1,,"6 issue(s)/PR(s) opened in the past year, none closed or merged; last push 5.3 years ago",https://github.com/epoberezkin/json-schema-traverse
 npm,http-deceiver,dead,19.4,67236595,2911733,301,1.2.7,2016-05-17T15:28:25.119000Z,2021-09-18T10:19:51.000Z,false,2,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 5.2 years ago",https://github.com/spdy-http2/http-deceiver
-npm,multicast-dns,dead,19.4,82426685,2890983,408,7.2.5,2022-05-16T08:18:55.104000Z,2024-06-14T07:52:28.000Z,false,2,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 2.4 years ago",https://github.com/mafintosh/multicast-dns
+npm,multicast-dns,dead,19.4,82426685,2890983,408,7.2.5,2022-05-16T08:18:55.104000Z,2024-06-14T07:52:28.000Z,false,2,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 2.5 years ago",https://github.com/mafintosh/multicast-dns
 npm,delegates,dead,19.4,73329353,2863488,650,1.0.0,2015-12-14T19:56:09.247000Z,2020-02-25T14:04:19.000Z,false,2,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 6.8 years ago",https://github.com/tj/node-delegates
 npm,invariant,dead,19.4,196363811,2745293,5321,2.2.4,2018-03-13T18:36:10.235000Z,2021-12-14T00:53:36.000Z,false,3,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 5.0 years ago",https://github.com/zertosh/invariant
 npm,url-parse,dead,19.4,212841843,2588673,2573,1.5.10,2022-02-22T15:49:03.624000Z,2023-01-04T21:12:05.000Z,false,4,,"6 issue(s)/PR(s) opened in the past year, none closed or merged; last push 3.9 years ago",https://github.com/unshiftio/url-parse
@@ -154,7 +154,7 @@ npm,err-code,dead,18,149314203,846998,384,3.0.1,2021-02-05T15:55:03.335000Z,2022
 npm,hash.js,dead,18,108852040,841002,1350,1.1.7,2018-11-30T19:50:03.326000Z,2021-05-06T22:05:46.000Z,false,1,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 5.6 years ago",https://github.com/indutny/hash.js
 npm,p-finally,dead,18,209642494,782912,1036,3.0.0,2021-04-09T05:42:39.138000Z,2021-04-09T05:45:17.000Z,true,1,,source repository is archived,https://github.com/sindresorhus/p-finally
 npm,graphemer,dead,18,197300997,780852,245,1.4.0,2022-09-19T10:19:34.014000Z,2022-09-19T10:19:01.000Z,true,1,,source repository is archived,https://github.com/flmnt/graphemer
-npm,util,dead,18,233656264,701284,5372,0.12.5,2022-10-16T20:26:27.691000Z,2024-12-21T10:14:56.000Z,false,6,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 23 months ago",https://github.com/browserify/node-util
+npm,util,dead,18,233656264,701284,5372,0.12.5,2022-10-16T20:26:27.691000Z,2024-12-21T10:14:56.000Z,false,6,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 24 months ago",https://github.com/browserify/node-util
 rubygems,coderay,dead,18,,326686,316,1.1.3,2020-05-30T07:24:49.350000Z,2025-09-05T18:42:36.000Z,false,1,,"5 issue(s)/PR(s) opened in the past year, none closed or merged; last push 15 months ago",https://github.com/rubychan/coderay
 go,github.com/pmezard/go-difflib,dead,18,,281215,69104,v1.0.0,2016-01-10T10:55:54.000000Z,2023-05-30T11:23:07.000Z,false,0,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 3.5 years ago",https://github.com/pmezard/go-difflib
 npm,assign-symbols,dead,17.9,62344267,871923,1006,2.0.2,2018-08-07T15:26:38.594000Z,2018-09-14T11:47:36.000Z,false,3,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 8.2 years ago",https://github.com/jonschlinkert/assign-symbols
@@ -165,10 +165,10 @@ npm,fast-diff,dead,17.9,191651908,731517,721,1.3.0,2023-05-19T08:34:57.408000Z,2
 rubygems,jquery-rails,dead,17.9,,576659,1568,4.6.1,2025-10-21T20:23:15.992000Z,2025-10-21T20:23:08.000Z,false,14,,"2 issue(s)/PR(s) opened in the past year, none closed or merged; last push 13 months ago",https://github.com/rails/jquery-rails
 packagist,swiftmailer/swiftmailer,dead,17.9,,452482,1109,v6.3.0,2021-10-18T15:26:12.000000Z,2021-10-25T07:19:17.000Z,true,1,,source repository is archived,https://github.com/swiftmailer/swiftmailer
 rubygems,ast,dead,17.9,,92629,29,2.4.3,2025-03-19T18:49:27.350000Z,2025-03-19T18:48:50.000Z,false,3,,"2 issue(s)/PR(s) opened in the past year, none closed or merged; last push 21 months ago",https://github.com/whitequark/ast
-npm,create-hmac,dead,17.8,52083980,819567,1022,1.1.7,2018-04-11T12:31:20.190000Z,2024-12-21T10:00:04.000Z,false,5,,"2 issue(s)/PR(s) opened in the past year, none closed or merged; last push 23 months ago",https://github.com/browserify/createHmac
-npm,diffie-hellman,dead,17.8,50262556,796557,384,5.0.3,2018-04-11T12:03:30.207000Z,2024-12-21T09:34:19.000Z,false,5,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 23 months ago",https://github.com/browserify/diffie-hellman
+npm,create-hmac,dead,17.8,52083980,819567,1022,1.1.7,2018-04-11T12:31:20.190000Z,2024-12-21T10:00:04.000Z,false,5,,"2 issue(s)/PR(s) opened in the past year, none closed or merged; last push 24 months ago",https://github.com/browserify/createHmac
+npm,diffie-hellman,dead,17.8,50262556,796557,384,5.0.3,2018-04-11T12:03:30.207000Z,2024-12-21T09:34:19.000Z,false,5,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 24 months ago",https://github.com/browserify/diffie-hellman
 npm,JSONStream,dead,17.8,64230154,794191,2104,1.3.5,2018-10-14T01:24:01.629000Z,2018-10-14T01:23:58.000Z,true,10,,source repository is archived,https://github.com/dominictarr/JSONStream
-npm,public-encrypt,dead,17.8,48707493,791978,376,4.0.3,2018-10-01T19:47:16.256000Z,2024-12-21T10:13:51.000Z,false,5,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 23 months ago",https://github.com/browserify/publicEncrypt
+npm,public-encrypt,dead,17.8,48707493,791978,376,4.0.3,2018-10-01T19:47:16.256000Z,2024-12-21T10:13:51.000Z,false,5,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 24 months ago",https://github.com/browserify/publicEncrypt
 npm,buffer-equal-constant-time,dead,17.8,101740021,732467,119,1.0.1,2013-12-16T20:12:17.799000Z,2022-02-12T14:32:22.000Z,true,2,,source repository is archived,https://github.com/salesforce/buffer-equal-constant-time
 npm,lodash.get,dead,17.8,92485315,680658,5364,4.4.2,2016-08-13T17:39:26.852000Z,2026-10-01T23:04:09.000Z,false,2,,registry marks the package as deprecated,https://github.com/lodash/lodash
 cargo,pin-utils,dead,17.8,,47615,206,0.1.1,2026-10-01T07:13:59.339322Z,2026-09-30T15:52:28.000Z,true,1,,source repository is archived,https://github.com/rust-lang/pin-utils
@@ -180,7 +180,7 @@ npm,prr,dead,17.7,62317054,718801,436,1.0.1,2014-07-22T06:50:49.598000Z,2017-12-
 npm,dependency-graph,dead,17.7,98362207,694186,311,1.0.0,2023-12-06T00:09:45.123000Z,2025-11-18T16:05:06.000Z,false,1,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 12 months ago",https://github.com/jriecken/dependency-graph
 npm,sha.js,dead,17.7,121685112,676472,1283,2.4.12,2025-07-01T17:46:33.039000Z,2025-10-23T23:09:37.000Z,false,3,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 13 months ago",https://github.com/browserify/sha.js
 npm,denque,dead,17.7,204461820,615261,234,2.1.0,2022-07-18T10:14:29.117000Z,2023-03-04T08:16:33.000Z,true,1,,source repository is archived,https://github.com/invertase/denque
-cargo,same-file,dead,17.7,,36226,51,1.0.6,2020-01-11T17:02:30.960838Z,2025-10-17T12:41:41.000Z,false,1,,"5 issue(s)/PR(s) opened in the past year, none closed or merged; last push 13 months ago",https://github.com/BurntSushi/same-file
+cargo,same-file,dead,17.7,,36226,51,1.0.6,2020-01-11T17:02:30.960838Z,2025-10-17T12:41:41.000Z,false,1,,"5 issue(s)/PR(s) opened in the past year, none closed or merged; last push 14 months ago",https://github.com/BurntSushi/same-file
 cargo,httpdate,dead,17.7,,29446,114,1.0.3,2023-08-13T10:55:54.391658Z,2024-12-22T13:34:22.000Z,false,1,,"2 issue(s)/PR(s) opened in the past year, none closed or merged; last push 23 months ago",https://github.com/pyfisch/httpdate
 npm,from2,dead,17.6,44063463,681663,608,2.3.0,2016-08-15T17:15:59.624000Z,2019-06-11T15:51:29.000Z,false,2,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 7.5 years ago",https://github.com/hughsk/from2
 npm,arch,dead,17.6,72965443,673262,166,3.0.0,2024-02-12T03:31:33.308000Z,2024-02-13T22:50:43.000Z,false,2,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 2.8 years ago",https://github.com/feross/arch
@@ -199,7 +199,7 @@ cargo,paste,dead,17.5,,23840,1829,1.0.15,2024-05-07T01:50:22.784771Z,2024-10-06T
 npm,node-libs-browser,dead,17.4,17211821,587718,2117,2.2.1,2019-06-12T21:08:00.062000Z,2021-11-22T13:41:06.000Z,true,2,,source repository is archived,https://github.com/webpack/node-libs-browser
 npm,memory-fs,dead,17.4,43951814,586382,2441,0.5.0,2019-10-08T12:22:39.687000Z,2023-07-12T03:11:19.000Z,true,1,,source repository is archived,https://github.com/webpack/memory-fs
 npm,md5,dead,17.4,105893781,447709,6615,2.3.0,2020-08-02T10:29:33.749000Z,2025-10-26T15:03:15.000Z,false,2,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 13 months ago",https://github.com/pvorb/node-md5
-npm,fast-safe-stringify,dead,17.4,288607904,353584,760,2.1.1,2021-09-08T07:19:16.545000Z,2024-12-21T09:58:57.000Z,false,3,,"2 issue(s)/PR(s) opened in the past year, none closed or merged; last push 23 months ago",https://github.com/davidmarkclements/fast-safe-stringify
+npm,fast-safe-stringify,dead,17.4,288607904,353584,760,2.1.1,2021-09-08T07:19:16.545000Z,2024-12-21T09:58:57.000Z,false,3,,"2 issue(s)/PR(s) opened in the past year, none closed or merged; last push 24 months ago",https://github.com/davidmarkclements/fast-safe-stringify
 packagist,fzaninotto/faker,dead,17.4,,325223,4343,v1.9.2,2020-12-11T09:56:16.000000Z,2024-03-20T13:44:54.000Z,true,1,,source repository is archived,https://github.com/fzaninotto/Faker
 go,github.com/json-iterator/go,dead,17.4,,143681,48676,v1.1.12,2021-09-11T02:17:26.000000Z,2024-05-27T09:03:49.000Z,true,0,,source repository is archived,https://github.com/json-iterator/go
 rubygems,rest-client,dead,17.4,,100798,4231,2.1.0,2019-08-21T23:16:56.085000Z,2024-05-19T10:18:13.000Z,false,5,,"2 issue(s)/PR(s) opened in the past year, none closed or merged; last push 2.5 years ago",https://github.com/rest-client/rest-client
@@ -312,7 +312,7 @@ packagist,behat/transliterator,dead,15.9,,11382,123,v1.5.0,2022-03-30T09:27:43.0
 cargo,dirs-next,dead,15.9,,11330,291,2.0.0,2020-10-22T03:34:04.786339Z,2023-04-08T14:57:53.000Z,false,2,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 3.6 years ago",https://github.com/xdg-rs/dirs
 cargo,bs58,dead,15.9,,7888,486,0.5.1,2024-03-19T12:50:23.529199Z,2024-05-24T11:29:52.000Z,false,1,,"5 issue(s)/PR(s) opened in the past year, none closed or merged; last push 2.5 years ago",https://github.com/Nullus157/bs58-rs
 npm,jmespath,dead,15.8,51463261,136508,231,0.16.0,2022-01-19T20:39:39.257000Z,2023-12-07T10:42:27.000Z,false,1,,"5 issue(s)/PR(s) opened in the past year, none closed or merged; last push 3.0 years ago",https://github.com/jmespath/jmespath.js
-go,gopkg.in/tomb.v1,dead,15.8,,99833,8277,v1.0.0-20141024135613-dd632973f1e7,2014-10-24T13:56:13.000000Z,2023-01-20T15:55:54.000Z,false,0,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 3.8 years ago",https://github.com/go-tomb/tomb
+go,gopkg.in/tomb.v1,dead,15.8,,99833,8277,v1.0.0-20141024135613-dd632973f1e7,2014-10-24T13:56:13.000000Z,2023-01-20T15:55:54.000Z,false,0,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 3.9 years ago",https://github.com/go-tomb/tomb
 rubygems,will_paginate,dead,15.8,,72883,503,4.0.1,2024-06-10T09:08:51.238000Z,2025-11-24T13:36:25.000Z,false,1,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 12 months ago",https://github.com/mislav/will_paginate
 pypi,google-crc32c,dead,15.8,170827714,8602,78,1.9.0,2026-09-24T21:19:00.000000Z,2026-04-01T20:26:51.000Z,true,2,,source repository is archived,https://github.com/googleapis/python-crc32c
 cargo,serde-value,dead,15.8,,3640,110,0.7.0,2020-07-17T18:20:27.889805Z,2024-07-31T20:10:21.000Z,false,1,,"2 issue(s)/PR(s) opened in the past year, none closed or merged; last push 2.3 years ago",https://github.com/arcnmx/serde-value
@@ -478,7 +478,7 @@ packagist,symfony/assetic-bundle,dead,14.3,,14209,515,v2.8.2,2017-07-14T07:26:46
 pypi,isoduration,dead,14.3,47929576,8138,51,20.11.0,2020-11-01T10:59:58.000000Z,2021-11-26T23:07:05.000Z,false,1,,"3 issue(s)/PR(s) opened in the past year, none closed or merged; last push 5.0 years ago",https://github.com/bolsote/isoduration
 cargo,tempdir,dead,14.3,,6268,1249,0.3.7,2018-03-21T07:46:03.078845Z,2019-09-03T21:37:02.000Z,true,2,,source repository is archived,https://github.com/rust-lang-deprecated/tempdir
 npm,number-is-nan,dead,14.3,45776275,5557,540,3.0.0,2021-04-07T06:14:22.892000Z,2024-05-02T17:43:43.000Z,true,1,,source repository is archived,https://github.com/sindresorhus/number-is-nan
-rubygems,airbrake,dead,14.3,,4467,84,13.0.5,2024-12-13T01:32:44.698000Z,2024-12-21T01:08:22.000Z,false,6,,"3 issue(s)/PR(s) opened in the past year, none closed or merged; last push 23 months ago",https://github.com/airbrake/airbrake
+rubygems,airbrake,dead,14.3,,4467,84,13.0.5,2024-12-13T01:32:44.698000Z,2024-12-21T01:08:22.000Z,false,6,,"3 issue(s)/PR(s) opened in the past year, none closed or merged; last push 24 months ago",https://github.com/airbrake/airbrake
 packagist,google/crc32,dead,14.3,,1894,7,v0.2.0,2023-04-16T22:44:57.000000Z,2024-04-01T14:55:48.000Z,true,1,,source repository is archived,https://github.com/google/php-crc32
 go,go.uber.org/tools,dead,14.2,,49593,511,v0.0.0-20190618225709-2cfd321de3ee,2019-06-18T22:57:09.000000Z,2019-06-18T22:58:21.000Z,true,0,,source repository is archived,https://github.com/uber-go/tools
 go,github.com/cpuguy83/go-md2man,dead,14.2,,37230,1611,v1.0.10,2019-03-14T22:45:56.000000Z,2025-11-24T22:07:49.000Z,false,0,,"2 issue(s)/PR(s) opened in the past year, none closed or merged; last push 12 months ago",https://github.com/cpuguy83/go-md2man
@@ -516,7 +516,7 @@ pypi,google-pasta,dead,13.9,18522392,24151,92,0.2.0,2020-03-13T18:57:47.000000Z,
 go,github.com/VividCortex/gohistogram,dead,13.9,,22010,2003,v1.0.0,2016-08-22T18:46:21.000000Z,2020-12-15T17:33:31.000Z,true,0,,source repository is archived,https://github.com/VividCortex/gohistogram
 pypi,sphinxcontrib-qthelp,dead,13.9,17951413,21955,162,2.0.0,2024-07-29T01:09:54.000000Z,2024-10-25T12:59:42.000Z,false,1,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 2.1 years ago",https://github.com/sphinx-doc/sphinxcontrib-qthelp
 pypi,sphinxcontrib-applehelp,dead,13.9,17916143,21914,155,2.0.0,2024-07-29T01:08:58.000000Z,2024-10-25T09:14:38.000Z,false,1,,"2 issue(s)/PR(s) opened in the past year, none closed or merged; last push 2.1 years ago",https://github.com/sphinx-doc/sphinxcontrib-applehelp
-go,github.com/gorilla/securecookie,dead,13.9,,16980,2561,v1.1.2,2023-10-18T11:18:40.000000Z,2023-11-08T15:56:24.000Z,false,0,,"8 issue(s)/PR(s) opened in the past year, none closed or merged; last push 3.0 years ago",https://github.com/gorilla/securecookie
+go,github.com/gorilla/securecookie,dead,13.9,,16980,2561,v1.1.2,2023-10-18T11:18:40.000000Z,2023-11-08T15:56:24.000Z,false,0,,"8 issue(s)/PR(s) opened in the past year, none closed or merged; last push 3.1 years ago",https://github.com/gorilla/securecookie
 go,github.com/Azure/go-autorest/autorest/azure/cli,dead,13.9,,14741,2771,,2025-01-28T16:29:15.000000Z,2025-02-12T15:11:58.000Z,true,0,,source repository is archived,https://github.com/Azure/go-autorest
 pypi,pytest-runner,dead,13.9,33638872,6128,426,6.0.1,2023-12-04T01:03:28.000000Z,2023-12-04T01:03:42.000Z,true,1,,source repository is archived,https://github.com/pytest-dev/pytest-runner
 packagist,true/punycode,dead,13.9,,3145,85,v2.1.1,2016-11-16T10:37:54.000000Z,2021-09-16T08:14:24.000Z,true,3,,source repository is archived,https://github.com/true/php-punycode
@@ -538,7 +538,7 @@ go,sourcegraph.com/sourcegraph/appdash,dead,13.6,,22591,1247,v0.0.0-202110280806
 pypi,dataclasses,dead,13.6,6709618,15152,1111,0.8,2020-11-13T14:40:29.000000Z,2024-07-11T16:14:35.000Z,false,1,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 2.4 years ago",https://github.com/ericvsmith/dataclasses
 npm,fsevents,dormant,13.5,164719230,5289351,5083,2.3.3,2023-08-21T16:24:22.854000Z,2024-09-03T21:54:37.000Z,false,2,,no release for 3.3 years; no push for 2.2 years,https://github.com/fsevents/fsevents
 npm,setprototypeof,dormant,13.5,817996195,5068682,1763,1.2.0,2019-07-18T04:49:56.614000Z,2022-06-24T23:48:22.000Z,false,1,,no release for 7.4 years; no push for 4.4 years,https://github.com/wesleytodd/setprototypeof
-npm,unpipe,dormant,13.5,743718735,5053604,1163,1.0.0,2015-06-14T20:30:19.934000Z,2020-12-15T06:33:25.000Z,false,2,,no release for 11.5 years; no push for 5.9 years,https://github.com/stream-utils/unpipe
+npm,unpipe,dormant,13.5,743718735,5053604,1163,1.0.0,2015-06-14T20:30:19.934000Z,2020-12-15T06:33:25.000Z,false,2,,no release for 11.5 years; no push for 6.0 years,https://github.com/stream-utils/unpipe
 npm,fast-json-stable-stringify,dormant,13.5,889856510,4957551,2347,2.1.0,2019-12-14T16:17:57.583000Z,2023-07-03T08:14:47.000Z,false,1,,no release for 7.0 years; no push for 3.4 years,https://github.com/epoberezkin/fast-json-stable-stringify
 npm,jsesc,dormant,13.5,1041223295,4543338,2094,3.1.0,2024-12-11T08:24:34.551000Z,2024-12-11T08:25:58.000Z,false,1,,no release for 24 months; no push for 24 months,https://github.com/mathiasbynens/jsesc
 npm,convert-source-map,dormant,13.5,1284474934,4241143,2395,2.0.0,2022-10-17T22:06:48.628000Z,2025-03-27T03:08:35.000Z,false,2,,no release for 4.1 years; no push for 20 months,https://github.com/thlorenz/convert-source-map
@@ -549,7 +549,7 @@ npm,require-directory,dormant,13.4,800971928,4338986,2217,2.1.1,2015-05-28T08:31
 npm,cookie-signature,dormant,13.4,862539644,4104495,1056,1.2.2,2024-10-29T19:39:47.642000Z,2025-04-30T17:42:26.000Z,false,3,,no release for 2.1 years; no push for 19 months,https://github.com/tj/node-cookie-signature
 go,rsc.io/pdf,dead,13.4,,28789,73,v0.1.1,2018-04-11T19:01:10.000000Z,2024-03-06T07:32:09.000Z,true,0,,source repository is archived,https://github.com/rsc/pdf
 npm,array-flatten,dormant,13.3,305344567,4097259,1118,3.0.0,2019-11-21T05:14:39.925000Z,2025-06-24T05:32:34.000Z,false,1,,no release for 7.0 years; no push for 17 months,https://github.com/blakeembrey/array-flatten
-npm,set-blocking,dormant,13.3,300526806,3960025,1222,2.0.0,2016-05-17T22:59:27.619000Z,2023-12-15T11:34:26.000Z,false,1,,no release for 10.5 years; no push for 2.9 years,https://github.com/yargs/set-blocking
+npm,set-blocking,dormant,13.3,300526806,3960025,1222,2.0.0,2016-05-17T22:59:27.619000Z,2023-12-15T11:34:26.000Z,false,1,,no release for 10.5 years; no push for 3.0 years,https://github.com/yargs/set-blocking
 npm,chownr,dormant,13.3,658907191,3832022,706,3.0.0,2024-04-06T21:32:30.155000Z,2025-11-24T22:32:51.000Z,false,1,,no release for 2.6 years; no push for 12 months,https://github.com/isaacs/chownr
 npm,universalify,dormant,13.3,940465778,3543281,1464,2.0.1,2023-11-01T17:12:45.392000Z,2023-11-01T17:12:25.000Z,false,1,,no release for 3.1 years; no push for 3.1 years,https://github.com/RyanZim/universalify
 go,github.com/getsentry/raven-go,dead,13.3,,17019,1005,v0.2.0,2018-11-28T22:11:06.000000Z,2019-06-19T10:34:35.000Z,true,0,,source repository is archived,https://github.com/getsentry/raven-go
@@ -571,7 +571,7 @@ npm,fragment-cache,dormant,13.2,39265800,3779677,926,0.2.1,2017-03-14T20:36:58.5
 npm,snapdragon-node,dormant,13.2,40604078,3778633,926,3.0.0,2018-11-24T09:18:16.600000Z,2018-11-24T09:19:04.000Z,false,2,,no release for 8.0 years; no push for 8.0 years,https://github.com/here-be/snapdragon-node
 npm,snapdragon-util,dormant,13.2,36997215,3777798,921,5.0.1,2018-01-11T09:04:26.184000Z,2020-08-12T02:34:38.000Z,false,2,,no release for 8.9 years; no push for 6.3 years,https://github.com/here-be/snapdragon-util
 npm,safe-regex,dormant,13.2,106521077,3777495,1070,2.1.1,2019-10-21T19:45:01.945000Z,2022-11-01T15:52:16.000Z,false,1,,no release for 7.1 years; no push for 4.1 years,https://github.com/davisjam/safe-regex
-npm,require-main-filename,dormant,13.2,290332513,3489281,1021,2.0.0,2019-01-28T19:42:56.566000Z,2023-12-15T05:59:41.000Z,false,1,,no release for 7.8 years; no push for 2.9 years,https://github.com/yargs/require-main-filename
+npm,require-main-filename,dormant,13.2,290332513,3489281,1021,2.0.0,2019-01-28T19:42:56.566000Z,2023-12-15T05:59:41.000Z,false,1,,no release for 7.8 years; no push for 3.0 years,https://github.com/yargs/require-main-filename
 npm,which-module,dormant,13.2,281540419,3468922,1003,2.0.1,2023-04-21T14:39:08.508000Z,2023-04-21T14:38:21.000Z,false,1,,no release for 3.6 years; no push for 3.6 years,https://github.com/nexdrew/which-module
 npm,unicode-match-property-value-ecmascript,dormant,13.1,264689020,3422854,965,2.2.1,2025-09-09T15:35:26.428000Z,2025-09-09T15:35:08.000Z,false,2,,no release for 15 months; no push for 15 months,https://github.com/mathiasbynens/unicode-match-property-value-ecmascript
 npm,unicode-match-property-ecmascript,dormant,13.1,259351871,3422853,962,2.0.0,2021-09-14T11:23:05.092000Z,2021-09-14T11:22:43.000Z,false,2,,no release for 5.2 years; no push for 5.2 years,https://github.com/mathiasbynens/unicode-match-property-ecmascript
@@ -588,7 +588,7 @@ go,github.com/jung-kurt/gofpdf,dead,13.1,,17508,515,v1.16.2,2019-11-19T19:55:53.
 npm,batch,dormant,13,84449481,3143451,618,0.6.1,2017-05-16T21:11:49.205000Z,2024-09-03T22:16:04.000Z,false,2,,no release for 9.5 years; no push for 2.2 years,https://github.com/visionmedia/batch
 npm,html-entities,dormant,13,254851430,3072516,2023,2.6.0,2025-03-30T15:40:10.885000Z,2025-04-06T16:04:39.000Z,false,1,,no release for 20 months; no push for 20 months,https://github.com/mdevils/html-entities
 npm,babel-plugin-dynamic-import-node,dormant,13,28469952,2991665,5287,2.3.3,2020-04-21T19:01:34.019000Z,2023-03-04T01:43:36.000Z,false,6,,no release for 6.6 years; no push for 3.7 years,https://github.com/airbnb/babel-plugin-dynamic-import-node
-npm,detect-node,dormant,13,149546129,2961651,817,2.1.0,2021-05-16T06:34:44.130000Z,2022-05-10T23:29:32.000Z,false,1,,no release for 5.5 years; no push for 4.5 years,https://github.com/iliakan/detect-node
+npm,detect-node,dormant,13,149546129,2961651,817,2.1.0,2021-05-16T06:34:44.130000Z,2022-05-10T23:29:32.000Z,false,1,,no release for 5.5 years; no push for 4.6 years,https://github.com/iliakan/detect-node
 npm,wide-align,dormant,13,80109689,2924368,512,1.1.5,2021-10-15T14:17:01.529000Z,2021-10-18T12:33:10.000Z,false,1,,no release for 5.1 years; no push for 5.1 years,https://github.com/iarna/wide-align
 npm,hpack.js,dormant,13,69986842,2912523,299,2.1.6,2016-09-18T18:00:36.108000Z,2016-09-18T18:00:35.000Z,false,1,,no release for 10.2 years; no push for 10.2 years,https://github.com/indutny/hpack.js
 npm,obuf,dormant,13,102179075,2904278,311,1.1.2,2018-03-10T21:33:18.385000Z,2023-04-15T22:07:44.000Z,false,1,,no release for 8.7 years; no push for 3.6 years,https://github.com/indutny/offset-buffer
@@ -599,7 +599,7 @@ npm,punycode,dormant,13,1245486495,2016724,2734,2.3.1,2023-10-30T18:28:32.512000
 npm,mkdirp,dormant,13,720495224,1948611,34778,3.0.1,2023-04-24T17:27:38.604000Z,2023-09-15T19:59:26.000Z,false,1,,no release for 3.6 years; no push for 3.2 years,https://github.com/isaacs/node-mkdirp
 npm,shebang-command,dormant,13,1409044704,1885623,1888,2.0.0,2019-09-06T14:53:25.901000Z,2021-08-14T13:19:23.000Z,false,1,,no release for 7.2 years; no push for 5.3 years,https://github.com/kevva/shebang-command
 npm,estraverse,dormant,13,1235738574,1803046,3235,5.3.0,2021-10-25T12:18:17.722000Z,2022-04-04T18:32:01.000Z,false,3,,no release for 5.1 years; no push for 4.6 years,https://github.com/estools/estraverse
-npm,safe-buffer,dormant,13,1855149491,1261649,4055,5.2.1,2020-05-10T16:37:30.776000Z,2023-06-03T11:06:05.000Z,false,2,,no release for 6.5 years; no push for 3.5 years,https://github.com/feross/safe-buffer
+npm,safe-buffer,dormant,13,1855149491,1261649,4055,5.2.1,2020-05-10T16:37:30.776000Z,2023-06-03T11:06:05.000Z,false,2,,no release for 6.6 years; no push for 3.5 years,https://github.com/feross/safe-buffer
 npm,color-convert,dormant,13,1938426652,1246711,3135,3.1.3,2025-11-14T18:29:11.565000Z,2025-11-14T18:26:51.000Z,false,1,,no release for 13 months; no push for 13 months,https://github.com/Qix-/color-convert
 npm,yallist,dormant,13,1816988319,1187300,1848,5.0.0,2024-04-09T19:21:44.844000Z,2024-06-19T00:55:19.000Z,false,1,,no release for 2.6 years; no push for 2.4 years,https://github.com/isaacs/yallist
 go,github.com/oklog/oklog,dead,13,,19873,250,v0.3.2,2018-03-28T02:21:06.000000Z,2018-09-07T21:45:27.000Z,true,0,,source repository is archived,https://github.com/oklog/oklog
@@ -609,7 +609,7 @@ npm,select-hose,dormant,12.9,78198002,2883774,299,2.0.0,2015-07-14T18:02:25.0260
 npm,spdy,dormant,12.9,78236902,2882748,677,4.0.2,2020-04-04T03:20:39.257000Z,2022-02-28T23:54:25.000Z,false,4,,no release for 6.6 years; no push for 4.7 years,https://github.com/spdy-http2/node-spdy
 npm,spdy-transport,dormant,12.9,78737164,2882507,298,3.0.0,2018-11-08T07:08:53.372000Z,2018-11-08T10:28:59.000Z,false,3,,no release for 8.1 years; no push for 8.1 years,https://github.com/spdy-http2/spdy-transport
 npm,wbuf,dormant,12.9,77961287,2880775,302,1.7.3,2018-03-10T21:51:19.126000Z,2023-04-15T22:07:17.000Z,false,1,,no release for 8.7 years; no push for 3.6 years,https://github.com/indutny/wbuf
-npm,thunky,dormant,12.9,82882074,2870641,509,1.1.0,2019-10-14T08:54:30.361000Z,2024-06-14T07:43:38.000Z,false,2,,no release for 7.1 years; no push for 2.4 years,https://github.com/mafintosh/thunky
+npm,thunky,dormant,12.9,82882074,2870641,509,1.1.0,2019-10-14T08:54:30.361000Z,2024-06-14T07:43:38.000Z,false,2,,no release for 7.1 years; no push for 2.5 years,https://github.com/mafintosh/thunky
 npm,has-unicode,dormant,12.9,76813196,2839706,450,2.0.1,2016-06-23T22:10:28.872000Z,2020-12-16T19:13:47.000Z,false,1,,no release for 10.4 years; no push for 5.9 years,https://github.com/iarna/has-unicode
 npm,console-control-strings,dormant,12.9,83934067,2830527,405,1.1.0,2016-06-15T23:29:58.743000Z,2020-12-18T05:56:02.000Z,false,1,,no release for 10.5 years; no push for 5.9 years,https://github.com/iarna/console-control-strings
 npm,clean-css,dormant,12.9,111354266,2829869,3850,5.3.3,2023-11-30T09:05:04.410000Z,2024-10-18T06:34:43.000Z,false,1,,no release for 3.0 years; no push for 2.1 years,https://github.com/clean-css/clean-css
@@ -632,7 +632,7 @@ npm,wrappy,dormant,12.9,722267397,2102639,2464,1.0.2,2016-05-17T23:30:52.415000Z
 npm,queue-microtask,dormant,12.9,734262987,2080081,1250,1.2.3,2021-03-22T05:37:10.418000Z,2023-11-30T00:54:01.000Z,false,1,,no release for 5.7 years; no push for 3.0 years,https://github.com/feross/queue-microtask
 npm,merge-stream,dormant,12.9,582598713,2059364,4424,2.0.0,2019-05-23T13:36:45.932000Z,2019-06-20T04:46:40.000Z,false,3,,no release for 7.5 years; no push for 7.4 years,https://github.com/grncdr/merge-stream
 npm,path-parse,dormant,12.9,818659167,1929330,2172,1.0.7,2021-05-25T12:57:37.333000Z,2022-03-23T02:59:23.000Z,false,1,,no release for 5.5 years; no push for 4.7 years,https://github.com/jbgutierrez/path-parse
-npm,micromatch,dormant,12.9,909971864,1847280,4709,4.0.8,2024-08-23T16:31:18.748000Z,2024-08-26T23:15:58.000Z,false,3,,no release for 2.3 years; no push for 2.2 years,https://github.com/micromatch/micromatch
+npm,micromatch,dormant,12.9,909971864,1847280,4709,4.0.8,2024-08-23T16:31:18.748000Z,2024-08-26T23:15:58.000Z,false,3,,no release for 2.3 years; no push for 2.3 years,https://github.com/micromatch/micromatch
 npm,esutils,dormant,12.9,878039890,1790196,1888,2.0.3,2019-07-31T01:10:54.228000Z,2022-04-07T03:34:54.000Z,false,2,,no release for 7.3 years; no push for 4.6 years,https://github.com/estools/esutils
 go,github.com/gobuffalo/syncx,dead,12.9,,17619,174,v0.1.0,2019-09-06T20:34:37.000000Z,2019-09-06T20:34:43.000Z,true,0,,source repository is archived,https://github.com/gobuffalo/syncx
 go,github.com/gobuffalo/gogen,dead,12.9,,17385,250,v0.2.0,2019-06-14T03:15:52.000000Z,2020-01-14T20:38:57.000Z,true,0,,source repository is archived,https://github.com/gobuffalo/gogen
@@ -645,7 +645,7 @@ npm,param-case,dormant,12.8,151621850,2431340,725,4.0.0,2023-09-30T01:32:10.1060
 npm,tsutils,dormant,12.8,84959867,2391438,2385,3.21.0,2021-03-07T17:26:32.170000Z,2024-03-10T22:14:58.000Z,false,1,,no release for 5.7 years; no push for 2.7 years,https://github.com/ajafff/tsutils
 npm,relateurl,dormant,12.8,90982506,2386120,261,0.2.7,2016-07-14T13:31:25.910000Z,2021-02-27T22:52:28.000Z,false,1,,no release for 10.4 years; no push for 5.7 years,https://github.com/stevenvachon/relateurl
 npm,css-select-base-adapter,dormant,12.8,19989380,2352285,164,0.1.1,2018-10-24T02:45:08.034000Z,2018-10-24T02:46:36.000Z,false,1,,no release for 8.1 years; no push for 8.1 years,https://github.com/nrkn/css-select-base-adapter
-npm,text-table,dormant,12.8,202919605,2282127,2289,0.2.0,2013-10-05T03:51:26.868000Z,,false,1,,no release for 13.1 years,https://github.com/substack/text-table
+npm,text-table,dormant,12.8,202919605,2282127,2289,0.2.0,2013-10-05T03:51:26.868000Z,,false,1,,no release for 13.2 years,https://github.com/substack/text-table
 npm,astral-regex,dormant,12.8,207263265,2279822,1073,2.0.0,2019-04-05T10:44:47.115000Z,2019-04-05T10:44:54.000Z,false,1,,no release for 7.6 years; no push for 7.6 years,https://github.com/kevva/astral-regex
 npm,wordwrap,dormant,12.8,279903922,2192392,1209,1.0.0,2015-05-07T17:07:25.416000Z,2020-06-05T18:34:52.000Z,false,1,,no release for 11.6 years; no push for 6.5 years,https://github.com/substack/node-wordwrap
 npm,prompts,dormant,12.8,389013736,2075921,7975,2.4.2,2021-10-07T21:23:57.263000Z,2025-05-14T16:42:36.000Z,false,1,,no release for 5.1 years; no push for 19 months,https://github.com/terkelg/prompts
@@ -654,7 +654,7 @@ npm,process-nextick-args,dormant,12.8,533316239,1840796,1469,2.0.1,2019-06-19T20
 npm,run-parallel,dormant,12.8,719496032,1799977,1520,1.2.0,2021-02-10T02:58:08.152000Z,2023-02-27T23:50:37.000Z,false,1,,no release for 5.8 years; no push for 3.7 years,https://github.com/feross/run-parallel
 npm,esrecurse,dormant,12.8,811231553,1702132,1563,4.3.0,2020-08-31T18:21:44.794000Z,2023-03-30T19:46:51.000Z,false,3,,no release for 6.2 years; no push for 3.7 years,https://github.com/estools/esrecurse
 npm,human-signals,dormant,12.8,871589291,1698573,1153,8.0.1,2025-03-29T02:43:46.398000Z,2025-05-25T23:03:22.000Z,false,1,,no release for 20 months; no push for 18 months,https://github.com/ehmicky/human-signals
-npm,estree-walker,dormant,12.8,1281723866,1169599,1283,3.0.3,2023-01-20T02:27:12.467000Z,2025-09-07T19:57:21.000Z,false,1,,no release for 3.8 years; no push for 15 months,https://github.com/Rich-Harris/estree-walker
+npm,estree-walker,dormant,12.8,1281723866,1169599,1283,3.0.3,2023-01-20T02:27:12.467000Z,2025-09-07T19:57:21.000Z,false,1,,no release for 3.9 years; no push for 15 months,https://github.com/Rich-Harris/estree-walker
 go,github.com/jackc/pgproto3,dead,12.8,,17816,15,v1.1.0,2019-04-17T01:30:55.000000Z,2025-01-25T16:05:27.000Z,true,0,,source repository is archived,https://github.com/jackc/pgproto3
 go,github.com/jackc/chunkreader,dead,12.8,,17814,34,v1.0.0,2019-03-30T17:21:36.000000Z,2022-01-24T14:29:57.000Z,false,0,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 4.8 years ago",https://github.com/jackc/chunkreader
 go,github.com/gobuffalo/mapi,dead,12.8,,17618,97,v1.2.1,2020-01-31T18:13:45.000000Z,2020-01-31T18:14:17.000Z,true,0,,source repository is archived,https://github.com/gobuffalo/mapi
@@ -669,7 +669,7 @@ npm,duplexer,dormant,12.7,144909181,2218742,673,0.1.2,2020-08-12T08:27:19.981000
 npm,clone-deep,dormant,12.7,140799778,2208537,1418,4.0.1,2018-11-22T00:00:24.930000Z,2024-02-09T23:45:49.000Z,false,2,,no release for 8.0 years; no push for 2.8 years,https://github.com/jonschlinkert/clone-deep
 npm,strict-uri-encode,dormant,12.7,100393749,2182990,323,2.0.0,2016-10-11T20:09:00.764000Z,2019-10-21T15:14:04.000Z,false,1,,no release for 10.1 years; no push for 7.1 years,https://github.com/kevva/strict-uri-encode
 npm,shallow-clone,dormant,12.7,140713105,2182387,800,3.0.1,2019-04-16T00:06:42.461000Z,2025-09-04T10:33:03.000Z,false,2,,no release for 7.6 years; no push for 15 months,https://github.com/jonschlinkert/shallow-clone
-npm,has,dormant,12.7,73806977,2161770,2511,1.0.4,2023-10-03T17:14:45.308000Z,2023-10-03T17:25:29.000Z,false,1,,no release for 3.1 years; no push for 3.1 years,https://github.com/tarruda/has
+npm,has,dormant,12.7,73806977,2161770,2511,1.0.4,2023-10-03T17:14:45.308000Z,2023-10-03T17:25:29.000Z,false,1,,no release for 3.2 years; no push for 3.2 years,https://github.com/tarruda/has
 npm,simple-swizzle,dormant,12.7,172866300,2152974,151,0.2.4,2025-09-13T16:19:21.071000Z,2025-09-13T16:18:44.000Z,false,1,,no release for 15 months; no push for 15 months,https://github.com/Qix-/node-simple-swizzle
 npm,infer-owner,dormant,12.7,43719059,2113203,382,1.0.4,2019-07-19T23:13:07.339000Z,2022-10-15T01:23:16.000Z,false,1,,no release for 7.4 years; no push for 4.1 years,https://github.com/isaacs/infer-owner
 npm,throat,dormant,12.7,116815936,2093703,1094,6.0.2,2023-01-03T13:31:47.643000Z,2023-01-03T13:31:48.000Z,false,2,,no release for 3.9 years; no push for 3.9 years,https://github.com/ForbesLindesay/throat
@@ -680,6 +680,7 @@ npm,ast-types-flow,dormant,12.7,267305721,2035986,547,0.0.8,2023-04-15T00:34:00.
 npm,jest-pnp-resolver,dormant,12.7,189482458,1909842,2302,1.2.3,2022-11-15T09:49:56.652000Z,2022-11-15T09:47:32.000Z,false,1,,no release for 4.0 years; no push for 4.0 years,https://github.com/arcanis/jest-pnp-resolver
 npm,html-escaper,dormant,12.7,498035059,1783603,1087,3.0.3,2021-02-18T08:35:19.586000Z,2021-02-18T08:35:18.000Z,false,1,,no release for 5.8 years; no push for 5.8 years,https://github.com/WebReflection/html-escaper
 npm,colorette,dormant,12.7,488624063,1727690,2155,2.0.20,2023-04-16T15:34:09.905000Z,2025-10-03T11:20:56.000Z,false,1,,no release for 3.6 years; no push for 14 months,https://github.com/jorgebucaran/colorette
+npm,core-util-is,dormant,12.7,612863393,1693704,1808,1.0.3,2021-08-31T14:35:36.995000Z,2025-11-25T05:08:19.000Z,false,1,,no release for 5.2 years; no push for 12 months,https://github.com/isaacs/core-util-is
 npm,@bcoe/v8-coverage,dormant,12.7,476319378,1666305,17,1.0.2,2025-01-15T17:30:44.306000Z,2025-01-15T17:29:07.000Z,false,1,,no release for 23 months; no push for 23 months,https://github.com/bcoe/v8-coverage
 npm,internal-slot,dormant,12.7,533170891,1631550,867,1.1.0,2024-12-13T16:02:29.590000Z,2024-12-13T16:01:56.000Z,false,1,,no release for 24 months; no push for 24 months,https://github.com/ljharb/internal-slot
 npm,json-stable-stringify-without-jsonify,dormant,12.7,750713529,1575335,1166,1.0.1,2016-12-15T22:00:35.805000Z,2021-04-11T19:15:36.000Z,false,1,,no release for 10.0 years; no push for 5.6 years,https://github.com/samn/json-stable-stringify
@@ -691,21 +692,21 @@ go,github.com/gobuffalo/gitgen,dead,12.7,,17317,16,v0.0.0-20190315122116-cc08618
 go,github.com/gobuffalo/depgen,dead,12.7,,17040,45,v0.2.0,2019-06-14T03:12:33.000000Z,2019-06-14T03:12:37.000Z,true,0,,source repository is archived,https://github.com/gobuffalo/depgen
 pypi,pydata-google-auth,dead,12.7,16109748,829,16,1.9.1,2025-01-23T21:04:38.000000Z,2025-01-29T18:42:13.000Z,false,4,,"1 issue(s)/PR(s) opened in the past year, none closed or merged; last push 22 months ago",https://github.com/pydata/pydata-google-auth
 npm,browser-process-hrtime,dormant,12.6,41262392,2037289,601,1.0.0,2018-09-23T07:19:44.502000Z,2022-01-06T15:04:22.000Z,false,1,,no release for 8.2 years; no push for 4.9 years,https://github.com/kumavis/browser-process-hrtime
-npm,randombytes,dormant,12.6,124731320,1888601,2276,2.1.0,2019-02-19T13:48:39.116000Z,2024-12-21T10:13:14.000Z,false,5,,no release for 7.8 years; no push for 23 months,https://github.com/browserify/randombytes
+npm,randombytes,dormant,12.6,124731320,1888601,2276,2.1.0,2019-02-19T13:48:39.116000Z,2024-12-21T10:13:14.000Z,false,5,,no release for 7.8 years; no push for 24 months,https://github.com/browserify/randombytes
 npm,case-sensitive-paths-webpack-plugin,dormant,12.6,44739349,1869888,16271,2.4.0,2021-02-22T18:21:06.617000Z,2023-01-07T23:23:38.000Z,false,1,,no release for 5.8 years; no push for 3.9 years,https://github.com/Urthen/case-sensitive-paths-webpack-plugin
 npm,find-cache-dir,dormant,12.6,163316368,1812888,1793,6.0.0,2025-04-08T15:30:14.851000Z,2025-04-08T15:25:25.000Z,false,1,,no release for 20 months; no push for 20 months,https://github.com/sindresorhus/find-cache-directory
-npm,@sinonjs/commons,dormant,12.6,296092736,1806144,18,4.0.0-alpha.0,2024-01-20T15:20:51.832000Z,2024-06-16T09:53:15.000Z,false,6,,no release for 2.8 years; no push for 2.4 years,https://github.com/sinonjs/commons
+npm,@sinonjs/commons,dormant,12.6,296092736,1806144,18,4.0.0-alpha.0,2024-01-20T15:20:51.832000Z,2024-06-16T09:53:15.000Z,false,6,,no release for 2.9 years; no push for 2.4 years,https://github.com/sinonjs/commons
 npm,@types/json5,dormant,12.6,287067086,1794713,609,2.2.0,2021-02-01T20:00:41.991000Z,,false,1,,no linked source repository; no release for 5.8 years,
 npm,@types/parse-json,dormant,12.6,132772546,1793430,78,7.0.0,2025-02-21T17:33:12.018000Z,2025-02-18T18:23:17.000Z,false,1,,no release for 21 months; no push for 22 months,https://github.com/DefinitelyTyped/DefinitelyTyped
 npm,requires-port,dormant,12.6,284416400,1725022,549,1.0.0,2015-10-30T14:42:33.794000Z,2023-07-14T21:05:22.000Z,false,2,,no release for 11.1 years; no push for 3.4 years,https://github.com/unshiftio/requires-port
-npm,co,dormant,12.6,249629621,1566701,10884,4.6.0,2015-07-09T22:30:44.562000Z,2020-12-15T07:22:26.000Z,false,3,,no release for 11.4 years; no push for 5.9 years,https://github.com/tj/co
+npm,co,dormant,12.6,249629621,1566701,10884,4.6.0,2015-07-09T22:30:44.562000Z,2020-12-15T07:22:26.000Z,false,3,,no release for 11.4 years; no push for 6.0 years,https://github.com/tj/co
 npm,json-schema,dormant,12.6,382107197,1556405,2341,0.4.0,2021-11-09T02:04:08.632000Z,2022-08-23T16:09:40.000Z,false,1,,no release for 5.0 years; no push for 4.3 years,https://github.com/kriszyp/json-schema
 npm,sprintf-js,dormant,12.6,585552652,1492049,2891,1.1.3,2023-09-11T13:12:09.207000Z,2024-04-05T01:22:42.000Z,false,1,,no release for 3.2 years; no push for 2.6 years,https://github.com/alexei/sprintf.js
 npm,supports-preserve-symlinks-flag,dormant,12.6,791199295,1245746,1388,1.0.0,2022-01-03T07:22:56.640000Z,2022-11-02T16:24:38.000Z,false,1,,no release for 4.9 years; no push for 4.1 years,https://github.com/inspect-js/node-supports-preserve-symlinks-flag
 npm,bytes,dormant,12.6,805033949,1080038,2391,3.1.2,2022-01-28T05:02:37.661000Z,2024-07-05T20:46:24.000Z,false,2,,no release for 4.8 years; no push for 2.4 years,https://github.com/visionmedia/bytes.js
 rubygems,builder,dormant,12.6,,939517,1270,3.3.0,2024-06-06T16:22:32.091000Z,2024-07-11T12:28:55.000Z,false,11,,no release for 2.5 years; no push for 2.4 years,https://github.com/rails/builder
 npm,@types/prettier,dormant,12.5,42973399,1748823,6947,3.0.0,2023-07-29T15:32:49.546000Z,,false,1,,no linked source repository; no release for 3.3 years,
-npm,for-own,dormant,12.5,44881209,1710262,360,1.0.0,2017-02-27T01:33:27.609000Z,2017-02-27T01:33:40.000Z,false,3,,no release for 9.7 years; no push for 9.7 years,https://github.com/jonschlinkert/for-own
+npm,for-own,dormant,12.5,44881209,1710262,360,1.0.0,2017-02-27T01:33:27.609000Z,2017-02-27T01:33:40.000Z,false,3,,no release for 9.8 years; no push for 9.8 years,https://github.com/jonschlinkert/for-own
 npm,postcss-replace-overflow-wrap,dormant,12.5,36886174,1647876,86,4.0.0,2020-09-16T18:12:07.912000Z,2020-09-16T18:12:51.000Z,false,1,,no release for 6.2 years; no push for 6.2 years,https://github.com/MattDiMu/postcss-replace-overflow-wrap
 npm,confusing-browser-globals,dormant,12.5,60517291,1644562,981,1.0.11,2021-12-14T15:54:01.150000Z,2025-02-15T01:32:11.000Z,false,5,,no release for 5.0 years; no push for 22 months,https://github.com/react/create-react-app
 npm,resolve-url-loader,dormant,12.5,45281373,1583039,5306,5.0.0,2022-01-17T21:55:09.985000Z,2022-12-02T07:42:44.000Z,false,1,,no release for 4.9 years; no push for 4.0 years,https://github.com/bholloway/resolve-url-loader
@@ -715,9 +716,9 @@ npm,@types/mime,dormant,12.5,218443855,1509678,1428,4.0.0,2024-03-31T09:35:29.74
 npm,neo-async,dormant,12.5,359369364,1452098,1383,2.6.2,2020-07-09T18:23:53.065000Z,2022-12-02T17:22:37.000Z,false,1,,no release for 6.4 years; no push for 4.0 years,https://github.com/suguru03/neo-async
 npm,commondir,dormant,12.5,240501558,1447358,1266,1.0.1,2015-03-14T00:15:01.725000Z,2016-05-04T19:21:45.000Z,false,1,,no release for 11.7 years; no push for 10.6 years,https://github.com/substack/node-commondir
 npm,webpack-merge,dormant,12.5,107590143,1382156,32351,6.0.1,2024-07-02T07:39:22.644000Z,2024-07-12T06:35:58.000Z,false,1,,no release for 2.4 years; no push for 2.4 years,https://github.com/survivejs/webpack-merge
-npm,events,dormant,12.5,481471061,1326229,6717,3.3.0,2021-02-27T16:51:27.318000Z,2024-12-21T09:59:54.000Z,false,3,,no release for 5.7 years; no push for 23 months,https://github.com/browserify/events
+npm,events,dormant,12.5,481471061,1326229,6717,3.3.0,2021-02-27T16:51:27.318000Z,2024-12-21T09:59:54.000Z,false,3,,no release for 5.7 years; no push for 24 months,https://github.com/browserify/events
 npm,anymatch,dormant,12.5,601831767,1149091,3053,3.1.3,2022-11-21T18:21:37.586000Z,2023-05-18T16:52:59.000Z,false,4,,no release for 4.0 years; no push for 3.5 years,https://github.com/micromatch/anymatch
-npm,@humanwhocodes/module-importer,dormant,12.5,660961623,1124195,10,1.0.1,2022-08-18T17:55:51.038000Z,2025-02-19T21:42:46.000Z,false,1,,no release for 4.3 years; no push for 21 months,https://github.com/humanwhocodes/module-importer
+npm,@humanwhocodes/module-importer,dormant,12.5,660961623,1124195,10,1.0.1,2022-08-18T17:55:51.038000Z,2025-02-19T21:42:46.000Z,false,1,,no release for 4.3 years; no push for 22 months,https://github.com/humanwhocodes/module-importer
 npm,postcss-page-break,dormant,12.4,36504141,1630965,78,3.0.4,2020-09-27T11:57:53.641000Z,2023-03-05T13:10:16.000Z,false,1,,no release for 6.2 years; no push for 3.7 years,https://github.com/shrpne/postcss-page-break
 npm,adjust-sourcemap-loader,dormant,12.4,47172737,1508724,81,5.0.0,2022-10-14T00:47:23.079000Z,2022-10-14T00:49:44.000Z,false,1,,no release for 4.1 years; no push for 4.1 years,https://github.com/bholloway/adjust-sourcemap-loader
 npm,regex-parser,dormant,12.4,46620845,1507825,140,2.3.1,2025-02-14T01:27:54.480000Z,2025-02-14T01:27:57.000Z,false,1,,no release for 22 months; no push for 22 months,https://github.com/IonicaBizau/regex-parser.js
@@ -770,7 +771,7 @@ npm,make-error,dormant,12.2,276008442,1000848,928,1.3.6,2020-02-19T09:34:36.5970
 npm,is-extendable,dormant,12.2,254556955,990766,1051,1.0.1,2017-09-11T20:38:26.333000Z,2021-08-20T19:50:29.000Z,false,2,,no release for 9.2 years; no push for 5.3 years,https://github.com/jonschlinkert/is-extendable
 npm,walker,dormant,12.2,243195644,983878,1074,1.0.8,2021-10-23T14:03:34.682000Z,2021-10-23T14:03:40.000Z,false,1,,no release for 5.1 years; no push for 5.1 years,https://github.com/daaku/nodejs-walker
 rubygems,coffee-script,dormant,12.2,,973159,424,2.4.1,2015-04-06T18:58:00.893000Z,2021-02-01T08:02:07.000Z,false,13,,no release for 11.6 years; no push for 5.8 years,https://github.com/rails/ruby-coffee-script
-rubygems,coffee-script-source,dormant,12.2,,971193,36,1.12.2,2016-12-16T14:55:38.398000Z,,false,11,,no release for 9.9 years,
+rubygems,coffee-script-source,dormant,12.2,,971193,36,1.12.2,2016-12-16T14:55:38.398000Z,,false,11,,no release for 10.0 years,
 npm,is-buffer,dormant,12.2,290963536,971086,1461,2.0.5,2020-11-03T19:19:33.762000Z,2021-08-18T15:42:05.000Z,false,1,,no release for 6.1 years; no push for 5.3 years,https://github.com/feross/is-buffer
 npm,define-property,dormant,12.2,234223003,968223,1057,2.0.2,2018-01-26T20:24:22.283000Z,2023-03-14T09:09:01.000Z,false,2,,no release for 8.8 years; no push for 3.7 years,https://github.com/jonschlinkert/define-property
 npm,process,dormant,12.2,272439213,951523,5072,0.11.10,2017-04-26T12:34:27.448000Z,2020-08-07T11:25:53.000Z,false,3,,no release for 9.6 years; no push for 6.3 years,https://github.com/defunctzombie/node-process
@@ -803,7 +804,7 @@ npm,object.pick,dormant,12,56076126,977420,1115,1.3.0,2017-08-19T02:34:34.023000
 npm,regexpp,dormant,12,59331977,972745,852,3.2.0,2021-06-14T11:06:58.407000Z,2023-04-30T13:02:28.000Z,false,1,,no release for 5.5 years; no push for 3.6 years,https://github.com/mysticatea/regexpp
 npm,mixin-deep,dormant,12,49139373,971683,1279,2.0.1,2019-06-19T17:47:14.541000Z,2023-08-23T03:30:34.000Z,false,2,,no release for 7.4 years; no push for 3.3 years,https://github.com/jonschlinkert/mixin-deep
 npm,object-visit,dormant,12,40189131,968952,930,1.0.1,2017-05-30T04:25:21.809000Z,2023-03-14T06:07:43.000Z,false,1,,no release for 9.5 years; no push for 3.7 years,https://github.com/jonschlinkert/object-visit
-npm,collection-visit,dormant,12,40732367,968919,937,1.0.0,2017-04-09T22:00:31.200000Z,2020-12-15T10:25:39.000Z,false,2,,no release for 9.6 years; no push for 5.9 years,https://github.com/jonschlinkert/collection-visit
+npm,collection-visit,dormant,12,40732367,968919,937,1.0.0,2017-04-09T22:00:31.200000Z,2020-12-15T10:25:39.000Z,false,2,,no release for 9.6 years; no push for 6.0 years,https://github.com/jonschlinkert/collection-visit
 npm,map-visit,dormant,12,42501757,968889,924,1.0.0,2017-04-09T21:43:35.689000Z,2022-06-27T09:45:31.000Z,false,2,,no release for 9.6 years; no push for 4.4 years,https://github.com/jonschlinkert/map-visit
 npm,regex-not,dormant,12,41082502,968882,923,1.0.2,2018-02-20T02:31:14.441000Z,2018-02-20T02:37:53.000Z,false,1,,no release for 8.8 years; no push for 8.8 years,https://github.com/jonschlinkert/regex-not
 npm,copy-descriptor,dormant,12,43822504,968762,920,0.1.1,2016-06-09T18:32:05.080000Z,2016-06-09T18:32:11.000Z,false,1,,no release for 10.5 years; no push for 10.5 years,https://github.com/jonschlinkert/copy-descriptor
@@ -823,11 +824,11 @@ npm,promise-retry,dormant,12,152198600,852861,631,2.0.1,2020-06-14T13:09:02.8480
 npm,humanize-ms,dormant,12,119179949,840243,244,2.0.0,2024-12-12T09:34:43.775000Z,2024-12-12T09:46:21.000Z,false,2,,no release for 24 months; no push for 24 months,https://github.com/node-modules/humanize-ms
 npm,typedarray,dormant,12,175413620,830363,895,0.0.7,2022-10-12T07:29:40.069000Z,2023-11-07T00:36:13.000Z,false,1,,no release for 4.1 years; no push for 3.1 years,https://github.com/es-shims/typedarray
 npm,functional-red-black-tree,dormant,12,117910904,823559,779,1.0.1,2014-09-29T16:05:12.335000Z,2023-08-13T11:16:45.000Z,false,1,,no release for 12.2 years; no push for 3.3 years,https://github.com/mikolalysenko/functional-red-black-tree
-npm,stream-browserify,dormant,12,121463604,818738,3231,3.0.0,2020-04-16T12:50:54.368000Z,2024-12-21T09:59:22.000Z,false,39,,no release for 6.6 years; no push for 23 months,https://github.com/browserify/stream-browserify
+npm,stream-browserify,dormant,12,121463604,818738,3231,3.0.0,2020-04-16T12:50:54.368000Z,2024-12-21T09:59:22.000Z,false,39,,no release for 6.6 years; no push for 24 months,https://github.com/browserify/stream-browserify
 npm,asn1.js,dormant,12,147711819,814933,667,5.4.1,2020-06-18T16:11:51.629000Z,2024-06-15T23:13:31.000Z,false,2,,no release for 6.4 years; no push for 2.4 years,https://github.com/indutny/asn1.js
 npm,run-async,dormant,12,200409120,757656,999,4.0.6,2025-08-08T14:17:06.831000Z,2025-08-08T14:17:15.000Z,false,1,,no release for 16 months; no push for 16 months,https://github.com/SBoudrias/run-async
-npm,duplexify,dormant,12,235783103,753415,950,4.1.3,2024-03-06T21:28:58.862000Z,2024-06-14T07:49:56.000Z,false,1,,no release for 2.7 years; no push for 2.4 years,https://github.com/mafintosh/duplexify
-npm,path-browserify,dormant,12,264995813,745742,2997,1.0.1,2020-03-03T16:52:38.480000Z,2024-12-21T10:13:57.000Z,false,1,,no release for 6.7 years; no push for 23 months,https://github.com/browserify/path-browserify
+npm,duplexify,dormant,12,235783103,753415,950,4.1.3,2024-03-06T21:28:58.862000Z,2024-06-14T07:49:56.000Z,false,1,,no release for 2.7 years; no push for 2.5 years,https://github.com/mafintosh/duplexify
+npm,path-browserify,dormant,12,264995813,745742,2997,1.0.1,2020-03-03T16:52:38.480000Z,2024-12-21T10:13:57.000Z,false,1,,no release for 6.7 years; no push for 24 months,https://github.com/browserify/path-browserify
 rubygems,sass-rails,dormant,12,,744828,1254,6.0.0,2019-08-16T21:16:20.304000Z,2020-10-01T19:31:05.000Z,false,12,,no release for 7.3 years; no push for 6.2 years,https://github.com/rails/sass-rails
 npm,pend,dormant,12,268949434,742033,252,1.2.0,2014-11-23T21:52:52.675000Z,2014-11-23T21:52:12.000Z,false,1,,no release for 12.0 years; no push for 12.0 years,https://github.com/andrewrk/node-pend
 npm,enquirer,dormant,12,213511738,727459,3808,2.4.1,2023-07-28T12:26:30.586000Z,2024-06-11T15:05:05.000Z,false,2,,no release for 3.3 years; no push for 2.5 years,https://github.com/enquirer/enquirer
@@ -847,8 +848,8 @@ npm,is-number,dormant,12,971386019,6502,2612,7.0.0,2018-07-04T15:08:58.238000Z,2
 npm,es6-weak-map,dormant,11.9,37446637,888066,244,2.0.3,2019-06-07T14:59:48.125000Z,2021-06-30T16:03:55.000Z,false,1,,no release for 7.5 years; no push for 5.4 years,https://github.com/medikoo/es6-weak-map
 npm,class-utils,dormant,11.9,38935815,856124,913,0.3.6,2018-01-11T14:49:23.288000Z,2023-03-14T09:15:33.000Z,false,2,,no release for 8.9 years; no push for 3.7 years,https://github.com/jonschlinkert/class-utils
 npm,har-schema,dormant,11.9,58725460,841087,512,2.0.0,2017-04-18T19:44:14.320000Z,2020-06-04T18:03:42.000Z,false,2,,no release for 9.6 years; no push for 6.5 years,https://github.com/ahmadnassri/har-schema
-npm,browserify-aes,dormant,11.9,52360178,824929,610,1.2.0,2018-04-03T14:23:16.754000Z,2024-12-21T09:58:52.000Z,false,5,,no release for 8.7 years; no push for 23 months,https://github.com/browserify/browserify-aes
-npm,browserify-zlib,dormant,11.9,92459814,810875,1111,0.2.0,2017-06-03T16:02:05.764000Z,2024-12-21T10:00:54.000Z,false,2,,no release for 9.5 years; no push for 23 months,https://github.com/browserify/browserify-zlib
+npm,browserify-aes,dormant,11.9,52360178,824929,610,1.2.0,2018-04-03T14:23:16.754000Z,2024-12-21T09:58:52.000Z,false,5,,no release for 8.7 years; no push for 24 months,https://github.com/browserify/browserify-aes
+npm,browserify-zlib,dormant,11.9,92459814,810875,1111,0.2.0,2017-06-03T16:02:05.764000Z,2024-12-21T10:00:54.000Z,false,2,,no release for 9.5 years; no push for 24 months,https://github.com/browserify/browserify-zlib
 npm,common-path-prefix,dormant,11.9,61360877,785447,202,3.0.0,2019-11-03T17:04:02.458000Z,2019-11-03T17:04:11.000Z,false,1,,no release for 7.1 years; no push for 7.1 years,https://github.com/novemberborn/common-path-prefix
 npm,stream-http,dormant,11.9,54590093,781294,1293,3.2.0,2021-04-14T20:05:52.715000Z,2021-04-14T19:40:11.000Z,false,2,,no release for 5.6 years; no push for 5.6 years,https://github.com/jhiesey/stream-http
 npm,ts-interface-checker,dormant,11.9,216358804,697518,151,1.0.2,2021-10-11T22:57:41.129000Z,2024-04-20T13:30:16.000Z,false,2,,no release for 5.1 years; no push for 2.6 years,https://github.com/gristlabs/ts-interface-checker
@@ -872,7 +873,7 @@ npm,miller-rabin,dormant,11.8,54992560,769484,369,4.0.1,2017-09-27T22:09:20.5130
 npm,base,dormant,11.8,35642018,762347,1040,3.0.0,2018-03-30T03:10:40.158000Z,2022-10-28T13:33:44.000Z,false,2,,no release for 8.7 years; no push for 4.1 years,https://github.com/base-repos/base
 npm,cache-base,dormant,11.8,41270534,762323,929,4.0.2,2021-11-06T22:19:53.659000Z,2022-04-01T11:09:38.000Z,false,2,,no release for 5.1 years; no push for 4.7 years,https://github.com/jonschlinkert/cache-base
 npm,@leichtgewicht/ip-codec,dormant,11.8,56523391,761913,9,2.0.5,2024-03-27T04:42:14.678000Z,2024-03-27T04:42:03.000Z,false,1,,no release for 2.7 years; no push for 2.7 years,https://github.com/dnsquery/ip-codec
-npm,pumpify,dormant,11.8,65627523,702585,781,2.0.1,2019-10-01T13:53:36.066000Z,2024-06-14T07:47:20.000Z,false,1,,no release for 7.2 years; no push for 2.4 years,https://github.com/mafintosh/pumpify
+npm,pumpify,dormant,11.8,65627523,702585,781,2.0.1,2019-10-01T13:53:36.066000Z,2024-06-14T07:47:20.000Z,false,1,,no release for 7.2 years; no push for 2.5 years,https://github.com/mafintosh/pumpify
 npm,errno,dormant,11.8,72734152,702325,761,1.0.0,2020-12-16T12:58:15.559000Z,2020-12-16T12:58:12.000Z,false,2,,no release for 5.9 years; no push for 5.9 years,https://github.com/rvagg/node-errno
 npm,array-unique,dormant,11.8,58346969,696961,1271,0.3.2,2016-08-01T00:54:49.804000Z,2020-11-02T07:17:44.000Z,false,2,,no release for 10.3 years; no push for 6.1 years,https://github.com/jonschlinkert/array-unique
 npm,expand-brackets,dormant,11.8,54089049,696484,982,4.0.0,2018-04-30T10:28:42.598000Z,2021-10-04T10:08:35.000Z,false,4,,no release for 8.6 years; no push for 5.1 years,https://github.com/micromatch/expand-brackets
@@ -880,7 +881,7 @@ npm,oauth-sign,dormant,11.8,62410336,691549,630,0.9.0,2018-08-02T18:03:51.602000
 npm,is-module,dormant,11.8,102366319,686074,401,1.0.0,2014-04-01T00:58:29.191000Z,2022-12-30T17:22:05.000Z,false,13,,no release for 12.7 years; no push for 3.9 years,https://github.com/component/is-module
 npm,color-support,dormant,11.8,103600506,680554,411,1.1.3,2017-06-06T20:40:54.019000Z,2018-10-18T17:50:11.000Z,false,1,,no release for 9.5 years; no push for 8.1 years,https://github.com/isaacs/color-support
 npm,elliptic,dormant,11.8,73820190,667005,2976,6.6.1,2024-11-13T03:39:50.967000Z,2024-11-13T03:39:36.000Z,false,1,GHSA-848j-6mx2-7j84,no release for 2.0 years; no push for 2.0 years,https://github.com/indutny/elliptic
-npm,assert,dormant,11.8,93035577,650104,9537,2.1.0,2023-09-07T18:24:30.341000Z,2024-12-21T09:36:17.000Z,false,6,,no release for 3.2 years; no push for 23 months,https://github.com/browserify/commonjs-assert
+npm,assert,dormant,11.8,93035577,650104,9537,2.1.0,2023-09-07T18:24:30.341000Z,2024-12-21T09:36:17.000Z,false,6,,no release for 3.2 years; no push for 24 months,https://github.com/browserify/commonjs-assert
 npm,stream-shift,dormant,11.8,219551853,593454,370,1.0.3,2024-01-17T19:15:13.384000Z,2024-01-17T19:15:12.000Z,false,1,,no release for 2.9 years; no push for 2.9 years,https://github.com/mafintosh/stream-shift
 npm,duplexer2,dormant,11.8,198217204,561797,344,0.1.4,2015-11-08T08:07:39.098000Z,2020-04-24T23:45:53.000Z,false,3,,no release for 11.1 years; no push for 6.6 years,https://github.com/deoxxa/duplexer2
 npm,ccount,dormant,11.8,386749038,432239,89,2.0.1,2021-10-28T09:38:13.774000Z,2022-11-20T09:13:25.000Z,false,1,,no release for 5.1 years; no push for 4.0 years,https://github.com/wooorm/ccount
@@ -909,29 +910,29 @@ npm,ripemd160,dormant,11.7,63060014,665209,678,2.0.3,2025-09-23T03:21:34.178000Z
 npm,minimalistic-crypto-utils,dormant,11.7,66925446,663202,420,1.0.1,2017-02-22T21:20:57.947000Z,2018-02-15T19:30:50.000Z,false,1,,no release for 9.8 years; no push for 8.8 years,https://github.com/indutny/minimalistic-crypto-utils
 npm,hmac-drbg,dormant,11.7,70880890,663202,446,1.0.1,2017-04-09T22:33:31.828000Z,2022-03-07T23:54:12.000Z,false,1,,no release for 9.6 years; no push for 4.7 years,https://github.com/indutny/hmac-drbg
 npm,cipher-base,dormant,11.7,63600591,655514,387,1.0.7,2025-09-25T04:52:36.583000Z,2025-09-25T04:52:33.000Z,false,3,,no release for 14 months; no push for 14 months,https://github.com/browserify/cipher-base
-npm,buffer-xor,dormant,11.7,52627090,653302,475,2.0.2,2017-08-21T13:46:38.904000Z,2024-12-21T10:00:38.000Z,false,2,,no release for 9.3 years; no push for 23 months,https://github.com/browserify/buffer-xor
-npm,evp_bytestokey,dormant,11.7,31497603,653240,369,1.0.3,2017-09-05T10:20:36.240000Z,2024-12-21T09:59:49.000Z,false,3,,no release for 9.2 years; no push for 23 months,https://github.com/browserify/EVP_BytesToKey
+npm,buffer-xor,dormant,11.7,52627090,653302,475,2.0.2,2017-08-21T13:46:38.904000Z,2024-12-21T10:00:38.000Z,false,2,,no release for 9.3 years; no push for 24 months,https://github.com/browserify/buffer-xor
+npm,evp_bytestokey,dormant,11.7,31497603,653240,369,1.0.3,2017-09-05T10:20:36.240000Z,2024-12-21T09:59:49.000Z,false,3,,no release for 9.2 years; no push for 24 months,https://github.com/browserify/EVP_BytesToKey
 npm,hash-base,dormant,11.7,90159905,651189,367,3.1.2,2025-09-23T00:02:26.619000Z,2025-09-23T00:02:21.000Z,false,4,,no release for 14 months; no push for 14 months,https://github.com/browserify/hash-base
-npm,browserify-rsa,dormant,11.7,45906791,644809,361,4.1.1,2024-09-26T23:18:32.485000Z,2024-12-21T10:01:02.000Z,false,5,,no release for 2.2 years; no push for 23 months,https://github.com/browserify/browserify-rsa
+npm,browserify-rsa,dormant,11.7,45906791,644809,361,4.1.1,2024-09-26T23:18:32.485000Z,2024-12-21T10:01:02.000Z,false,5,,no release for 2.2 years; no push for 24 months,https://github.com/browserify/browserify-rsa
 npm,des.js,dormant,11.7,83800424,644536,364,1.1.0,2023-05-29T14:33:38.542000Z,2023-05-29T19:13:20.000Z,false,1,,no release for 3.5 years; no push for 3.5 years,https://github.com/indutny/des.js
-npm,browserify-cipher,dormant,11.7,48571134,644363,421,1.0.1,2018-04-11T12:05:37.638000Z,2024-12-21T10:00:46.000Z,false,1,,no release for 8.6 years; no push for 23 months,https://github.com/browserify/browserify-cipher
-npm,browserify-des,dormant,11.7,48699272,644347,349,1.0.2,2018-07-10T15:06:46.481000Z,2024-12-21T10:01:10.000Z,false,3,,no release for 8.4 years; no push for 23 months,https://github.com/browserify/browserify-des
-npm,md5.js,dormant,11.7,53104923,642573,441,1.3.5,2018-10-02T13:35:56.206000Z,2024-12-21T09:51:10.000Z,false,5,,no release for 8.2 years; no push for 23 months,https://github.com/browserify/md5.js
-npm,https-browserify,dormant,11.7,53971121,638099,1328,1.0.0,2017-04-04T23:35:16.037000Z,2017-04-04T23:35:14.000Z,false,2,,no release for 9.6 years; no push for 9.6 years,https://github.com/substack/https-browserify
+npm,browserify-cipher,dormant,11.7,48571134,644363,421,1.0.1,2018-04-11T12:05:37.638000Z,2024-12-21T10:00:46.000Z,false,1,,no release for 8.6 years; no push for 24 months,https://github.com/browserify/browserify-cipher
+npm,browserify-des,dormant,11.7,48699272,644347,349,1.0.2,2018-07-10T15:06:46.481000Z,2024-12-21T10:01:10.000Z,false,3,,no release for 8.4 years; no push for 24 months,https://github.com/browserify/browserify-des
+npm,md5.js,dormant,11.7,53104923,642573,441,1.3.5,2018-10-02T13:35:56.206000Z,2024-12-21T09:51:10.000Z,false,5,,no release for 8.2 years; no push for 24 months,https://github.com/browserify/md5.js
+npm,https-browserify,dormant,11.7,53971121,638099,1328,1.0.0,2017-04-04T23:35:16.037000Z,2017-04-04T23:35:14.000Z,false,2,,no release for 9.7 years; no push for 9.7 years,https://github.com/substack/https-browserify
 npm,os-browserify,dormant,11.7,53312264,637295,1279,0.3.0,2017-04-20T03:38:21.786000Z,2018-02-28T15:48:09.000Z,false,2,,no release for 9.6 years; no push for 8.7 years,https://github.com/CoderPuppy/os-browserify
-npm,timers-browserify,dormant,11.7,40443486,636103,666,2.0.12,2020-10-27T10:44:21.049000Z,2024-12-21T10:11:41.000Z,false,39,,no release for 6.1 years; no push for 23 months,https://github.com/browserify/timers-browserify
+npm,timers-browserify,dormant,11.7,40443486,636103,666,2.0.12,2020-10-27T10:44:21.049000Z,2024-12-21T10:11:41.000Z,false,39,,no release for 6.1 years; no push for 24 months,https://github.com/browserify/timers-browserify
 npm,querystring-es3,dormant,11.7,52621365,635628,748,0.2.1,2014-10-13T19:06:08.473000Z,2024-06-06T23:41:25.000Z,false,1,,no release for 12.1 years; no push for 2.5 years,https://github.com/SpainTrain/querystring-es3
 npm,constants-browserify,dormant,11.7,53358541,635041,851,1.0.0,2015-07-13T18:16:42.306000Z,2025-05-12T10:13:54.000Z,false,1,,no release for 11.4 years; no push for 19 months,https://github.com/juliangruber/constants-browserify
-npm,tty-browserify,dormant,11.7,51354127,634678,630,0.0.1,2018-01-27T15:25:42.162000Z,2024-12-21T09:52:33.000Z,false,39,,no release for 8.8 years; no push for 23 months,https://github.com/browserify/tty-browserify
+npm,tty-browserify,dormant,11.7,51354127,634678,630,0.0.1,2018-01-27T15:25:42.162000Z,2024-12-21T09:52:33.000Z,false,39,,no release for 8.8 years; no push for 24 months,https://github.com/browserify/tty-browserify
 npm,builtin-status-codes,dormant,11.7,51321736,633314,336,3.0.0,2016-06-29T19:57:30.192000Z,2022-04-21T17:51:51.000Z,false,1,,no release for 10.4 years; no push for 4.6 years,https://github.com/bendrucker/builtin-status-codes
 npm,external-editor,dormant,11.7,110068149,629749,945,3.1.0,2019-07-08T16:07:13.082000Z,2022-07-20T18:00:09.000Z,false,1,,no release for 7.4 years; no push for 4.4 years,https://github.com/mrkmg/node-external-editor
-npm,vm-browserify,dormant,11.7,49522905,618735,703,1.1.2,2019-11-04T12:31:39.026000Z,2024-12-21T09:59:14.000Z,false,39,,no release for 7.1 years; no push for 23 months,https://github.com/browserify/vm-browserify
+npm,vm-browserify,dormant,11.7,49522905,618735,703,1.1.2,2019-11-04T12:31:39.026000Z,2024-12-21T09:59:14.000Z,false,39,,no release for 7.1 years; no push for 24 months,https://github.com/browserify/vm-browserify
 npm,es6-symbol,dormant,11.7,66373365,612719,539,3.1.4,2024-03-01T13:27:21.636000Z,2024-03-01T13:27:04.000Z,false,1,,no release for 2.7 years; no push for 2.7 years,https://github.com/medikoo/es6-symbol
 npm,find-root,dormant,11.7,99632809,602026,784,1.1.0,2017-06-29T21:25:58.908000Z,2023-01-11T11:56:13.000Z,false,0,,no release for 9.4 years; no push for 3.9 years,https://github.com/junosuarez/find-root
 npm,is-relative,dormant,11.7,74743722,598070,487,1.0.0,2017-07-13T08:00:45.797000Z,2018-05-06T07:08:40.000Z,false,2,,no release for 9.4 years; no push for 8.6 years,https://github.com/jonschlinkert/is-relative
 npm,proto-list,dormant,11.7,128409403,579880,334,1.2.4,2015-05-21T00:58:33.471000Z,2025-10-25T19:12:00.000Z,false,1,,no release for 11.5 years; no push for 13 months,https://github.com/isaacs/proto-list
 rubygems,safe_yaml,dormant,11.7,,492513,138,1.0.5,2019-02-22T19:10:49.376000Z,2024-01-08T15:33:49.000Z,false,1,,no release for 7.8 years; no push for 2.9 years,https://github.com/dtao/safe_yaml
-npm,cross-fetch,dormant,11.7,213936647,460600,5841,4.1.0,2024-12-21T15:03:07.027000Z,2025-04-15T12:40:26.000Z,false,1,,no release for 23 months; no push for 20 months,https://github.com/lquixada/cross-fetch
+npm,cross-fetch,dormant,11.7,213936647,460600,5841,4.1.0,2024-12-21T15:03:07.027000Z,2025-04-15T12:40:26.000Z,false,1,,no release for 24 months; no push for 20 months,https://github.com/lquixada/cross-fetch
 npm,is-hexadecimal,dormant,11.7,285076383,401903,100,2.0.1,2021-11-04T07:17:07.036000Z,2022-11-23T12:08:04.000Z,false,1,,no release for 5.1 years; no push for 4.0 years,https://github.com/wooorm/is-hexadecimal
 npm,character-reference-invalid,dormant,11.7,309366262,401468,87,2.0.1,2021-10-27T16:35:51.866000Z,2022-11-16T09:21:28.000Z,false,1,,no release for 5.1 years; no push for 4.0 years,https://github.com/wooorm/character-reference-invalid
 npm,node-gyp-build,dormant,11.7,322735285,356875,635,4.8.4,2024-11-19T14:43:46.572000Z,2024-11-19T14:43:07.000Z,false,2,,no release for 2.0 years; no push for 2.0 years,https://github.com/prebuild/node-gyp-build
@@ -941,14 +942,14 @@ rubygems,unf,dormant,11.7,,222761,71,0.2.0,2024-08-17T16:39:11.649000Z,2024-08-1
 go,github.com/google/uuid,dormant,11.7,,141184,55031,v1.6.0,2024-01-23T18:54:04.000000Z,2024-11-14T17:05:06.000Z,false,0,,no release for 2.8 years; no push for 2.0 years,https://github.com/google/uuid
 cargo,winapi,dormant,11.7,,107944,2026,0.3.9,2020-06-26T11:34:33.480855Z,2024-04-27T20:28:44.000Z,false,1,,no release for 6.4 years; no push for 2.6 years,https://github.com/retep998/winapi-rs
 rubygems,netrc,dormant,11.7,,100146,163,0.11.0,2015-10-29T22:33:04.558000Z,2024-01-21T14:26:31.000Z,false,5,,no release for 11.1 years; no push for 2.8 years,https://github.com/geemus/netrc
-cargo,nu-ansi-term,dormant,11.7,,11500,97,0.50.3,2025-10-10T17:34:18.972478Z,2025-11-16T21:31:31.000Z,false,2,,no release for 14 months; no push for 12 months,https://github.com/nushell/nu-ansi-term
-npm,bluebird,dormant,11.7,360150814,8603,30080,3.7.2,2019-11-28T22:55:40.312000Z,2024-11-07T20:26:46.000Z,false,1,,no release for 7.0 years; no push for 2.0 years,https://github.com/petkaantonov/bluebird
+cargo,nu-ansi-term,dormant,11.7,,11500,97,0.50.3,2025-10-10T17:34:18.972478Z,2025-11-16T21:31:31.000Z,false,2,,no release for 14 months; no push for 13 months,https://github.com/nushell/nu-ansi-term
+npm,bluebird,dormant,11.7,360150814,8603,30080,3.7.2,2019-11-28T22:55:40.312000Z,2024-11-07T20:26:46.000Z,false,1,,no release for 7.0 years; no push for 2.1 years,https://github.com/petkaantonov/bluebird
 npm,extend,dormant,11.7,627563363,6640,6106,3.0.2,2018-07-19T20:28:11.447000Z,2025-03-06T18:47:41.000Z,false,2,,no release for 8.4 years; no push for 21 months,https://github.com/justmoon/node-extend
 npm,is-arrayish,dormant,11.7,711877313,5599,1534,0.3.4,2025-09-13T16:44:23.359000Z,2025-09-13T16:43:12.000Z,false,1,,no release for 15 months; no push for 15 months,https://github.com/Qix-/node-is-arrayish
 npm,array.prototype.reduce,dormant,11.6,31470248,626282,138,1.0.8,2025-03-15T05:05:56.799000Z,2025-03-15T05:05:54.000Z,false,1,,no release for 21 months; no push for 21 months,https://github.com/es-shims/Array.prototype.reduce
 npm,to-arraybuffer,dormant,11.6,20709291,610009,349,1.0.1,2016-01-13T04:35:30.645000Z,2021-07-09T16:35:48.000Z,false,1,,no release for 10.9 years; no push for 5.4 years,https://github.com/jhiesey/to-arraybuffer
 npm,grapheme-splitter,dormant,11.6,37199296,590714,518,1.0.4,2018-09-11T20:25:43.410000Z,2021-02-12T00:21:57.000Z,false,1,,no release for 8.2 years; no push for 5.8 years,https://github.com/orling/grapheme-splitter
-npm,svg-tags,dormant,11.6,59255620,576802,114,1.0.0,2014-09-03T21:08:56.633000Z,2017-06-16T04:30:35.000Z,false,1,,no release for 12.2 years; no push for 9.4 years,https://github.com/element-io/svg-tags
+npm,svg-tags,dormant,11.6,59255620,576802,114,1.0.0,2014-09-03T21:08:56.633000Z,2017-06-16T04:30:35.000Z,false,1,,no release for 12.2 years; no push for 9.5 years,https://github.com/element-io/svg-tags
 npm,@nicolo-ribaudo/eslint-scope-5-internals,dormant,11.6,30570774,576758,3,5.1.1-v1,2022-09-05T14:54:37.577000Z,,false,1,,no linked source repository; no release for 4.2 years,
 npm,dezalgo,dormant,11.6,96732896,551330,202,1.0.4,2022-04-06T16:04:42.572000Z,2023-04-15T20:45:37.000Z,false,1,,no release for 4.6 years; no push for 3.6 years,https://github.com/isaacs/dezalgo
 npm,global,dormant,11.6,33545340,549162,3053,4.4.0,2019-06-10T11:26:48.555000Z,2019-06-10T11:26:46.000Z,false,3,,no release for 7.5 years; no push for 7.5 years,https://github.com/Raynos/global
@@ -957,9 +958,9 @@ npm,unc-path-regex,dormant,11.6,63323956,547040,379,0.1.2,2016-04-10T02:51:44.09
 npm,path-is-inside,dormant,11.6,64147354,528354,468,1.0.2,2016-09-10T23:35:10.802000Z,2020-03-03T13:02:23.000Z,false,1,,no release for 10.2 years; no push for 6.7 years,https://github.com/domenic/path-is-inside
 npm,streamsearch,dormant,11.6,186410670,470874,111,1.1.0,2021-12-19T19:12:20.627000Z,2023-10-16T13:35:05.000Z,false,1,,no release for 4.9 years; no push for 3.1 years,https://github.com/mscdex/streamsearch
 npm,file-uri-to-path,dormant,11.6,155995825,457029,488,2.0.0,2019-10-11T20:21:53.304000Z,2022-05-24T09:43:38.000Z,false,1,,no release for 7.1 years; no push for 4.5 years,https://github.com/TooTallNate/file-uri-to-path
-npm,bindings,dormant,11.6,146722091,436775,3518,1.5.0,2019-02-27T22:54:44.325000Z,2024-04-09T06:03:02.000Z,false,1,,no release for 7.7 years; no push for 2.6 years,https://github.com/TooTallNate/node-bindings
+npm,bindings,dormant,11.6,146722091,436775,3518,1.5.0,2019-02-27T22:54:44.325000Z,2024-04-09T06:03:02.000Z,false,1,,no release for 7.8 years; no push for 2.6 years,https://github.com/TooTallNate/node-bindings
 npm,busboy,dormant,11.6,176269231,428463,1087,1.6.0,2022-04-19T12:53:31.121000Z,2024-05-31T20:04:04.000Z,false,1,,no release for 4.6 years; no push for 2.5 years,https://github.com/mscdex/busboy
-npm,object.groupby,dormant,11.6,312216660,345709,53,1.0.3,2024-03-18T18:04:13.675000Z,2024-12-21T21:07:39.000Z,false,1,,no release for 2.7 years; no push for 23 months,https://github.com/es-shims/Object.groupBy
+npm,object.groupby,dormant,11.6,312216660,345709,53,1.0.3,2024-03-18T18:04:13.675000Z,2024-12-21T21:07:39.000Z,false,1,,no release for 2.7 years; no push for 24 months,https://github.com/es-shims/Object.groupBy
 npm,array.prototype.findlastindex,dormant,11.6,315011481,335321,391,1.2.6,2025-03-14T18:20:03.256000Z,2025-03-14T18:20:00.000Z,false,1,,no release for 21 months; no push for 21 months,https://github.com/es-shims/Array.prototype.findLastIndex
 rubygems,childprocess,dormant,11.6,,307829,182,5.1.0,2024-08-06T06:35:39.691000Z,2024-08-06T06:37:24.000Z,false,3,,no release for 2.3 years; no push for 2.3 years,https://github.com/enkessler/childprocess
 npm,longest-streak,dormant,11.6,358811233,278360,40,3.1.0,2022-11-15T12:13:29.629000Z,2022-11-15T12:13:20.000Z,false,1,,no release for 4.0 years; no push for 4.0 years,https://github.com/wooorm/longest-streak
@@ -972,14 +973,14 @@ cargo,winapi-i686-pc-windows-gnu,dormant,11.6,,102690,3,0.4.0,2018-01-18T00:55:3
 cargo,winapi-x86_64-pc-windows-gnu,dormant,11.6,,102690,3,0.4.0,2018-01-18T00:55:12.008307Z,2024-04-27T20:28:44.000Z,false,1,,no release for 8.9 years; no push for 2.6 years,https://github.com/retep998/winapi-rs
 cargo,termcolor,dormant,11.6,,45842,552,1.4.1,2024-01-10T12:40:32.427230Z,2024-12-31T13:59:34.000Z,false,1,,no release for 2.9 years; no push for 23 months,https://github.com/BurntSushi/termcolor
 cargo,matchers,dormant,11.6,,15171,2,0.2.0,2024-07-01T22:20:07.033866Z,2024-07-01T22:19:49.000Z,false,1,,no release for 2.4 years; no push for 2.4 years,https://github.com/hawkw/matchers
-npm,flush-write-stream,dormant,11.5,21572723,539796,416,2.0.0,2019-02-08T11:31:03.031000Z,2024-06-14T07:50:13.000Z,false,1,,no release for 7.8 years; no push for 2.4 years,https://github.com/mafintosh/flush-write-stream
-npm,dom-walk,dormant,11.5,27700359,538162,166,0.1.2,2020-04-03T08:51:05.880000Z,2020-04-03T08:50:59.000Z,false,1,,no release for 6.6 years; no push for 6.6 years,https://github.com/npm-dom/dom-walk
+npm,flush-write-stream,dormant,11.5,21572723,539796,416,2.0.0,2019-02-08T11:31:03.031000Z,2024-06-14T07:50:13.000Z,false,1,,no release for 7.8 years; no push for 2.5 years,https://github.com/mafintosh/flush-write-stream
+npm,dom-walk,dormant,11.5,27700359,538162,166,0.1.2,2020-04-03T08:51:05.880000Z,2020-04-03T08:50:59.000Z,false,1,,no release for 6.7 years; no push for 6.7 years,https://github.com/npm-dom/dom-walk
 npm,archy,dormant,11.5,46109475,535948,518,1.0.0,2014-09-14T07:57:58.806000Z,2021-12-21T10:47:52.000Z,false,1,,no release for 12.2 years; no push for 4.9 years,https://github.com/substack/node-archy
 npm,pretty-hrtime,dormant,11.5,24390612,534349,886,1.0.3,2016-11-05T19:38:49.433000Z,2020-06-19T17:14:04.000Z,false,1,,no release for 10.1 years; no push for 6.4 years,https://github.com/robrich/pretty-hrtime
 npm,pseudomap,dormant,11.5,53521788,519331,405,1.0.2,2016-01-05T03:03:55.449000Z,2025-10-25T19:12:18.000Z,false,1,,no release for 10.9 years; no push for 13 months,https://github.com/isaacs/pseudomap
 npm,is-absolute,dormant,11.5,69569829,512266,499,1.0.0,2017-07-13T08:05:31.177000Z,2017-07-13T08:05:44.000Z,false,2,,no release for 9.4 years; no push for 9.4 years,https://github.com/jonschlinkert/is-absolute
-npm,randomfill,dormant,11.5,42837717,503072,343,1.0.4,2018-02-16T13:03:56.771000Z,2024-12-21T09:51:15.000Z,false,3,,no release for 8.8 years; no push for 23 months,https://github.com/browserify/randomfill
-npm,browser-stdout,dormant,11.5,50131392,494253,434,1.3.1,2018-02-27T17:29:13.726000Z,2018-08-18T05:14:48.000Z,false,1,,no release for 8.7 years; no push for 8.3 years,https://github.com/kumavis/browser-stdout
+npm,randomfill,dormant,11.5,42837717,503072,343,1.0.4,2018-02-16T13:03:56.771000Z,2024-12-21T09:51:15.000Z,false,3,,no release for 8.8 years; no push for 24 months,https://github.com/browserify/randomfill
+npm,browser-stdout,dormant,11.5,50131392,494253,434,1.3.1,2018-02-27T17:29:13.726000Z,2018-08-18T05:14:48.000Z,false,1,,no release for 8.8 years; no push for 8.3 years,https://github.com/kumavis/browser-stdout
 npm,d,dormant,11.5,67325898,486328,288,1.0.2,2024-03-01T13:08:07.744000Z,2024-03-01T13:07:48.000Z,false,1,,no release for 2.7 years; no push for 2.7 years,https://github.com/medikoo/d
 npm,es6-iterator,dormant,11.5,66096219,486078,198,2.0.3,2017-10-17T11:01:55.570000Z,2021-06-30T16:03:42.000Z,false,1,,no release for 9.1 years; no push for 5.4 years,https://github.com/medikoo/es6-iterator
 npm,es5-ext,dormant,11.5,66206946,477130,386,0.10.64,2024-02-27T16:42:12.377000Z,2025-05-09T10:21:10.000Z,false,1,,no release for 2.7 years; no push for 19 months,https://github.com/medikoo/es5-ext
@@ -1001,7 +1002,7 @@ npm,internmap,dormant,11.5,521136509,50665,31,2.0.3,2021-09-20T03:11:43.688000Z,
 rubygems,faraday_middleware,dormant,11.5,,46353,1830,1.2.1,2024-09-23T13:28:08.686000Z,2025-03-11T09:43:40.000Z,false,3,,no release for 2.2 years; no push for 21 months,https://github.com/lostisland/faraday_middleware
 npm,error-ex,dormant,11.5,560692493,6821,1589,1.3.4,2025-09-15T14:58:41.266000Z,2025-09-15T14:56:37.000Z,false,2,,no release for 15 months; no push for 15 months,https://github.com/Qix-/node-error-ex
 npm,cyclist,dormant,11.4,17372792,506521,299,1.0.2,2023-05-28T21:15:25.466000Z,2024-04-14T17:59:03.000Z,false,1,,no release for 3.5 years; no push for 2.6 years,https://github.com/mafintosh/cyclist
-npm,console-browserify,dormant,11.4,50172809,454456,500,1.2.0,2019-10-28T08:44:20.862000Z,2024-12-21T10:00:17.000Z,false,39,,no release for 7.1 years; no push for 23 months,https://github.com/browserify/console-browserify
+npm,console-browserify,dormant,11.4,50172809,454456,500,1.2.0,2019-10-28T08:44:20.862000Z,2024-12-21T10:00:17.000Z,false,39,,no release for 7.1 years; no push for 24 months,https://github.com/browserify/console-browserify
 npm,next-tick,dormant,11.4,62486433,448508,308,1.1.0,2020-02-11T04:03:15.049000Z,2021-06-30T16:05:41.000Z,false,1,,no release for 6.8 years; no push for 5.4 years,https://github.com/medikoo/next-tick
 rubygems,ruby_dep,dormant,11.4,,418400,22,1.5.0,2016-10-09T22:00:49.203000Z,2021-04-15T22:02:39.000Z,false,1,,no release for 10.1 years; no push for 5.6 years,https://github.com/e2/ruby_dep
 npm,path-root,dormant,11.4,68863604,415186,88,0.1.1,2016-03-29T07:14:27.534000Z,2016-12-12T13:42:53.000Z,false,1,,no release for 10.7 years; no push for 10.0 years,https://github.com/jonschlinkert/path-root
@@ -1020,7 +1021,7 @@ npm,client-only,dormant,11.4,259811680,249350,81,0.0.1,2022-09-03T01:07:11.98100
 go,golang.org/x/xerrors,dormant,11.4,,206048,29580,,2024-09-03T12:06:38.000000Z,,false,0,,no release for 2.2 years,https://cs.opensource.google/go/x/xerrors
 npm,crc-32,dormant,11.4,320213515,157349,656,1.2.2,2022-04-04T23:05:52.784000Z,2022-08-20T21:32:00.000Z,false,1,,no release for 4.6 years; no push for 4.3 years,https://github.com/SheetJS/js-crc32
 npm,@types/uuid,dormant,11.4,198121340,137530,15745,11.0.0,2025-09-16T21:33:15.821000Z,2024-04-13T19:41:31.000Z,false,1,,no release for 15 months; no push for 2.6 years,https://github.com/DefinitelyTyped/DefinitelyTyped
-go,github.com/gorilla/websocket,dormant,11.4,,107879,37531,v1.5.3,2024-06-14T03:18:03.000000Z,2025-03-19T13:29:08.000Z,false,0,,no release for 2.4 years; no push for 21 months,https://github.com/gorilla/websocket
+go,github.com/gorilla/websocket,dormant,11.4,,107879,37531,v1.5.3,2024-06-14T03:18:03.000000Z,2025-03-19T13:29:08.000Z,false,0,,no release for 2.5 years; no push for 21 months,https://github.com/gorilla/websocket
 npm,use-sidecar,dormant,11.4,389859820,90147,27,1.1.3,2024-12-15T01:49:19.375000Z,2024-12-15T01:49:31.000Z,false,1,,no release for 24 months; no push for 24 months,https://github.com/theKashey/use-sidecar
 npm,aria-hidden,dormant,11.4,413918508,83458,188,1.2.6,2025-05-19T00:03:50.887000Z,2025-05-19T00:04:00.000Z,false,1,,no release for 19 months; no push for 19 months,https://github.com/theKashey/aria-hidden
 npm,@pkgjs/parseargs,dormant,11.4,448172239,65894,14,0.11.0,2022-10-10T14:18:44.810000Z,2025-07-27T00:25:38.000Z,false,1,,no release for 4.1 years; no push for 16 months,https://github.com/pkgjs/parseargs
@@ -1047,7 +1048,7 @@ cargo,hyper-tls,dormant,11.3,,19474,536,0.6.0,2023-11-27T19:18:29.702911Z,2025-0
 cargo,dunce,dormant,11.3,,6902,262,1.0.5,2024-08-04T01:36:46.487482Z,,false,1,,no release for 2.3 years,https://gitlab.com/kornelski/dunce
 pypi,flask-session,dead,11.3,4914501,658,38,0.8.0,2024-03-26T07:56:11.000000Z,2025-06-14T20:23:32.000Z,false,1,,"5 issue(s)/PR(s) opened in the past year, none closed or merged; last push 18 months ago",https://github.com/pallets-eco/flask-session
 npm,is-lambda,dormant,11.2,47258635,372719,142,1.0.1,2017-05-24T19:07:11.056000Z,2018-11-23T16:11:47.000Z,false,1,,no release for 9.5 years; no push for 8.0 years,https://github.com/watson/is-lambda
-rubygems,sdoc,dormant,11.2,,293921,125,2.6.5,2025-10-18T19:53:15.366000Z,2025-11-16T14:30:32.000Z,false,3,,no release for 13 months; no push for 12 months,https://github.com/zzak/sdoc
+rubygems,sdoc,dormant,11.2,,293921,125,2.6.5,2025-10-18T19:53:15.366000Z,2025-11-16T14:30:32.000Z,false,3,,no release for 13 months; no push for 13 months,https://github.com/zzak/sdoc
 npm,unist-util-remove-position,dormant,11.2,109705316,286781,212,5.0.0,2023-07-07T10:24:53.442000Z,2023-07-07T10:24:50.000Z,false,2,,no release for 3.4 years; no push for 3.4 years,https://github.com/syntax-tree/unist-util-remove-position
 packagist,facade/ignition-contracts,dormant,11.2,,235236,88,1.0.2,2020-10-16T08:27:54.000000Z,2022-03-30T15:03:10.000Z,false,1,,no release for 6.1 years; no push for 4.7 years,https://github.com/facade/ignition-contracts
 packagist,jakub-onderka/php-console-highlighter,dormant,11.2,,232295,463,v0.4,2018-09-29T18:48:56.000000Z,2020-04-02T19:47:23.000Z,false,1,,no release for 8.2 years; no push for 6.7 years,https://github.com/JakubOnderka/PHP-Console-Highlighter
@@ -1055,7 +1056,7 @@ rubygems,mimemagic,dormant,11.2,,210567,194,0.4.3,2021-03-26T17:01:23.291000Z,20
 npm,v8-compile-cache-lib,dormant,11.2,216264550,191646,351,3.0.1,2022-04-16T01:03:39.155000Z,2022-04-16T01:03:40.000Z,false,1,,no release for 4.6 years; no push for 4.6 years,https://github.com/cspotcode/v8-compile-cache-lib
 rubygems,debug_inspector,dormant,11.2,,188756,14,1.2.0,2023-12-12T13:14:23.462000Z,2025-07-17T12:32:59.000Z,false,3,,no release for 3.0 years; no push for 17 months,https://github.com/banister/debug_inspector
 npm,sirv,dormant,11.2,236674188,164936,630,3.0.2,2025-09-03T22:05:27.662000Z,2025-09-03T22:05:10.000Z,false,1,,no release for 15 months; no push for 15 months,https://github.com/lukeed/sirv
-npm,totalist,dormant,11.2,225791722,160599,100,3.0.1,2023-04-03T18:36:39.508000Z,2023-04-03T18:36:38.000Z,false,1,,no release for 3.6 years; no push for 3.6 years,https://github.com/lukeed/totalist
+npm,totalist,dormant,11.2,225791722,160599,100,3.0.1,2023-04-03T18:36:39.508000Z,2023-04-03T18:36:38.000Z,false,1,,no release for 3.7 years; no push for 3.7 years,https://github.com/lukeed/totalist
 npm,@polka/url,dormant,11.2,229897590,157279,29,0.5.0,2018-09-18T18:17:32.381000Z,2025-04-09T18:42:18.000Z,false,1,,no release for 8.2 years; no push for 20 months,https://github.com/lukeed/polka
 npm,change-case,dormant,11.2,207967341,155328,4046,5.4.4,2024-04-03T22:34:57.150000Z,2025-06-17T20:12:46.000Z,false,1,,no release for 2.6 years; no push for 18 months,https://github.com/blakeembrey/change-case
 npm,mrmime,dormant,11.2,284832089,118827,157,2.0.1,2025-02-17T18:17:05.137000Z,2025-02-17T18:17:03.000Z,false,1,,no release for 22 months; no push for 22 months,https://github.com/lukeed/mrmime
@@ -1181,7 +1182,7 @@ pypi,isodate,dormant,10.7,206020403,13050,393,0.7.2,2024-10-08T23:04:09.000000Z,
 cargo,derivative,dormant,10.7,,12480,645,2.2.0,2021-01-23T17:05:39.339355Z,2025-09-27T19:44:25.000Z,false,1,,no release for 5.8 years; no push for 14 months,https://github.com/mcarton/rust-derivative
 cargo,yaml-rust,dormant,10.7,,12361,375,0.4.5,2021-01-03T19:58:30.295058Z,2024-03-25T12:42:02.000Z,false,1,,no release for 5.9 years; no push for 2.7 years,https://github.com/chyh1990/yaml-rust
 cargo,precomputed-hash,dormant,10.7,,8889,6,0.1.1,2017-09-29T20:25:54.097804Z,2017-09-29T20:25:48.000Z,false,1,,no release for 9.2 years; no push for 9.2 years,https://github.com/emilio/precomputed-hash
-cargo,sha1_smol,dormant,10.7,,5352,39,1.0.1,2024-07-21T20:34:38.814832Z,2024-07-21T20:34:37.000Z,false,1,,no release for 2.3 years; no push for 2.3 years,https://github.com/mitsuhiko/sha1-smol
+cargo,sha1_smol,dormant,10.7,,5352,39,1.0.1,2024-07-21T20:34:38.814832Z,2024-07-21T20:34:37.000Z,false,1,,no release for 2.4 years; no push for 2.4 years,https://github.com/mitsuhiko/sha1-smol
 npm,performance-now,dormant,10.7,199977570,4469,1187,2.1.0,2017-02-19T14:28:49.939000Z,2021-02-05T06:42:49.000Z,false,1,,no release for 9.8 years; no push for 5.8 years,https://github.com/braveg1rl/performance-now
 npm,tunnel-agent,dormant,10.7,215792951,4021,805,0.6.0,2017-03-05T00:30:01.500000Z,2020-06-05T19:23:01.000Z,false,4,,no release for 9.7 years; no push for 6.5 years,https://github.com/request/tunnel-agent
 cargo,protobuf,dormant,10.7,,3839,510,3.7.2,2025-03-10T14:07:03.378871Z,2024-10-15T17:28:55.000Z,false,2,,no release for 21 months; no push for 2.1 years,https://github.com/stepancheg/rust-protobuf
@@ -1217,7 +1218,7 @@ rubygems,nenv,dormant,10.5,,36718,21,0.3.0,2016-02-08T05:54:33.785000Z,2017-09-1
 rubygems,shellany,dormant,10.5,,35417,3,0.0.1,2014-12-25T03:25:52.348000Z,,false,2,,no linked source repository; no release for 11.9 years,
 rubygems,notiffany,dormant,10.5,,35404,4,0.1.3,2019-08-01T06:57:38.618000Z,2022-11-03T13:43:59.000Z,false,2,,no release for 7.3 years; no push for 4.1 years,https://github.com/guard/notiffany
 rubygems,guard-compat,dormant,10.5,,29158,103,1.2.1,2015-01-14T16:26:07.661000Z,,false,1,,no linked source repository; no release for 11.9 years,
-npm,on-exit-leak-free,dormant,10.5,159708591,19551,25,2.1.2,2023-10-03T14:42:06.031000Z,2024-04-28T12:54:29.000Z,false,1,,no release for 3.1 years; no push for 2.6 years,https://github.com/mcollina/on-exit-leak-free
+npm,on-exit-leak-free,dormant,10.5,159708591,19551,25,2.1.2,2023-10-03T14:42:06.031000Z,2024-04-28T12:54:29.000Z,false,1,,no release for 3.2 years; no push for 2.6 years,https://github.com/mcollina/on-exit-leak-free
 cargo,fxhash,dormant,10.5,,15943,472,0.2.1,2017-07-29T19:02:18.664479Z,2024-01-03T20:33:46.000Z,false,1,,no release for 9.3 years; no push for 2.9 years,https://github.com/cbreeden/fxhash
 packagist,friendsofphp/proxy-manager-lts,dormant,10.5,,14093,85,v1.0.19,2025-10-28T10:28:17.000000Z,2025-10-28T10:29:59.000Z,false,1,,no release for 13 months; no push for 13 months,https://github.com/FriendsOfPHP/proxy-manager-lts
 rubygems,open4,dormant,10.5,,13437,365,1.3.4,2014-05-15T05:57:24.703000Z,2023-11-28T22:45:47.000Z,false,10,,no release for 12.5 years; no push for 3.0 years,https://github.com/ahoward/open4
@@ -1272,7 +1273,7 @@ go,github.com/go-kit/log,dormant,10.3,,46895,8646,v0.2.1,2022-04-27T13:55:41.000
 go,github.com/pborman/uuid,dormant,10.3,,41939,9413,v1.2.1,2019-10-24T13:36:33.000000Z,2024-03-16T20:51:09.000Z,false,0,,no release for 7.1 years; no push for 2.7 years,https://github.com/pborman/uuid
 rubygems,annotate,dormant,10.3,,40893,73,3.2.0,2022-02-10T06:20:44.218000Z,2024-08-05T23:45:54.000Z,false,1,,no release for 4.8 years; no push for 2.3 years,https://github.com/ctran/annotate_models
 go,gopkg.in/natefinch/lumberjack.v2,dormant,10.3,,39753,9948,v2.2.1,2023-02-06T19:38:14.000000Z,2024-08-05T20:55:26.000Z,false,0,,no release for 3.8 years; no push for 2.3 years,https://github.com/natefinch/lumberjack
-rubygems,escape,dormant,10.3,,31654,99,0.0.4,2009-07-25T18:23:33.000000Z,,false,1,,no release for 17.3 years,
+rubygems,escape,dormant,10.3,,31654,99,0.0.4,2009-07-25T18:23:33.000000Z,,false,1,,no release for 17.4 years,
 go,github.com/gorilla/handlers,dormant,10.3,,30713,11537,v1.5.2,2023-10-18T11:25:31.000000Z,2024-02-20T16:27:20.000Z,false,0,,no release for 3.1 years; no push for 2.8 years,https://github.com/gorilla/handlers
 rubygems,fuzzy_match,dormant,10.3,,29906,35,2.1.0,2014-07-14T16:04:31.734000Z,2021-05-11T08:38:25.000Z,false,1,,no release for 12.4 years; no push for 5.5 years,https://github.com/seamusabshere/fuzzy_match
 rubygems,cocoapods-trunk,dormant,10.3,,29154,3,1.6.0,2021-09-01T19:10:53.273000Z,2023-10-26T23:27:43.000Z,false,10,,no release for 5.2 years; no push for 3.1 years,https://github.com/CocoaPods/cocoapods-trunk
@@ -1286,7 +1287,7 @@ rubygems,axiom-types,dormant,10.3,,9396,5,0.1.1,2014-03-27T06:29:33.554000Z,2021
 npm,bcrypt-pbkdf,dormant,10.3,118732104,9016,571,1.0.2,2018-06-29T00:33:59.042000Z,2019-10-20T17:09:19.000Z,false,10,,no release for 8.4 years; no push for 7.1 years,https://github.com/TritonDataCenter/node-bcrypt-pbkdf
 rubygems,database_cleaner-active_record,dormant,10.3,,7389,67,2.2.2,2025-07-30T18:01:54.130000Z,2025-07-30T18:00:03.000Z,false,2,,no release for 16 months; no push for 16 months,https://github.com/DatabaseCleaner/database_cleaner-active_record
 rubygems,redis-rack,dormant,10.3,,5577,7,3.0.0,2023-12-04T22:42:12.035000Z,,false,5,,no release for 3.0 years,
-cargo,tokio-io-timeout,dormant,10.3,,5342,8,1.2.1,2025-07-20T00:47:43.200104Z,2025-07-20T00:48:01.000Z,false,1,,no release for 16 months; no push for 16 months,https://github.com/sfackler/tokio-io-timeout
+cargo,tokio-io-timeout,dormant,10.3,,5342,8,1.2.1,2025-07-20T00:47:43.200104Z,2025-07-20T00:48:01.000Z,false,1,,no release for 17 months; no push for 17 months,https://github.com/sfackler/tokio-io-timeout
 rubygems,deep_merge,dormant,10.3,,4874,239,1.2.2,2022-01-07T22:31:29.587000Z,2025-05-27T15:39:48.000Z,false,4,,no release for 4.9 years; no push for 18 months,https://github.com/danielsdeleo/deep_merge
 cargo,atomic,dormant,10.3,,3521,99,0.6.1,2025-06-20T07:00:18.336083Z,2025-09-16T23:58:33.000Z,false,1,,no release for 17 months; no push for 15 months,https://github.com/Amanieu/atomic-rs
 cargo,ascii,dormant,10.3,,3191,103,1.1.0,2022-09-18T13:04:12.231348Z,2024-07-22T19:49:25.000Z,false,4,,no release for 4.2 years; no push for 2.3 years,https://github.com/tomprogrammer/rust-ascii
@@ -1335,7 +1336,7 @@ rubygems,celluloid-essentials,dormant,10.2,,730,10,0.20.5,2015-09-30T23:49:08.65
 go,github.com/kr/logfmt,dormant,10.1,,102292,1187,v0.0.0-20210122060352-19f9bcb100e6,2021-01-22T06:03:52.000000Z,2024-02-02T12:04:12.000Z,false,0,,no release for 5.8 years; no push for 2.8 years,https://github.com/kr/logfmt
 npm,getos,dormant,10.1,17471513,98261,150,3.2.1,2020-05-19T03:00:25.921000Z,2023-01-06T17:31:25.000Z,false,3,,no release for 6.5 years; no push for 3.9 years,https://github.com/retrohacker/getos
 go,github.com/chzyer/test,dormant,10.1,,96199,1495,v1.0.0,2022-04-24T13:19:37.000000Z,2025-01-02T07:09:13.000Z,false,0,,no release for 4.6 years; no push for 23 months,https://github.com/chzyer/test
-go,github.com/chzyer/logex,dormant,10.1,,96197,1488,v1.2.1,2022-04-24T13:13:51.000000Z,2024-04-02T15:49:33.000Z,false,0,,no release for 4.6 years; no push for 2.6 years,https://github.com/chzyer/logex
+go,github.com/chzyer/logex,dormant,10.1,,96197,1488,v1.2.1,2022-04-24T13:13:51.000000Z,2024-04-02T15:49:33.000Z,false,0,,no release for 4.6 years; no push for 2.7 years,https://github.com/chzyer/logex
 go,github.com/jtolds/gls,dormant,10.1,,82349,3363,v4.20.0+incompatible,2018-11-10T20:30:27.000000Z,2022-08-12T02:32:01.000Z,false,0,,no release for 8.0 years; no push for 4.3 years,https://github.com/jtolio/gls
 pypi,appdirs,dormant,10.1,28116858,70456,1381,1.4.4,2020-05-11T07:59:49.000000Z,2023-02-10T23:42:40.000Z,false,1,,no release for 6.5 years; no push for 3.8 years,https://github.com/ActiveState/appdirs
 go,github.com/armon/circbuf,dormant,10.1,,69214,4708,v0.0.0-20190214190532-5111143e8da2,2019-02-14T19:05:32.000000Z,2022-11-17T20:57:00.000Z,false,0,,no release for 7.8 years; no push for 4.0 years,https://github.com/armon/circbuf
@@ -1377,13 +1378,13 @@ go,github.com/dgryski/go-sip13,dormant,10,,60452,4082,v0.0.0-20211015210918-3d5f
 rubygems,compass,dormant,10,,51640,585,1.0.3,2015-01-15T23:50:43.227000Z,2023-04-24T17:45:42.000Z,false,2,,no release for 11.9 years; no push for 3.6 years,https://github.com/Compass/compass
 go,github.com/go-task/slim-sprig,dormant,10,,32560,6383,v2.20.0+incompatible,2019-06-18T15:54:40.000000Z,2025-11-07T20:50:25.000Z,false,0,,no release for 7.4 years; no push for 13 months,https://github.com/go-task/slim-sprig
 go,github.com/streadway/amqp,dormant,10,,28168,7453,,2023-06-19T10:39:15.000000Z,2023-09-07T02:58:29.000Z,false,0,,no release for 3.4 years; no push for 3.2 years,https://github.com/streadway/amqp
-go,github.com/bmizerany/assert,dormant,10,,23942,7750,v0.0.0-20160611221934-b7ed37b82869,2016-06-11T22:19:34.000000Z,2018-06-16T14:01:51.000Z,false,0,,no release for 10.5 years; no push for 8.4 years,https://github.com/bmizerany/assert
+go,github.com/bmizerany/assert,dormant,10,,23942,7750,v0.0.0-20160611221934-b7ed37b82869,2016-06-11T22:19:34.000000Z,2018-06-16T14:01:51.000Z,false,0,,no release for 10.5 years; no push for 8.5 years,https://github.com/bmizerany/assert
 go,gopkg.in/go-playground/assert.v1,dormant,10,,21785,7380,v1.2.1,2016-02-05T15:04:13.000000Z,2022-09-12T22:28:25.000Z,false,0,,no release for 10.8 years; no push for 4.2 years,https://github.com/go-playground/assert
 cargo,net2,dormant,10,,21427,195,0.2.39,2023-06-14T18:02:31.313490Z,2024-06-29T18:10:26.000Z,false,1,,no release for 3.5 years; no push for 2.4 years,https://github.com/deprecrated/net2-rs
 go,github.com/bitly/go-simplejson,dormant,10,,19085,7548,v0.5.1,2023-06-06T14:49:55.000000Z,2024-04-08T09:37:30.000Z,false,0,,no release for 3.5 years; no push for 2.6 years,https://github.com/bitly/go-simplejson
 npm,esbuild-register,dormant,10,74798937,18697,985,3.6.0,2024-07-25T13:46:46.760000Z,,false,1,,no linked source repository; no release for 2.3 years,
 npm,aws-sign2,dormant,10,89015156,9743,681,0.7.0,2017-04-12T19:08:50.725000Z,2020-06-02T19:02:12.000Z,false,1,,no release for 9.6 years; no push for 6.5 years,https://github.com/request/aws-sign
-packagist,webmozart/path-util,dormant,10,,8622,362,2.3.0,2015-12-17T08:42:14.000000Z,2021-11-08T08:17:20.000Z,false,1,,no release for 10.9 years; no push for 5.0 years,https://github.com/webmozart/path-util
+packagist,webmozart/path-util,dormant,10,,8622,362,2.3.0,2015-12-17T08:42:14.000000Z,2021-11-08T08:17:20.000Z,false,1,,no release for 11.0 years; no push for 5.1 years,https://github.com/webmozart/path-util
 rubygems,hiredis,dormant,10,,7651,136,0.6.3,2018-11-08T19:48:43.257000Z,2024-07-01T10:04:36.000Z,false,10,,no release for 8.1 years; no push for 2.4 years,https://github.com/redis/hiredis-rb
 npm,dashdash,dormant,10,86277594,7118,736,2.0.0,2020-09-25T23:05:04.302000Z,2023-03-05T01:43:18.000Z,false,1,,no release for 6.2 years; no push for 3.7 years,https://github.com/trentm/node-dashdash
 cargo,match_cfg,dormant,10,,6028,1,0.1.0,2019-04-02T10:50:59.802728Z,2019-04-02T10:47:26.000Z,false,1,,no release for 7.7 years; no push for 7.7 years,https://github.com/gnzlbg/match_cfg
@@ -1393,7 +1394,7 @@ rubygems,redis-activesupport,dormant,10,,4987,14,5.3.0,2022-01-17T01:17:34.24500
 rubygems,activemodel-serializers-xml,dormant,10,,4706,23,1.0.3,2024-09-18T12:42:47.075000Z,2024-09-18T12:42:32.000Z,false,12,,no release for 2.2 years; no push for 2.2 years,https://github.com/rails/activemodel-serializers-xml
 cargo,take_mut,dormant,10,,4008,52,0.2.2,2018-03-20T05:12:48.872959Z,2019-11-21T19:59:10.000Z,false,1,,no release for 8.7 years; no push for 7.0 years,https://github.com/Sgeo/take_mut
 rubygems,tty-prompt,dormant,10,,3867,396,0.23.1,2021-04-17T18:18:07.361000Z,2024-07-20T19:31:37.000Z,false,1,,no release for 5.6 years; no push for 2.4 years,https://github.com/piotrmurach/tty-prompt
-cargo,normalize-line-endings,dormant,10,,3826,11,0.3.0,2018-12-16T15:17:15.641063Z,2018-12-16T15:17:09.000Z,false,1,,no release for 7.9 years; no push for 7.9 years,https://github.com/richard-uk1/normalize-line-endings
+cargo,normalize-line-endings,dormant,10,,3826,11,0.3.0,2018-12-16T15:17:15.641063Z,2018-12-16T15:17:09.000Z,false,1,,no release for 8.0 years; no push for 8.0 years,https://github.com/richard-uk1/normalize-line-endings
 packagist,felixfbecker/language-server-protocol,dormant,10,,3523,7,v1.5.3,2024-04-30T00:40:11.000000Z,2024-09-25T20:16:56.000Z,false,1,,no release for 2.6 years; no push for 2.2 years,https://github.com/felixfbecker/php-language-server-protocol
 cargo,parse-zoneinfo,dormant,10,,3086,9,0.5.0,2025-07-15T14:33:56.331781Z,2025-10-10T08:38:57.000Z,false,2,,no release for 17 months; no push for 14 months,https://github.com/chronotope/chrono-tz
 cargo,assert_matches,dormant,10,,2773,742,1.5.0,2021-02-05T04:16:48.301552Z,2021-02-05T04:14:49.000Z,false,1,,no release for 5.8 years; no push for 5.8 years,https://github.com/murarth/assert_matches
@@ -1407,7 +1408,7 @@ pypi,backcall,dormant,9.9,8771319,79510,172,0.2.0,2020-06-09T15:11:30.000000Z,20
 npm,value-or-promise,dormant,9.9,31516906,61715,19,1.0.12,2023-01-03T08:12:36.352000Z,2023-01-03T08:09:57.000Z,false,1,,no release for 3.9 years; no push for 3.9 years,https://github.com/yaacovCR/value-or-promise
 go,github.com/xeipuuv/gojsonpointer,dormant,9.9,,30784,6014,v0.0.0-20190905194746-02993c407bfb,2019-09-05T19:47:46.000000Z,2022-01-04T11:50:58.000Z,false,0,,no release for 7.2 years; no push for 4.9 years,https://github.com/xeipuuv/gojsonpointer
 go,github.com/xeipuuv/gojsonreference,dormant,9.9,,30612,5622,,2018-01-27T04:06:03.000000Z,2021-04-12T15:14:44.000Z,false,0,,no release for 8.8 years; no push for 5.6 years,https://github.com/xeipuuv/gojsonreference
-pypi,ruamel.yaml.clib,dormant,9.9,60719899,26772,98,0.2.15,2025-11-16T16:13:02.000000Z,,false,1,,no release for 12 months,
+pypi,ruamel.yaml.clib,dormant,9.9,60719899,26772,98,0.2.15,2025-11-16T16:13:02.000000Z,,false,1,,no release for 13 months,
 cargo,iovec,dormant,9.9,,21660,36,0.1.4,2019-10-09T18:09:56.560010Z,2019-11-27T17:20:08.000Z,false,1,,no release for 7.1 years; no push for 7.0 years,https://github.com/carllerche/iovec
 go,github.com/xdg-go/pbkdf2,dormant,9.9,,21044,6517,v1.0.0,2021-03-28T18:46:53.000000Z,2021-03-28T18:50:51.000Z,false,0,,no release for 5.7 years; no push for 5.7 years,https://github.com/xdg-go/pbkdf2
 go,github.com/Masterminds/goutils,dormant,9.9,,19393,6878,v1.1.1,2021-02-04T20:06:53.000000Z,2021-02-04T20:16:33.000Z,false,0,,no release for 5.8 years; no push for 5.8 years,https://github.com/Masterminds/goutils
@@ -1420,7 +1421,7 @@ rubygems,fuubar,dormant,9.9,,7575,581,2.5.1,2020-12-31T03:18:05.540000Z,2022-02-
 rubygems,rack-accept,dormant,9.9,,6580,25,0.4.5,2012-06-15T15:38:20.495000Z,2022-08-25T15:18:13.000Z,false,1,,no release for 14.5 years; no push for 4.3 years,https://github.com/mjackson/rack-accept
 npm,forever-agent,dormant,9.9,79301345,6085,641,0.6.1,2015-04-07T17:03:49.221000Z,2020-06-05T21:48:08.000Z,false,3,,no release for 11.6 years; no push for 6.5 years,https://github.com/request/forever-agent
 pypi,rfc3339-validator,dormant,9.9,82312981,5913,79,0.1.4,2021-05-12T16:37:52.000000Z,2022-12-26T20:59:27.000Z,false,1,,no release for 5.5 years; no push for 3.9 years,https://github.com/naimetti/rfc3339-validator
-rubygems,redis-rails,dormant,9.9,,4963,20,5.0.2,2017-04-06T16:45:49.249000Z,2024-11-26T04:07:05.000Z,false,5,,no release for 9.6 years; no push for 24 months,https://github.com/redis-store/redis-rails
+rubygems,redis-rails,dormant,9.9,,4963,20,5.0.2,2017-04-06T16:45:49.249000Z,2024-11-26T04:07:05.000Z,false,5,,no release for 9.6 years; no push for 2.0 years,https://github.com/redis-store/redis-rails
 packagist,pear/console_getopt,dormant,9.9,,4796,10,v1.4.3,2019-11-20T18:27:48.000000Z,2021-08-11T00:08:37.000Z,false,2,,no release for 7.0 years; no push for 5.3 years,https://github.com/pear/Console_Getopt
 rubygems,ruby-ole,dormant,9.9,,4556,24,1.2.13.1,2024-03-28T10:34:51.856000Z,2024-11-04T11:58:32.000Z,false,1,,no release for 2.7 years; no push for 2.1 years,https://github.com/aquasync/ruby-ole
 packagist,felixfbecker/advanced-json-rpc,dormant,9.9,,4146,9,v3.2.1,2021-06-11T22:34:44.000000Z,2023-08-25T09:13:40.000Z,false,1,,no release for 5.5 years; no push for 3.3 years,https://github.com/felixfbecker/php-advanced-json-rpc
@@ -1453,7 +1454,7 @@ rubygems,elasticsearch-model,dormant,9.8,,2842,37,8.0.1,2025-09-01T12:34:35.1230
 rubygems,lru_redux,dormant,9.8,,1858,77,1.1.0,2015-04-07T23:27:49.857000Z,2020-01-14T08:11:35.000Z,false,2,,no release for 11.6 years; no push for 6.9 years,https://github.com/SamSaffron/lru_redux
 rubygems,citrus,dormant,9.8,,1474,34,3.0.2,2015-02-19T13:42:38.644000Z,2021-08-28T16:49:08.000Z,false,2,,no release for 11.8 years; no push for 5.2 years,https://github.com/mjackson/citrus
 rubygems,logstash-output-sqs,dormant,9.8,,32,0,6.0.0,2019-01-11T16:02:22.941000Z,,false,1,,no release for 7.9 years,
-npm,file-system-cache,dormant,9.7,9094982,62759,139,3.0.0-alpha.8,2024-08-26T22:35:22.805000Z,2024-07-25T00:03:19.000Z,false,1,,no release for 2.2 years; no push for 2.3 years,https://github.com/philcockfield/file-system-cache
+npm,file-system-cache,dormant,9.7,9094982,62759,139,3.0.0-alpha.8,2024-08-26T22:35:22.805000Z,2024-07-25T00:03:19.000Z,false,1,,no release for 2.3 years; no push for 2.3 years,https://github.com/philcockfield/file-system-cache
 go,github.com/kr/fs,dormant,9.7,,52525,1963,v0.1.0,2018-05-06T03:17:01.000000Z,2021-02-18T18:58:35.000Z,false,0,,no release for 8.6 years; no push for 5.8 years,https://github.com/kr/fs
 pypi,bs4,dormant,9.7,17200205,42503,1491,0.0.2,2024-01-17T18:15:48.000000Z,,false,1,,no linked source repository; no release for 2.9 years,
 go,github.com/eapache/go-xerial-snappy,dormant,9.7,,37215,3522,v0.0.0-20230731223053-c322873962e3,2023-07-31T22:30:53.000000Z,2023-07-31T22:30:53.000Z,false,0,,no release for 3.3 years; no push for 3.3 years,https://github.com/eapache/go-xerial-snappy
@@ -1500,7 +1501,7 @@ rubygems,gssapi,dormant,9.6,,4110,14,1.3.1,2020-11-24T19:01:38.235000Z,2021-09-3
 packagist,openlss/lib-array2xml,dormant,9.6,,3771,56,1.0.0,2019-03-29T20:06:56.000000Z,2022-05-12T19:20:16.000Z,false,2,,no release for 7.7 years; no push for 4.5 years,https://github.com/nullivex/lib-array2xml
 packagist,webflo/drupal-finder,dormant,9.6,,3515,168,1.3.1,2024-06-28T13:45:36.000000Z,2024-06-28T13:49:29.000Z,false,1,,no release for 2.4 years; no push for 2.4 years,https://github.com/webflo/drupal-finder
 rubygems,health_check,dormant,9.6,,1220,3,3.1.0,2021-05-25T18:49:49.494000Z,2024-05-14T19:19:19.000Z,false,1,,no release for 5.5 years; no push for 2.5 years,https://github.com/Purple-Devs/health_check
-rubygems,license_finder,dormant,9.6,,1171,42,7.2.1,2024-05-09T00:26:24.112000Z,2024-07-22T21:57:46.000Z,false,4,,no release for 2.5 years; no push for 2.3 years,https://github.com/pivotal/LicenseFinder
+rubygems,license_finder,dormant,9.6,,1171,42,7.2.1,2024-05-09T00:26:24.112000Z,2024-07-22T21:57:46.000Z,false,4,,no release for 2.6 years; no push for 2.3 years,https://github.com/pivotal/LicenseFinder
 rubygems,murmurhash3,dormant,9.6,,1143,37,0.1.7,2023-01-05T20:16:31.153000Z,2023-01-05T20:10:39.000Z,false,1,,no release for 3.9 years; no push for 3.9 years,https://github.com/funny-falcon/murmurhash3-ruby
 rubygems,with_env,dormant,9.6,,959,3,1.1.0,2015-07-15T15:13:56.704000Z,2021-03-03T15:22:11.000Z,false,1,,no release for 11.4 years; no push for 5.7 years,https://github.com/mhs/with_env-rb
 rubygems,logstash-output-statsd,dormant,9.6,,15,0,3.2.0,2018-06-05T17:07:06.299000Z,,false,1,,no release for 8.5 years,
@@ -1510,7 +1511,7 @@ go,github.com/golang-sql/civil,dormant,9.5,,27232,3134,,2022-02-23T13:23:16.0000
 cargo,fuchsia-cprng,dormant,9.5,,17090,3,0.1.1,2019-02-05T19:31:52.132087Z,,false,4,,no release for 7.8 years,https://fuchsia.googlesource.com/fuchsia/+/master/garnet/public/rust/fuchsia-cprng
 rubygems,fog-brightbox,dormant,9.5,,9632,13,1.12.0,2024-12-10T12:41:00.964000Z,2025-03-11T10:43:24.000Z,false,3,,no release for 24 months; no push for 21 months,https://github.com/fog/fog-brightbox
 cargo,mach,dormant,9.5,,9077,67,0.3.2,2019-06-01T11:04:57.829203Z,2022-08-19T20:25:59.000Z,false,4,,no release for 7.5 years; no push for 4.3 years,https://github.com/fitzgen/mach
-rubygems,fog-softlayer,dormant,9.5,,8659,12,1.1.4,2016-08-28T14:26:25.362000Z,2023-01-30T15:07:47.000Z,false,5,,no release for 10.2 years; no push for 3.8 years,https://github.com/fog/fog-softlayer
+rubygems,fog-softlayer,dormant,9.5,,8659,12,1.1.4,2016-08-28T14:26:25.362000Z,2023-01-30T15:07:47.000Z,false,5,,no release for 10.3 years; no push for 3.8 years,https://github.com/fog/fog-softlayer
 pypi,uri-template,dormant,9.5,47118949,8519,49,1.3.0,2023-06-21T01:49:03.000000Z,,false,1,,no linked source repository; no release for 3.4 years,
 pypi,freezegun,dormant,9.5,42552180,8345,398,1.5.5,2025-08-09T10:39:06.000000Z,2025-08-19T19:29:42.000Z,false,2,,no release for 16 months; no push for 15 months,https://github.com/spulec/freezegun
 cargo,unreachable,dormant,9.5,,7892,36,1.0.0,2017-05-09T20:54:44.587632Z,2021-11-20T14:56:31.000Z,false,1,,no release for 9.6 years; no push for 5.0 years,https://github.com/reem/rust-unreachable
@@ -1531,8 +1532,8 @@ pypi,ply,dormant,9.4,28626316,17718,259,3.11,2018-02-15T19:01:27.000000Z,,false,
 go,github.com/xlab/treeprint,dormant,9.4,,17349,3522,v1.2.0,2023-03-09T08:58:20.000000Z,2025-06-18T03:41:29.000Z,false,0,,no release for 3.7 years; no push for 18 months,https://github.com/xlab/treeprint
 go,github.com/microcosm-cc/bluemonday,dormant,9.4,,15065,3600,v1.0.27,2024-07-04T13:09:59.000000Z,2025-04-04T09:55:48.000Z,false,0,,no release for 2.4 years; no push for 20 months,https://github.com/microcosm-cc/bluemonday
 go,github.com/Masterminds/sprig,dormant,9.4,,14710,3279,v2.22.0+incompatible,2019-10-02T15:00:24.000000Z,2025-07-18T13:29:21.000Z,false,0,,no release for 7.2 years; no push for 17 months,https://github.com/Masterminds/sprig
-rubygems,vegas,dormant,9.4,,7689,75,0.1.11,2012-01-23T08:03:31.103000Z,,false,1,,no release for 14.8 years,
-rubygems,fission,dormant,9.4,,7192,30,0.5.0,2013-10-05T05:31:09.420000Z,2013-10-05T05:31:06.000Z,false,1,,no release for 13.1 years; no push for 13.1 years,https://github.com/thbishop/fission
+rubygems,vegas,dormant,9.4,,7689,75,0.1.11,2012-01-23T08:03:31.103000Z,,false,1,,no release for 14.9 years,
+rubygems,fission,dormant,9.4,,7192,30,0.5.0,2013-10-05T05:31:09.420000Z,2013-10-05T05:31:06.000Z,false,1,,no release for 13.2 years; no push for 13.2 years,https://github.com/thbishop/fission
 rubygems,fog-sakuracloud,dormant,9.4,,6644,11,1.7.5,2015-12-26T12:32:12.192000Z,,false,3,,no linked source repository; no release for 10.9 years,
 rubygems,fog-radosgw,dormant,9.4,,6641,9,0.0.5,2016-01-10T09:59:58.983000Z,2016-01-10T09:46:45.000Z,false,2,,no release for 10.9 years; no push for 10.9 years,https://github.com/fog/fog-radosgw
 rubygems,fog-profitbricks,dormant,9.4,,6328,10,4.1.1,2017-12-01T21:07:38.154000Z,2020-03-06T16:02:25.000Z,false,4,,no release for 9.0 years; no push for 6.7 years,https://github.com/fog/fog-profitbricks
@@ -1556,7 +1557,7 @@ rubygems,dpl,dormant,9.3,,172,44,2.0.5.4,2025-03-31T12:09:26.570000Z,2025-08-25T
 rubygems,executable-hooks,dormant,9.3,,71,4,1.7.1,2024-01-07T21:10:21.393000Z,2024-01-07T21:10:03.000Z,false,3,,no release for 2.9 years; no push for 2.9 years,https://github.com/rvm/executable-hooks
 go,gopkg.in/gcfg.v1,dormant,9.2,,28786,914,v1.2.3,2018-05-17T20:24:47.000000Z,2021-07-02T06:41:18.000Z,false,0,,no release for 8.5 years; no push for 5.4 years,https://github.com/go-gcfg/gcfg
 go,github.com/anmitsu/go-shlex,dormant,9.2,,26986,1129,v0.0.0-20200514113438-38f4b401e2be,2020-05-14T11:34:38.000000Z,2020-05-14T11:41:05.000Z,false,0,,no release for 6.5 years; no push for 6.5 years,https://github.com/anmitsu/go-shlex
-go,github.com/armon/go-socks5,dormant,9.2,,25808,1265,v0.0.0-20160902184237-e75332964ef5,2016-09-02T18:42:37.000000Z,2024-06-14T23:51:57.000Z,false,0,,no release for 10.2 years; no push for 2.4 years,https://github.com/armon/go-socks5
+go,github.com/armon/go-socks5,dormant,9.2,,25808,1265,v0.0.0-20160902184237-e75332964ef5,2016-09-02T18:42:37.000000Z,2024-06-14T23:51:57.000Z,false,0,,no release for 10.2 years; no push for 2.5 years,https://github.com/armon/go-socks5
 go,github.com/op/go-logging,dormant,9.2,,25213,1389,v0.0.0-20160315200505-970db520ece7,2016-03-15T20:05:05.000000Z,2023-12-13T20:47:18.000Z,false,0,,no release for 10.7 years; no push for 3.0 years,https://github.com/op/go-logging
 go,github.com/gobuffalo/envy,dormant,9.2,,23269,1650,v1.10.2,2022-09-03T16:06:35.000000Z,2022-09-26T04:31:49.000Z,false,0,,no release for 4.2 years; no push for 4.2 years,https://github.com/gobuffalo/envy
 pypi,sphinxcontrib-htmlhelp,dormant,9.2,17926275,21968,165,2.1.0,2024-07-29T01:09:36.000000Z,2024-10-25T09:35:41.000Z,false,1,,no release for 2.3 years; no push for 2.1 years,https://github.com/sphinx-doc/sphinxcontrib-htmlhelp
@@ -1575,12 +1576,12 @@ packagist,symfony/polyfill-php55,dormant,9.1,,2762,34,v1.20.0,2020-10-23T14:02:1
 packagist,symfony/polyfill-php54,dormant,9.1,,2722,20,v1.20.0,2020-10-23T14:02:19.000000Z,2023-08-02T10:24:57.000Z,false,1,,no release for 6.1 years; no push for 3.3 years,https://github.com/symfony/polyfill-php54
 go,github.com/tv42/httpunix,dormant,9,,27177,501,v0.0.0-20191220191345-2ba4b9c3382c,2019-12-20T19:13:45.000000Z,2019-12-20T19:16:48.000Z,false,0,,no release for 6.9 years; no push for 6.9 years,https://github.com/tv42/httpunix
 go,gonum.org/v1/netlib,dormant,9,,24659,764,v0.0.0-20230729102104-8b8060e7531f,2023-07-29T10:21:04.000000Z,2023-07-29T10:21:07.000Z,false,0,,no release for 3.3 years; no push for 3.3 years,https://github.com/gonum/netlib
-go,bazil.org/fuse,dormant,9,,22895,775,v0.0.0-20230120002735-62a210ff1fd5,2023-01-20T00:27:35.000000Z,2023-12-20T08:43:43.000Z,false,0,,no release for 3.8 years; no push for 2.9 years,https://github.com/bazil/fuse
+go,bazil.org/fuse,dormant,9,,22895,775,v0.0.0-20230120002735-62a210ff1fd5,2023-01-20T00:27:35.000000Z,2023-12-20T08:43:43.000Z,false,0,,no release for 3.9 years; no push for 2.9 years,https://github.com/bazil/fuse
 go,github.com/influxdata/influxdb1-client,dormant,9,,21569,1084,v0.0.0-20220302092344-a9ab5670611c,2022-03-02T09:23:44.000000Z,2024-03-12T10:54:59.000Z,false,0,,no release for 4.7 years; no push for 2.7 years,https://github.com/influxdata/influxdb1-client
 go,github.com/afex/hystrix-go,dormant,9,,21232,1060,v0.0.0-20180502004556-fa1af6a1f4f5,2018-05-02T00:45:56.000000Z,2024-02-24T18:44:10.000Z,false,0,,no release for 8.6 years; no push for 2.8 years,https://github.com/afex/hystrix-go
 go,github.com/mattn/go-ieproxy,dormant,9,,15787,1570,v0.0.12,2024-05-22T12:17:52.000000Z,2024-05-22T12:24:32.000Z,false,0,,no release for 2.5 years; no push for 2.5 years,https://github.com/mattn/go-ieproxy
 pypi,ordered-set,dormant,9,26012726,2854,192,4.1.0,2022-01-26T14:38:48.000000Z,2024-08-09T19:22:31.000Z,false,3,,no release for 4.8 years; no push for 2.3 years,https://github.com/rspeer/ordered-set
-pypi,retry,dormant,9,27461478,1900,286,0.9.2,2016-05-11T13:58:39.000000Z,2024-07-05T13:16:48.000Z,false,1,,no release for 10.5 years; no push for 2.4 years,https://github.com/invl/retry
+pypi,retry,dormant,9,27461478,1900,286,0.9.2,2016-05-11T13:58:39.000000Z,2024-07-05T13:16:48.000Z,false,1,,no release for 10.6 years; no push for 2.4 years,https://github.com/invl/retry
 go,github.com/circonus-labs/circonusllhist,dormant,8.9,,23898,561,v0.4.1,2025-01-28T20:47:38.000000Z,2025-01-28T20:58:59.000Z,false,0,,no release for 22 months; no push for 22 months,https://github.com/openhistogram/circonusllhist
 go,github.com/aryann/difflib,dormant,8.9,,19909,710,v0.0.0-20210328193216-ff5ff6dc229b,2021-03-28T19:32:16.000000Z,2021-03-28T19:32:46.000Z,false,0,,no release for 5.7 years; no push for 5.7 years,https://github.com/aryann/difflib
 go,github.com/certifi/gocertifi,dormant,8.9,,16745,1163,v0.0.0-20210507211836-431795d63e8d,2021-05-07T21:18:36.000000Z,2023-06-07T20:20:50.000Z,false,0,,no release for 5.6 years; no push for 3.5 years,https://github.com/certifi/gocertifi
@@ -1588,7 +1589,7 @@ go,github.com/matryer/is,dormant,8.9,,14076,1280,v1.4.1,2022-05-16T09:57:40.0000
 go,github.com/k0kubun/colorstring,dormant,8.9,,13335,1539,v0.0.0-20150214042306-9440f1994b88,2015-02-14T04:23:06.000000Z,2020-11-11T09:52:30.000Z,false,0,,no release for 11.8 years; no push for 6.0 years,https://github.com/k0kubun/colorstring
 pypi,lockfile,dormant,8.9,14281484,12989,108,0.12.2,2015-11-25T18:29:51.000000Z,,false,1,,no release for 11.0 years,
 go,github.com/andreyvit/diff,dormant,8.8,,21086,545,,2017-04-06T06:49:48.000000Z,2017-04-06T06:50:13.000Z,false,0,,no release for 9.6 years; no push for 9.6 years,https://github.com/andreyvit/diff
-go,github.com/franela/goblin,dormant,8.8,,20823,548,v0.0.0-20211003143422-0a4f594942bf,2021-10-03T14:34:22.000000Z,2022-12-22T11:02:03.000Z,false,0,,no release for 5.1 years; no push for 3.9 years,https://github.com/franela/goblin
+go,github.com/franela/goblin,dormant,8.8,,20823,548,v0.0.0-20211003143422-0a4f594942bf,2021-10-03T14:34:22.000000Z,2022-12-22T11:02:03.000Z,false,0,,no release for 5.2 years; no push for 3.9 years,https://github.com/franela/goblin
 go,github.com/zenazn/goji,dormant,8.8,,20556,417,v1.0.1,2019-06-02T02:26:47.000000Z,2020-10-27T15:42:27.000Z,false,0,,no release for 7.5 years; no push for 6.1 years,https://github.com/zenazn/goji
 go,github.com/opentracing-contrib/go-observer,dormant,8.8,,20509,459,v0.0.0-20250314031746-df52693353bc,2025-03-14T03:17:46.000000Z,2025-03-14T03:20:32.000Z,false,0,,no release for 21 months; no push for 21 months,https://github.com/opentracing-contrib/go-observer
 go,github.com/openzipkin-contrib/zipkin-go-opentracing,dormant,8.8,,20284,604,v0.5.0,2022-10-11T19:01:14.000000Z,2022-10-11T19:02:56.000Z,false,0,,no release for 4.1 years; no push for 4.1 years,https://github.com/openzipkin-contrib/zipkin-go-opentracing
@@ -1604,7 +1605,7 @@ go,github.com/markbates/safe,dormant,8.7,,19992,297,v1.1.0,2024-02-29T20:09:45.0
 go,github.com/mistifyio/go-zfs,dormant,8.7,,15749,752,v2.1.1+incompatible,2015-05-29T14:27:51.000000Z,2025-10-04T22:52:24.000Z,false,0,,no release for 11.5 years; no push for 14 months,https://github.com/mistifyio/go-zfs
 go,github.com/otiai10/mint,dormant,8.7,,14188,823,v1.6.3,2023-07-01T08:53:10.000000Z,2023-07-02T21:21:52.000Z,false,0,,no release for 3.4 years; no push for 3.4 years,https://github.com/otiai10/mint
 go,github.com/otiai10/curr,dormant,8.7,,14079,891,v1.0.0,2020-03-07T04:23:52.000000Z,2021-05-11T04:59:24.000Z,false,0,,no release for 6.7 years; no push for 5.5 years,https://github.com/otiai10/curr
-go,github.com/performancecopilot/speed,dormant,8.6,,19912,68,v3.0.0+incompatible,2017-10-30T16:04:06.000000Z,2021-07-22T03:12:04.000Z,false,0,,no release for 9.1 years; no push for 5.3 years,https://github.com/performancecopilot/speed
+go,github.com/performancecopilot/speed,dormant,8.6,,19912,68,v3.0.0+incompatible,2017-10-30T16:04:06.000000Z,2021-07-22T03:12:04.000Z,false,0,,no release for 9.1 years; no push for 5.4 years,https://github.com/performancecopilot/speed
 go,github.com/shurcooL/go-goon,dormant,8.6,,17029,313,,2022-06-05T15:42:22.000000Z,2022-06-05T19:56:16.000Z,false,0,,no release for 4.5 years; no push for 4.5 years,https://github.com/shurcooL-deprecated/go-goon
 go,github.com/yvasiyarov/go-metrics,dormant,8.6,,16336,343,v0.0.0-20150112132944-c25f46c4b940,2015-01-12T13:29:44.000000Z,2015-01-12T13:30:30.000Z,false,0,,no release for 11.9 years; no push for 11.9 years,https://github.com/yvasiyarov/go-metrics
 go,github.com/yvasiyarov/newrelic_platform_go,dormant,8.6,,16336,338,v0.0.0-20160601141957-9c099fbc30e9,2016-06-01T14:19:57.000000Z,2016-06-01T14:19:58.000Z,false,0,,no release for 10.5 years; no push for 10.5 years,https://github.com/yvasiyarov/newrelic_platform_go
@@ -1621,7 +1622,7 @@ pypi,docker-pycreds,dormant,8.2,6702661,6345,27,0.4.0,2018-11-29T03:26:49.000000
 pypi,pytzdata,dormant,8.2,9082701,3452,26,2020.1,2020-07-13T10:42:10.000000Z,2024-01-06T03:20:34.000Z,false,1,,no release for 6.4 years; no push for 2.9 years,https://github.com/sdispater/pytzdata
 pypi,smdebug-rulesconfig,dormant,8.2,12070791,112,2,1.0.1,2020-12-18T23:54:51.000000Z,2022-12-09T00:31:37.000Z,false,1,,no release for 5.9 years; no push for 4.0 years,https://github.com/awslabs/sagemaker-debugger-rulesconfig
 pypi,asynctest,dormant,8.1,6286727,3865,124,0.13.0,2019-05-14T16:42:22.000000Z,2024-04-22T12:09:21.000Z,false,1,,no release for 7.5 years; no push for 2.6 years,https://github.com/Martiusweb/asynctest
-pypi,pkgutil_resolve_name,dormant,8,8172630,1348,8,1.3.10,2021-07-21T08:19:03.000000Z,2023-08-27T21:36:25.000Z,false,1,,no release for 5.4 years; no push for 3.2 years,https://github.com/graingert/pkgutil-resolve-name
+pypi,pkgutil_resolve_name,dormant,8,8172630,1348,8,1.3.10,2021-07-21T08:19:03.000000Z,2023-08-27T21:36:25.000Z,false,1,,no release for 5.4 years; no push for 3.3 years,https://github.com/graingert/pkgutil-resolve-name
 pypi,azure-datalake-store,dormant,7.9,8544752,660,17,1.0.1,2025-06-03T23:23:46.000000Z,2025-06-03T23:02:16.000Z,false,2,,no release for 18 months; no push for 18 months,https://github.com/Azure/azure-data-lake-store-python
 npm,array.prototype.toreversed,dormant,7.7,3911484,1,311,1.1.2,2023-09-07T17:05:14.623000Z,2023-09-07T17:05:09.000Z,false,1,,no release for 3.2 years; no push for 3.2 years,https://github.com/es-shims/Array.prototype.toReversed
 npm,libsql-stateless,dormant,2.9,6503,1,2,2.9.1,2024-09-07T20:05:08.318000Z,2024-09-07T20:04:28.000Z,false,1,,no release for 2.2 years; no push for 2.2 years,https://github.com/DaBigBlob/libsql-stateless
@@ -2106,7 +2107,6 @@ npm,crypto-random-string,active,0,153176678,1704297,960,6.0.0,2026-07-23T16:43:5
 npm,prettier,active,0,789017652,1703312,231277,3.10.1,2026-11-12T07:06:22.298000Z,2026-11-21T00:25:42.000Z,false,11,,,https://github.com/prettier/prettier
 npm,unique-string,active,0,168458220,1699885,610,3.0.0,2021-04-05T08:20:51.892000Z,2026-09-18T19:17:42.000Z,false,1,,,https://github.com/sindresorhus/unique-string
 npm,ignore,active,0,1875225828,1698122,2726,7.0.16,2026-11-17T05:56:55.170000Z,2026-11-17T05:54:55.000Z,false,1,,,https://github.com/kaelzhang/node-ignore
-npm,core-util-is,active,0,612863393,1693704,1808,1.0.3,2021-08-31T14:35:36.995000Z,2025-11-25T05:08:19.000Z,false,1,,,https://github.com/isaacs/core-util-is
 npm,is-regexp,active,0,185427154,1682812,166,3.1.0,2021-10-31T05:37:37.669000Z,2026-09-18T19:09:35.000Z,false,1,,,https://github.com/sindresorhus/is-regexp
 npm,@babel/plugin-syntax-import-meta,active,0,260733591,1681753,4201,7.10.4,2020-06-30T13:11:46.202000Z,2026-11-22T14:04:22.000Z,false,4,,,https://github.com/babel/babel
 npm,array-includes,active,0,418633552,1681276,1460,3.2.0,2026-09-09T22:45:07.168000Z,2026-09-11T19:29:55.000Z,false,1,,,https://github.com/es-shims/array-includes

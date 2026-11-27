@@ -1,3 +1,4 @@
+import { fundingLabel } from "./fund.js";
 import { readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { MAX_VIA } from "./graph.js";
@@ -90,6 +91,7 @@ export function formatText(result: ScanResult, color = false, showAll = false): 
     lines.push(`               ${f.message.replace(/^[^:]+: /, "").replace(stuck ? / Upgrade normally; no patch needed\.$/ : /$^/, "")}`);
     for (const a of f.advisories.slice(0, 3)) lines.push(c(90, `               - ${a.id}: ${a.title}`));
     if (f.advisories.length > 3) lines.push(c(90, `               - ...and ${f.advisories.length - 3} more`));
+    if (f.funding?.length) lines.push(c(35, `               fund: ${f.funding.slice(0, 2).map((u) => `${fundingLabel(u)} (${u})`).join(", ")}`));
     if (f.alternatives) lines.push(c(32, `               consider: ${describeAlternatives(f.alternatives)}`));
   }
   // One line per unmaintained direct dependency that holds fixes back, instead of one per finding.

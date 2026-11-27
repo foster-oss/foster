@@ -21,3 +21,4 @@ export { checkPackage, parseSpec, type CheckResult } from "./lib/check.js";
 export { formatText, formatMarkdown, formatFix, formatRecord } from "./lib/report.js";
 export { fosterVersion } from "./lib/http.js";
 export { guardCommand, parseInstallCommand, verdictFor, type GuardResult, type RequestedPackage, type Decision } from "./lib/guard.js";
+export { fundProject, fundingCandidates, formatFund, type FundResult, type FundingCandidate } from "./lib/fund.js";

@@ -7,6 +7,7 @@ import { fosterVersion } from "./lib/http.js";
 import { formatFix, formatMarkdown, formatRecord, formatSarif, formatText } from "./lib/report.js";
 import { describeAlternatives } from "./lib/replacements.js";
 import { commandLineFrom, guardCommand, parseInstallCommand } from "./lib/guard.js";
+import { formatFund, fundProject } from "./lib/fund.js";
 import { scanProject, scanSbom, shouldFail, type FailOn } from "./lib/scan.js";
 import { ECOSYSTEMS, type Ecosystem } from "./lib/types.js";
 
@@ -17,6 +18,7 @@ Usage:
   foster-oss scan --sbom <file>    Check a CycloneDX or SPDX JSON SBOM instead
   foster-oss fix [dir]             Point dependencies at released drop-in patches (edits package.json)
   foster-oss check <name[@ver]>    Look up one package
+  foster-oss fund [dir]            Which at-risk dependencies you rely on, and where to fund their maintainers
   foster-oss mcp                   Start the MCP server (stdio) for AI agents
   foster-oss guard -- <command>    Check the packages a shell command would install
   foster-oss guard --hook claude   Same, as a Claude Code PreToolUse hook (reads the hook JSON on stdin)
@@ -135,6 +137,12 @@ Maintained alternatives: ${describeAlternatives(result.alternatives)}`);
       if (values.json) console.log(JSON.stringify(result, null, 2));
       else console.log(result.message);
       return result.decision === "deny" || (values.strict && result.decision === "ask") ? 1 : 0;
+    }
+    case "fund": {
+      const result = await fundProject(arg ?? ".", { offline: values.offline, recursive: values.recursive });
+      if (values.json) console.log(JSON.stringify(result, null, 2));
+      else console.log(formatFund(result));
+      return 0;
     }
     case "mcp": {
       const { startMcpServer } = await import("./mcp.js");

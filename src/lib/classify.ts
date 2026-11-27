@@ -189,6 +189,7 @@ export function toOrphanRecord(pkg: RawPackage, ecosystem: Ecosystem, now: Date 
     archived: Boolean(pkg.repo_metadata?.archived),
     lastPushAt: pkg.repo_metadata?.pushed_at ?? null,
     publishers: Array.isArray(pkg.maintainers) ? pkg.maintainers.length : null,
+    ...(pkg.funding_links?.length ? { funding: [...new Set(pkg.funding_links)] } : {}),
     unpatchedAdvisories: advisories,
     priority,
   };

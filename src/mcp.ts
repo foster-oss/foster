@@ -7,6 +7,7 @@ import { fosterVersion } from "./lib/http.js";
 import { formatMarkdown, formatRecord } from "./lib/report.js";
 import { scanProject } from "./lib/scan.js";
 import { guardCommand } from "./lib/guard.js";
+import { formatFund, fundProject } from "./lib/fund.js";
 import { describeAlternatives } from "./lib/replacements.js";
 
 function text(s: string) {
@@ -81,6 +82,22 @@ export function createMcpServer(): McpServer {
       return text(`Decision: ${r.decision.toUpperCase()}
 ${r.message}`);
     },
+  );
+
+  server.registerTool(
+    "foster_fund_project",
+    {
+      title: "Where to fund the maintainers a project depends on",
+      description:
+        "List the project's dependencies that are unmaintained or at risk, ranked by how much the ecosystem relies on them, " +
+        "with their maintainers' sponsorship links (GitHub Sponsors, Open Collective, Tidelift, …).",
+      inputSchema: {
+        path: z.string().describe("Absolute path of the project directory"),
+        recursive: z.boolean().default(false).describe("Also scan lockfiles in subfolders (monorepos)"),
+      },
+      annotations: { readOnlyHint: true, openWorldHint: true },
+    },
+    async ({ path, recursive }) => text(formatFund(await fundProject(path, { recursive }))),
   );
 
   server.registerTool(

@@ -55,6 +55,7 @@ export interface RawPackage {
   latest_release_published_at?: string | null;
   repository_url?: string | null;
   maintainers?: unknown[] | null;
+  funding_links?: string[] | null;
   status?: string | null;
   critical?: boolean | null;
   advisories?: RawAdvisory[] | null;

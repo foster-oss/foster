@@ -240,6 +240,8 @@ export async function analyzeDependencies(deps: Dependency[], opts: ScanOptions 
     if (f) {
       // Where to go next: a maintained replacement, for anything that is not a plain upgrade.
       if (f.kind !== "upgrade-available") f.alternatives = alternativesFor(f.dependency.ecosystem, f.dependency.name);
+      // The cause of orphaned packages is unpaid maintenance: show where to fund it.
+      if (f.kind !== "upgrade-available" && p.record?.funding?.length) f.funding = p.record.funding;
       findings.push(f);
     }
   }

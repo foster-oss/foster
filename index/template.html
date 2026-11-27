@@ -70,6 +70,13 @@
     <div class="tablewrap"><table id="byeco"></table></div>
   </section>
 
+  <section id="fund">
+    <h2>Fund what everyone depends on</h2>
+    <p class="muted" id="fundsub">Orphaned packages are a funding problem before they are a security problem. These unmaintained packages are relied on by the most repositories, and their maintainers accept support.</p>
+    <div class="tablewrap"><table id="fundtable"></table></div>
+    <p class="muted">For your own project: <code>npx foster-oss fund</code> lists the at-risk dependencies you rely on and who to sponsor.</p>
+  </section>
+
   <section id="week">
     <h2>What changed this week</h2>
     <p class="muted" id="weeksub">Loading…</p>
@@ -143,6 +150,12 @@ function renderStats(s) {
   document.getElementById("bar").innerHTML = parts.map(([k, v]) => `<span style="width:${pct(v, t.packages)}%;background:var(--${k})" title="${k}: ${v}"></span>`).join("");
   document.getElementById("legend").innerHTML = parts.map(([k, v]) => `<span><span class="dot" style="background:var(--${k})"></span>${k} ${v} (${pct(v, t.packages)}%)</span>`).join("");
   document.getElementById("gen").textContent = "Updated " + new Date(s.generatedAt).toISOString().slice(0, 10) + ".";
+  if (s.fundable && s.fundable.length) {
+    const label = (u) => { const m = u.match(/^https?:\/\/(?:www\.)?([^/]+)\/(.*)$/); if (!m) return u; const [, h, p] = m; if (h === "github.com" && p.startsWith("sponsors/")) return "GitHub Sponsors: " + p.slice(9); if (h === "opencollective.com") return "Open Collective: " + p.split("/")[0]; if (h === "tidelift.com") return "Tidelift"; return h; };
+    document.getElementById("fundsub").textContent = `${s.totals.unmaintainedWithFunding} unmaintained packages in the index accept support. Orphaned packages are a funding problem before they are a security problem; these are the ones the most repositories rely on.`;
+    document.getElementById("fundtable").innerHTML = "<thead><tr><th>Package</th><th>Status</th><th class=num>Dependent repos</th><th>Support the maintainers</th></tr></thead><tbody>" +
+      s.fundable.slice(0, 20).map((f) => `<tr><td>${esc(f.name)} <span class="muted">${esc(f.ecosystem)}</span></td><td><span class="pill s-${f.status}">${f.status}</span></td><td class=num>${fmt(f.dependentRepos)}</td><td>${f.funding.map((u) => `<a href="${esc(u)}">${esc(label(u))}</a>`).join("<br>")}</td></tr>`).join("") + "</tbody>";
+  }
   const LABEL = { npm: "npm", pypi: "PyPI", cargo: "Cargo (Rust)", go: "Go", rubygems: "RubyGems", packagist: "Packagist (PHP)" };
   const rows = Object.entries(s.byEcosystem).sort((a, b) => b[1].packages - a[1].packages);
   document.getElementById("byeco").innerHTML = "<thead><tr><th>Ecosystem</th><th class=num>Critical packages</th><th class=num>Dead</th><th class=num>Dormant</th><th class=num>Unmaintained</th></tr></thead><tbody>" +
@@ -153,7 +166,7 @@ if (STATS) renderStats(STATS);
 let all = [], sortKey = "priority", sortDir = -1;
 const REGISTRY_URL = { npm: "https://www.npmjs.com/package/", pypi: "https://pypi.org/project/", cargo: "https://crates.io/crates/", go: "https://pkg.go.dev/", rubygems: "https://rubygems.org/gems/", packagist: "https://packagist.org/packages/" };
 const registryUrl = (r) => (REGISTRY_URL[r.ecosystem] || "") + r.name;
-const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+function esc(s) { return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]); }
 const LIMIT = 300;
 
 function render() {

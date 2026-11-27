@@ -62,6 +62,8 @@ export interface OrphanRecord {
   unpatchedAdvisories: AdvisorySummary[];
   /** Priority score: higher means more people are exposed to an unmaintained, vulnerable package. */
   priority: number;
+  /** Sponsorship pages for the package's maintainers (GitHub Sponsors, Open Collective, …), when known. */
+  funding?: string[];
 }
 
 export type PatchStatus = "staged" | "released" | "retired";
@@ -109,6 +111,8 @@ export interface Finding {
   fixedIn?: string;
   /** Maintained replacements worth moving to (npm only, from e18e module-replacements). */
   alternatives?: AlternativeSet;
+  /** Where to fund the maintainers of an unmaintained or at-risk package. */
+  funding?: string[];
   message: string;
 }
 

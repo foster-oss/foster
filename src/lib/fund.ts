@@ -108,6 +108,15 @@ export function formatFund(result: FundResult): string {
     return lines.join("\n");
   }
   if (result.fundable.length) {
+    // The same few people often maintain many of them: sponsoring a person covers all their packages.
+    const byLink = new Map<string, string[]>();
+    for (const c of result.fundable) for (const l of c.links) byLink.set(l, [...(byLink.get(l) ?? []), c.dependency.name]);
+    const people = [...byLink.entries()].filter(([l]) => !/tidelift\.com/.test(l)).sort((a, b) => b[1].length - a[1].length).slice(0, 5);
+    if (people.length) {
+      lines.push("Most of it comes down to a few people. Sponsoring them covers:", "");
+      for (const [link, pkgs] of people) lines.push(`  ${fundingLabel(link).padEnd(36)} ${pkgs.length} package(s): ${pkgs.slice(0, 4).join(", ")}${pkgs.length > 4 ? ", …" : ""}`);
+      lines.push("");
+    }
     lines.push("Your project relies on these at-risk packages, and their maintainers accept support:", "");
     for (const c of result.fundable) {
       lines.push(`  ${c.dependency.name} (${c.dependency.ecosystem}) · ${c.reasons.join(", ")} · ${compact(c.dependentRepos)} dependent repos`);

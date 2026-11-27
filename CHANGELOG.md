@@ -2,6 +2,14 @@
 
 ## 0.6.0
 
+- **`foster-oss fund`**: the dependencies you rely on that are unmaintained or at risk, ranked by how much
+  the ecosystem relies on them, with their maintainers' sponsorship links, and the few people whose
+  sponsorship covers most of them. Also as the MCP tool `foster_fund_project`.
+- `scan` shows a `fund:` line for orphaned findings; the README lists what to do in order: upstream
+  first, fund the maintainers, move to a maintained alternative, and use a drop-in patch only as a stopgap.
+- The Orphan Index records funding links (2,459 of 5,797 critical packages) and the site has a
+  "Fund what everyone depends on" section.
+
 - **Direct or transitive, and through what.** Foster now reads the dependency graph from the lockfile
   (package-lock v2/v3, pnpm v5/v6/v9, yarn classic and berry, uv, Poetry, Cargo, Gemfile.lock,
   composer.lock) and from CycloneDX/SPDX SBOMs that record it. Every transitive finding names the direct

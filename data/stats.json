@@ -1,19 +1,20 @@
 {
-  "generatedAt": "2026-11-26T00:22:31.487Z",
+  "generatedAt": "2026-11-27T01:18:30.677Z",
   "totals": {
     "packages": 5797,
-    "active": 4170,
-    "dormant": 1071,
+    "active": 4169,
+    "dormant": 1072,
     "dead": 556,
     "unknown": 0,
-    "unmaintainedDownloadsPerMonth": 191776987418,
+    "unmaintainedDownloadsPerMonth": 192389850811,
     "deadDownloadsPerMonth": 58967942549,
-    "unmaintainedDependentRepos": 939530425,
+    "unmaintainedDependentRepos": 941224129,
     "deadDependentRepos": 300346764,
     "unpatchedAdvisories": 40,
     "packagesWithUnpatchedAdvisories": 15,
     "orphanedWithUnpatchedAdvisories": 10,
-    "singlePublisherUnmaintained": 827
+    "singlePublisherUnmaintained": 828,
+    "unmaintainedWithFunding": 523
   },
   "byEcosystem": {
     "cargo": {
@@ -39,8 +40,8 @@
     },
     "npm": {
       "packages": 2295,
-      "active": 1587,
-      "dormant": 513,
+      "active": 1586,
+      "dormant": 514,
       "dead": 195,
       "unknown": 0
     },
@@ -318,6 +319,345 @@
       "priority": 19.6,
       "downloadsLastMonth": 98816690,
       "dependentRepos": 2565362,
+      "unpatched": []
+    }
+  ],
+  "fundable": [
+    {
+      "ecosystem": "npm",
+      "name": "fs.realpath",
+      "status": "dead",
+      "dependentRepos": 5532257,
+      "downloadsLastMonth": 540967123,
+      "funding": [
+        "https://github.com/sponsors/isaacs"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "fill-range",
+      "status": "dormant",
+      "dependentRepos": 5461792,
+      "downloadsLastMonth": 937696501,
+      "funding": [
+        "https://github.com/sponsors/jonschlinkert"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "to-regex-range",
+      "status": "dormant",
+      "dependentRepos": 5300496,
+      "downloadsLastMonth": 911127051,
+      "funding": [
+        "https://github.com/sponsors/doowb",
+        "https://github.com/sponsors/jonschlinkert"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "setprototypeof",
+      "status": "dormant",
+      "dependentRepos": 5068682,
+      "downloadsLastMonth": 817996195,
+      "funding": [
+        "https://github.com/sponsors/wesleytodd"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "fast-deep-equal",
+      "status": "dormant",
+      "dependentRepos": 4968905,
+      "downloadsLastMonth": 1274576069,
+      "funding": [
+        "https://github.com/sponsors/epoberezkin",
+        "https://tidelift.com/funding/github/npm/fast-deep-equal"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "fast-json-stable-stringify",
+      "status": "dormant",
+      "dependentRepos": 4957551,
+      "downloadsLastMonth": 889856510,
+      "funding": [
+        "https://github.com/sponsors/epoberezkin",
+        "https://tidelift.com/funding/github/npm/fast-json-stable-stringify"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "utils-merge",
+      "status": "dead",
+      "dependentRepos": 4948638,
+      "downloadsLastMonth": 368531424,
+      "funding": [
+        "https://github.com/sponsors/jaredhanson"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "jsesc",
+      "status": "dormant",
+      "dependentRepos": 4543338,
+      "downloadsLastMonth": 1041223295,
+      "funding": [
+        "https://github.com/sponsors/mathiasbynens"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "convert-source-map",
+      "status": "dormant",
+      "dependentRepos": 4241143,
+      "downloadsLastMonth": 1284474934,
+      "funding": [
+        "https://github.com/sponsors/thlorenz",
+        "paypal.me/thlorenz/25"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "cookie-signature",
+      "status": "dormant",
+      "dependentRepos": 4104495,
+      "downloadsLastMonth": 862539644,
+      "funding": [
+        "https://github.com/sponsors/tj"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "array-flatten",
+      "status": "dormant",
+      "dependentRepos": 4097259,
+      "downloadsLastMonth": 305344567,
+      "funding": [
+        "https://github.com/sponsors/blakeembrey"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "repeat-string",
+      "status": "dormant",
+      "dependentRepos": 4068394,
+      "downloadsLastMonth": 100570725,
+      "funding": [
+        "https://github.com/sponsors/jonschlinkert"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "for-in",
+      "status": "dead",
+      "dependentRepos": 3955204,
+      "downloadsLastMonth": 83504442,
+      "funding": [
+        "https://github.com/sponsors/jonschlinkert"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "repeat-element",
+      "status": "dormant",
+      "dependentRepos": 3941861,
+      "downloadsLastMonth": 44065745,
+      "funding": [
+        "https://github.com/sponsors/jonschlinkert"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "chownr",
+      "status": "dormant",
+      "dependentRepos": 3832022,
+      "downloadsLastMonth": 658907191,
+      "funding": [
+        "https://github.com/sponsors/isaacs"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "set-value",
+      "status": "dormant",
+      "dependentRepos": 3784516,
+      "downloadsLastMonth": 81122669,
+      "funding": [
+        "https://github.com/sponsors/jonschlinkert",
+        "https://github.com/sponsors/doowb"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "to-object-path",
+      "status": "dormant",
+      "dependentRepos": 3784348,
+      "downloadsLastMonth": 44638593,
+      "funding": [
+        "https://github.com/sponsors/jonschlinkert"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "split-string",
+      "status": "dormant",
+      "dependentRepos": 3781840,
+      "downloadsLastMonth": 60194474,
+      "funding": [
+        "https://github.com/sponsors/jonschlinkert"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "has-values",
+      "status": "dormant",
+      "dependentRepos": 3781356,
+      "downloadsLastMonth": 87877561,
+      "funding": [
+        "https://github.com/sponsors/jonschlinkert"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "union-value",
+      "status": "dormant",
+      "dependentRepos": 3781195,
+      "downloadsLastMonth": 54828475,
+      "funding": [
+        "https://github.com/sponsors/jonschlinkert"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "static-extend",
+      "status": "dead",
+      "dependentRepos": 3781103,
+      "downloadsLastMonth": 38611782,
+      "funding": [
+        "https://github.com/sponsors/jonschlinkert"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "has-value",
+      "status": "dormant",
+      "dependentRepos": 3780978,
+      "downloadsLastMonth": 84912150,
+      "funding": [
+        "https://github.com/sponsors/jonschlinkert"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "unset-value",
+      "status": "dormant",
+      "dependentRepos": 3780809,
+      "downloadsLastMonth": 42585849,
+      "funding": [
+        "https://github.com/sponsors/jonschlinkert"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "to-regex",
+      "status": "dormant",
+      "dependentRepos": 3780644,
+      "downloadsLastMonth": 40375453,
+      "funding": [
+        "https://github.com/sponsors/jonschlinkert"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "use",
+      "status": "dormant",
+      "dependentRepos": 3780112,
+      "downloadsLastMonth": 41489572,
+      "funding": [
+        "https://github.com/sponsors/jonschlinkert"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "fragment-cache",
+      "status": "dormant",
+      "dependentRepos": 3779677,
+      "downloadsLastMonth": 39265800,
+      "funding": [
+        "https://github.com/sponsors/jonschlinkert"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "which-module",
+      "status": "dormant",
+      "dependentRepos": 3468922,
+      "downloadsLastMonth": 281540419,
+      "funding": [
+        "https://github.com/sponsors/nexdrew"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "unicode-match-property-value-ecmascript",
+      "status": "dormant",
+      "dependentRepos": 3422854,
+      "downloadsLastMonth": 264689020,
+      "funding": [
+        "https://github.com/sponsors/mathiasbynens"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "unicode-match-property-ecmascript",
+      "status": "dormant",
+      "dependentRepos": 3422853,
+      "downloadsLastMonth": 259351871,
+      "funding": [
+        "https://github.com/sponsors/mathiasbynens"
+      ],
+      "unpatched": []
+    },
+    {
+      "ecosystem": "npm",
+      "name": "code-point-at",
+      "status": "dead",
+      "dependentRepos": 3327025,
+      "downloadsLastMonth": 44055853,
+      "funding": [
+        "https://github.com/sponsors/sindresorhus",
+        "https://opencollective.com/sindresorhus",
+        "https://sindresorhus.com/donate"
+      ],
       "unpatched": []
     }
   ]

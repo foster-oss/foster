@@ -1,5 +1,32 @@
 [
  {
+  "date": "2026-11-27T01:17:15.430Z",
+  "since": "2026-11-26T00:22:31.487Z",
+  "newlyUnmaintained": [
+   {
+    "ecosystem": "npm",
+    "name": "core-util-is",
+    "status": "dormant",
+    "dependentRepos": 1693704,
+    "downloadsLastMonth": 612863393,
+    "from": "active",
+    "reasons": [
+     "no release for 5.2 years",
+     "no push for 12 months"
+    ]
+   }
+  ],
+  "recovered": [],
+  "newUnfixed": [],
+  "resolvedUnfixed": [],
+  "counts": {
+   "newlyUnmaintained": 1,
+   "recovered": 0,
+   "newUnfixed": 0,
+   "resolvedUnfixed": 0
+  }
+ },
+ {
   "date": "2026-11-26T00:22:31.487Z",
   "since": "2026-11-25T22:14:46.770Z",
   "newlyUnmaintained": [
