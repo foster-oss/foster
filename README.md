@@ -106,7 +106,7 @@ Node 20+. Reads lockfiles from six ecosystems:
 | Command | What it does |
 |---|---|
 | `foster-oss scan --sbom <file>` | Same, from a CycloneDX or SPDX JSON SBOM (any tool that emits one) |
-| `foster-oss scan [dir]` | Report orphaned and unpatched dependencies. `--recursive` (monorepos), `--json`, `--markdown`, `--sarif <file>`, `--all`, `--fail-on <level>`, `--offline` |
+| `foster-oss scan [dir]` | Report orphaned and unpatched dependencies. `--since <ref>` (only what changed), `--recursive` (monorepos), `--json`, `--markdown`, `--sarif <file>`, `--all`, `--fail-on <level>`, `--offline` |
 | `foster-oss fix [dir]` | Point dependencies at published drop-in patches. `--dry-run`, `--force` |
 | `foster-oss check <name[@version]>` | Maintenance status, reach, unfixed advisories, patches and replacements for one package. `--ecosystem pypi\|cargo\|go\|rubygems\|packagist` |
 | `foster-oss guard -- <command>` | Check the packages a shell command would install, before it runs. `--hook claude` for Claude Code, `--strict`, `--json` |
@@ -141,6 +141,10 @@ you can find it; read the provider's source and advisory before adopting it.
     comment: true                  # optional PR comment; needs pull-requests: write
     sarif: true                    # optional: findings in the Security tab; needs security-events: write
 ```
+
+On pull requests the Action checks **only the dependencies the PR adds or changes** (`only-new: true`,
+compared with the base branch), so existing debt doesn't drown out what the PR introduces. On pushes and
+schedules it checks everything. Locally: `npx foster-oss scan --since main`.
 
 The report is also written to the job summary. With `sarif: true`, findings appear in GitHub code
 scanning next to your other security alerts. 

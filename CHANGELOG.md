@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0
+
+- `scan --since <git-ref>`: only check dependencies added or changed since a ref, by comparing each
+  lockfile with its content at that ref (works with `--recursive`; a lockfile that did not exist then
+  counts as all new; an unknown ref falls back to a full scan with a warning).
+- GitHub Action: on pull requests, checks only what the PR adds or changes (`only-new: true`, default),
+  fetching the base commit in shallow clones; `since` input to compare with any ref.
+- README: guard demo from real output.
+
 ## 0.4.0
 
 - Guard catches **look-alike names** of popular packages in all six ecosystems (`lodahs` → `lodash`,

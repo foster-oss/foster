@@ -31,6 +31,7 @@ export function formatText(result: ScanResult, color = false, showAll = false): 
   const lines: string[] = [];
   lines.push(c(1, `Foster scan: ${result.dir}`));
   lines.push(`Lockfiles: ${result.lockfiles.join(", ") || "none"} · ${result.dependencyCount} packages checked`);
+  if (result.since) lines.push(c(90, `Only dependencies added or changed since ${result.since} (${result.unchangedCount ?? 0} unchanged packages skipped)`));
   for (const w of result.warnings) lines.push(c(33, `warning: ${w}`));
   lines.push("");
   if (result.findings.length === 0) {
@@ -72,8 +73,9 @@ function summaryLine(findings: Finding[]): string {
 /** Markdown for PR comments and GitHub job summaries. */
 export function formatMarkdown(result: ScanResult): string {
   const out: string[] = ["## 🏠 Foster dependency check", ""];
+  if (result.since) out.push(`Dependencies **added or changed** since \`${result.since.slice(0, 12)}\` (${result.unchangedCount ?? 0} unchanged packages skipped).`, "");
   if (result.findings.length === 0) {
-    out.push(`No orphaned or unpatched dependencies among ${result.dependencyCount} packages. ✅`);
+    out.push(result.since && result.dependencyCount === 0 ? "No dependency changes. ✅" : `No orphaned or unpatched dependencies among ${result.dependencyCount} ${result.since ? "new or changed " : ""}packages. ✅`);
   } else {
     for (const kind of Object.keys(KIND_TITLE) as FindingKind[]) {
       const group = result.findings.filter((f) => f.kind === kind);
