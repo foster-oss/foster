@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.1
 
 - Fix: `foster-oss guard "npm install x"` (the whole command as one quoted argument) now checks the
   install instead of reporting "no package installs". `guard -- npm install x` was not affected.
