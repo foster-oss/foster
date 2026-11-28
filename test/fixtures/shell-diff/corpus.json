@@ -1,0 +1,1396 @@
+[
+  {
+    "shell": "bash",
+    "line": "npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "P=zzsent; npm i $P"
+  },
+  {
+    "shell": "bash",
+    "line": "P=zzsent; npm i \"${P}\""
+  },
+  {
+    "shell": "bash",
+    "line": "export P=zzsent && npm install $P"
+  },
+  {
+    "shell": "bash",
+    "line": "P=zzsent npm i $P"
+  },
+  {
+    "shell": "bash",
+    "line": "npm install \\\n  zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm install \\\r\n  zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm install react \\\n  zzsent \\\n  --save"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i zzsent # add sentinel"
+  },
+  {
+    "shell": "bash",
+    "line": "# setup\nnpm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "true && npm i zzsent || echo fail"
+  },
+  {
+    "shell": "bash",
+    "line": "false || npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "cat list.txt | npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i react; npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "echo $(npm i zzsent)"
+  },
+  {
+    "shell": "bash",
+    "line": "echo `npm i zzsent`"
+  },
+  {
+    "shell": "bash",
+    "line": "X=$(npm i zzsent 2>&1)"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i $(echo zzsent)"
+  },
+  {
+    "shell": "bash",
+    "line": "sh <<'EOF'\nnpm i zzsent\nEOF"
+  },
+  {
+    "shell": "bash",
+    "line": "bash <<< \"npm i zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "echo \"npm i zzsent\" | sh"
+  },
+  {
+    "shell": "bash",
+    "line": "printf 'npm i zzsent\\n' | bash"
+  },
+  {
+    "shell": "bash",
+    "line": "f() { npm i zzsent; }; f"
+  },
+  {
+    "shell": "bash",
+    "line": "function f { npm i \"$1\"; }; f zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "alias ni='npm i'; ni zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "alias x='npm i zzsent'; x"
+  },
+  {
+    "shell": "bash",
+    "line": "echo zzsent | xargs npm i"
+  },
+  {
+    "shell": "bash",
+    "line": "xargs npm i < deps.txt"
+  },
+  {
+    "shell": "bash",
+    "line": "xargs -n1 npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "find . -name x -exec npm i zzsent \\;"
+  },
+  {
+    "shell": "bash",
+    "line": "env -S \"npm i zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "env -i PATH=/usr/bin npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "env -u FOO npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "env FOO=1 npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "timeout 60 npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "timeout -s KILL 60 npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "nice npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "nice -n 10 npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "ionice -c3 npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "doas npm i -g zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "stdbuf -oL npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "time npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "time -p npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "command npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "command -p npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "builtin command npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "exec npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "exec -a foo npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "nohup npm i zzsent &"
+  },
+  {
+    "shell": "bash",
+    "line": "sudo npm i -g zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "sudo -E npm i -g zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "sudo -u node npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "su -c \"npm i -g zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "\\npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "n\"p\"m i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "bash -c \"npm i zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "bash -c \"bash -c \\\"bash -c \\\\\\\"npm i zzsent\\\\\\\"\\\"\""
+  },
+  {
+    "shell": "bash",
+    "line": "bash -c \"bash -c \\\"bash -c \\\\\\\"bash -c \\\\\\\\\\\\\\\"npm i zzsent\\\\\\\\\\\\\\\"\\\\\\\"\\\"\""
+  },
+  {
+    "shell": "bash",
+    "line": "bash -c \"bash -c \\\"bash -c \\\\\\\"bash -c \\\\\\\\\\\\\\\"bash -c \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"npm i zzsent\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"\\\\\\\\\\\\\\\"\\\\\\\"\\\"\""
+  },
+  {
+    "shell": "bash",
+    "line": "bash -c \"bash -c \\\"bash -c \\\\\\\"bash -c \\\\\\\\\\\\\\\"bash -c \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"bash -c \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"npm i zzsent\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"\\\\\\\\\\\\\\\"\\\\\\\"\\\"\""
+  },
+  {
+    "shell": "bash",
+    "line": "sh -c 'sh -c '\\''sh -c '\\''\\'\\'''\\''sh -c '\\''\\'\\'''\\''\\'\\''\\'\\'''\\'''\\''\\'\\'''\\''sh -c '\\''\\'\\'''\\''\\'\\''\\'\\'''\\'''\\''\\'\\'''\\''\\'\\''\\'\\'''\\''\\'\\''\\'\\'''\\'''\\''\\'\\'''\\'''\\''\\'\\'''\\''\\'\\''\\'\\'''\\'''\\''\\'\\'''\\''npm i zzsent'\\''\\'\\'''\\''\\'\\''\\'\\'''\\'''\\''\\'\\'''\\''\\'\\''\\'\\'''\\''\\'\\''\\'\\'''\\'''\\''\\'\\'''\\'''\\''\\'\\'''\\''\\'\\''\\'\\'''\\'''\\''\\'\\'''\\'''\\''\\'\\'''\\''\\'\\''\\'\\'''\\'''\\''\\'\\'''\\'''\\''\\'\\'''\\'''\\'''"
+  },
+  {
+    "shell": "bash",
+    "line": "sh -c 'npm i \"$0\"' zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "sh -c 'npm i \"$1\"' _ zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "bash -xc \"npm i zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "bash --norc -c \"npm i zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "bash -c -- \"npm i zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "/bin/bash -lc \"npm i zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "eval \"npm i zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "eval npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "for p in zzsent; do npm i \"$p\"; done"
+  },
+  {
+    "shell": "bash",
+    "line": "if [ -f package.json ]; then npm i zzsent; fi"
+  },
+  {
+    "shell": "bash",
+    "line": "[ -d node_modules ] || npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "test -f x && npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "while true; do npm i zzsent; break; done"
+  },
+  {
+    "shell": "bash",
+    "line": "case x in x) npm i zzsent;; esac"
+  },
+  {
+    "shell": "bash",
+    "line": "(cd /tmp && npm i zzsent)"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i zzsent&"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i zzsent>log 2>&1"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i zzsent |& tee log"
+  },
+  {
+    "shell": "bash",
+    "line": "script -qc \"npm i zzsent\" /dev/null"
+  },
+  {
+    "shell": "bash",
+    "line": "watch -n 5 npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "flock /tmp/l npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "xvfb-run npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npx cross-env NODE_ENV=dev npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npx dotenv -- npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npx npm@10 i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "nvm exec 20 npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "fnm exec --using=20 npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "mise exec -- npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "volta run npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "volta install zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "wsl npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "wsl -e npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "wsl -- npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "node /usr/lib/node_modules/npm/bin/npm-cli.js i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "docker run --rm node:20 npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "ssh host \"npm i zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "zsh -c \"npm i zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "fish -c \"npm i zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "busybox sh -c \"npm i zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "cd app && npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i -g zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm install --global zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm -g install zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm install --location=global zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm install --location global zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i --prefix dir zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm --prefix dir i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i --workspace a zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i --workspace=a zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i -w a zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm -w a i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i --save-dev zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i -D zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i -E -O zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm install -- zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm install --save -- zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm ins zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm inst zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm insta zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm instal zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm isnt zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm isnta zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm isntal zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm install-test zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm it zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i --loglevel silent zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm --loglevel silent i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i --before 2024-01-01 zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i --omit dev zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i --install-strategy shallow zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm exec --package=zzsent -- cmd"
+  },
+  {
+    "shell": "bash",
+    "line": "npm exec --package zzsent -- cmd"
+  },
+  {
+    "shell": "bash",
+    "line": "npm exec -p zzsent cmd"
+  },
+  {
+    "shell": "bash",
+    "line": "npm exec zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm exec -- zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm x zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm exec --package=react --package=zzsent -- cmd"
+  },
+  {
+    "shell": "bash",
+    "line": "npx -p zzsent cmd"
+  },
+  {
+    "shell": "bash",
+    "line": "npx -p react -p zzsent cmd"
+  },
+  {
+    "shell": "bash",
+    "line": "npx --package=zzsent cmd"
+  },
+  {
+    "shell": "bash",
+    "line": "npx --yes zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npx -y zzsent@latest init"
+  },
+  {
+    "shell": "bash",
+    "line": "npx --no-install zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npx -q zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npx --registry https://registry.npmjs.org zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npx -c 'zzsent --version'"
+  },
+  {
+    "shell": "bash",
+    "line": "npx --call \"zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "npm init zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm init -y zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm init --yes zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm init -w packages/a zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm create zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm create zzsent@latest my-app -- --template x"
+  },
+  {
+    "shell": "bash",
+    "line": "yarn create zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpm create zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "bun create zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i zzsent@latest"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i zzsent@next"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i zzsent@^1.2.0"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i \"zzsent@>=1 <2\""
+  },
+  {
+    "shell": "bash",
+    "line": "npm i zzsent@1.0.0"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i zzsent@*"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i zzsent@"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i alias@npm:zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i alias@npm:zzsent@1.0.0"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i @scope/alias@npm:zzsent@^1"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i npm:zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i ZZ-FOSTER-SENTINEL-404"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i Zz-Foster-Sentinel-404"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i \" zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "npm i \"zzsent \""
+  },
+  {
+    "shell": "bash",
+    "line": "npm i zzsent%40"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i @zzsent/pkg"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i https://registry.npmjs.org/zzsent/-/zzsent-1.0.0.tgz"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i https://registry.npmjs.org/zzsent/-/zzsent-1.0.0.tgz?x=1"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i https://registry.yarnpkg.com/zzsent/-/zzsent-1.0.0.tgz"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i https://registry.npmmirror.com/zzsent/-/zzsent-1.0.0.tgz"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i https://registry.npmjs.org/@zz/zzsent/-/zzsent-1.0.0.tgz"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i https://registry.npmjs.org/@zz%2fzzsent/-/zzsent-1.0.0.tgz"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i zzsent@https://registry.npmjs.org/zzsent/-/zzsent-1.0.0.tgz"
+  },
+  {
+    "shell": "bash",
+    "line": "npm update zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i zzsent --save"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpm add zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpm add -g zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpm add -D zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpm --filter web add zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpm add --filter web zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpm add --workspace zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpm -w add zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpm add --save-catalog zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpm dlx zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpm --package=zzsent dlx cmd"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpm dlx --package=zzsent cmd"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpx zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpm exec zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "yarn add zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "yarn add -D zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "yarn global add zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "yarn --cwd app add zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "yarn workspace web add zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "yarn workspaces foreach -A add zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "yarn dlx zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "yarn dlx -p zzsent cmd"
+  },
+  {
+    "shell": "bash",
+    "line": "yarn up zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "bun add zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "bun add -d zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "bun i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "bun install -g zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "bun x zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "bunx zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "bunx --bun zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "deno add npm:zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "deno install -g npm:zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "deno run npm:zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "corepack pnpm add zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "corepack yarn@4.1.0 add zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i react@npm:zzsent@1.0.0"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i react --before 2020-01-01"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i react --fetch-retries 5"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i react --otp 123456"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i react --loglevel warn"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i react # zz-not-a-package-comment"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i react --install-strategy nested"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i react --script-shell zz-nonexistent-shell"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i -g npm --location global"
+  },
+  {
+    "shell": "bash",
+    "line": "pnpm add react --workspace"
+  },
+  {
+    "shell": "bash",
+    "line": "yarn add react --network-timeout 100000"
+  },
+  {
+    "shell": "bash",
+    "line": "npx tsc --init"
+  },
+  {
+    "shell": "bash",
+    "line": "echo \"npm i zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "git commit -m \"npm i zzsent\""
+  },
+  {
+    "shell": "bash",
+    "line": "grep -r \"npm install zzsent\" ."
+  },
+  {
+    "shell": "bash",
+    "line": "cat <<'EOF' > README.md\nnpm i zzsent\nEOF"
+  },
+  {
+    "shell": "bash",
+    "line": "Write-Output 'run: npm i zzsent'"
+  },
+  {
+    "shell": "bash",
+    "line": "# npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "echo hi # ; npm i zzsent"
+  },
+  {
+    "shell": "bash",
+    "line": "npm run build -- --watch"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i react --cache /tmp/x"
+  },
+  {
+    "shell": "bash",
+    "line": "npm install react --audit-level high"
+  },
+  {
+    "shell": "bash",
+    "line": "pip install requests --timeout 60"
+  },
+  {
+    "shell": "bash",
+    "line": "npm i react -C zz-dir"
+  },
+  {
+    "shell": "pwsh",
+    "line": "npm i zzsent `\n  --save-dev"
+  },
+  {
+    "shell": "pwsh",
+    "line": "npm install `\n  zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "npm install `\r\n  zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "$x='zzsent'; npm i $x"
+  },
+  {
+    "shell": "pwsh",
+    "line": "$x = \"zzsent\"; npm i \"$x\""
+  },
+  {
+    "shell": "pwsh",
+    "line": "$a = @('i','zzsent'); npm @a"
+  },
+  {
+    "shell": "pwsh",
+    "line": "$a = 'i','zzsent'; & npm $a"
+  },
+  {
+    "shell": "pwsh",
+    "line": "& npm i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "& 'npm' i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "& \"C:\\Program Files\\nodejs\\npm.cmd\" install zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "& \"$env:ProgramFiles\\nodejs\\npm.cmd\" i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": ". npm i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "npm.cmd i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "C:\\nodejs\\npm.cmd i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "'C:\\Program Files\\nodejs\\npm.cmd' i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "Start-Process npm -ArgumentList 'i zzsent'"
+  },
+  {
+    "shell": "pwsh",
+    "line": "Start-Process -FilePath npm -ArgumentList 'i','zzsent' -Wait -NoNewWindow"
+  },
+  {
+    "shell": "pwsh",
+    "line": "saps npm.cmd -ArgumentList \"install zzsent\""
+  },
+  {
+    "shell": "pwsh",
+    "line": "start npm \"i zzsent\""
+  },
+  {
+    "shell": "pwsh",
+    "line": "Invoke-Expression \"npm i zzsent\""
+  },
+  {
+    "shell": "pwsh",
+    "line": "iex 'npm i zzsent'"
+  },
+  {
+    "shell": "pwsh",
+    "line": "Invoke-Expression -Command \"npm i zzsent\""
+  },
+  {
+    "shell": "pwsh",
+    "line": "$c = \"npm i zzsent\"; iex $c"
+  },
+  {
+    "shell": "pwsh",
+    "line": "\"npm i zzsent\" | iex"
+  },
+  {
+    "shell": "pwsh",
+    "line": "'npm i zzsent' | Invoke-Expression"
+  },
+  {
+    "shell": "pwsh",
+    "line": "iex (\"npm i \" + \"zzsent\")"
+  },
+  {
+    "shell": "pwsh",
+    "line": "Invoke-Command -ScriptBlock { npm i zzsent }"
+  },
+  {
+    "shell": "pwsh",
+    "line": "& { npm i zzsent }"
+  },
+  {
+    "shell": "pwsh",
+    "line": "$sb = [scriptblock]::Create(\"npm i zzsent\"); & $sb"
+  },
+  {
+    "shell": "pwsh",
+    "line": "@'\nnpm i zzsent\n'@ | iex"
+  },
+  {
+    "shell": "pwsh",
+    "line": "iex @\"\nnpm i zzsent\n\"@"
+  },
+  {
+    "shell": "pwsh",
+    "line": "$s = @\"\nnpm i zzsent\n\"@\niex $s"
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell -EncodedCommand bgBwAG0AIABpACAAegB6AC0AZgBvAHMAdABlAHIALQBzAGUAbgB0AGkAbgBlAGwALQA0ADAANAA="
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell -enc bgBwAG0AIABpACAAegB6AC0AZgBvAHMAdABlAHIALQBzAGUAbgB0AGkAbgBlAGwALQA0ADAANAA="
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell -e bgBwAG0AIABpACAAegB6AC0AZgBvAHMAdABlAHIALQBzAGUAbgB0AGkAbgBlAGwALQA0ADAANAA="
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell -ec bgBwAG0AIABpACAAegB6AC0AZgBvAHMAdABlAHIALQBzAGUAbgB0AGkAbgBlAGwALQA0ADAANAA="
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell -enco bgBwAG0AIABpACAAegB6AC0AZgBvAHMAdABlAHIALQBzAGUAbgB0AGkAbgBlAGwALQA0ADAANAA="
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell -Encoded bgBwAG0AIABpACAAegB6AC0AZgBvAHMAdABlAHIALQBzAGUAbgB0AGkAbgBlAGwALQA0ADAANAA="
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell -encodedc bgBwAG0AIABpACAAegB6AC0AZgBvAHMAdABlAHIALQBzAGUAbgB0AGkAbgBlAGwALQA0ADAANAA="
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell /enc bgBwAG0AIABpACAAegB6AC0AZgBvAHMAdABlAHIALQBzAGUAbgB0AGkAbgBlAGwALQA0ADAANAA="
+  },
+  {
+    "shell": "pwsh",
+    "line": "pwsh -NoProfile -NonInteractive -EncodedCommand bgBwAG0AIABpACAAegB6AC0AZgBvAHMAdABlAHIALQBzAGUAbgB0AGkAbgBlAGwALQA0ADAANAA="
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell -enc JAB4AD0AJwB6AHoALQBmAG8AcwB0AGUAcgAtAHMAZQBuAHQAaQBuAGUAbAAtADQAMAA0ACcAOwAgAG4AcABtACAAaQAgACQAeAA="
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell.exe -NoP -NonI -W Hidden -Exec Bypass -Command \"npm i zzsent\""
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell -Command npm i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell -c \"& {npm i zzsent}\""
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell -Command {npm i zzsent}"
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell \"npm i zzsent\""
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell npm i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "powershell /Command \"npm i zzsent\""
+  },
+  {
+    "shell": "pwsh",
+    "line": "pwsh -Comm \"npm i zzsent\""
+  },
+  {
+    "shell": "pwsh",
+    "line": "pwsh -CommandWithArgs 'npm i $args' zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "cmd /c npm i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "cmd.exe /C \"npm i zzsent\""
+  },
+  {
+    "shell": "pwsh",
+    "line": "cmd /s /c \"npm i zzsent\""
+  },
+  {
+    "shell": "pwsh",
+    "line": "cmd /c\"npm i zzsent\""
+  },
+  {
+    "shell": "pwsh",
+    "line": "cmd /d /c npm i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "cmd /c \"set P=zzsent&& npm i %P%\"",
+    "conservative": "cmd expands %P% before set runs on the same line; guard assumes the value"
+  },
+  {
+    "shell": "pwsh",
+    "line": "n`p`m i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "npm i zzsent | Out-Null"
+  },
+  {
+    "shell": "pwsh",
+    "line": "npm i zzsent 2>&1 | Write-Host"
+  },
+  {
+    "shell": "pwsh",
+    "line": "npm i zzsent; if ($?) { \"ok\" }"
+  },
+  {
+    "shell": "pwsh",
+    "line": "npm --% i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "npm i --% zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "node \"C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js\" i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "if (Test-Path package.json) { npm i zzsent }"
+  },
+  {
+    "shell": "pwsh",
+    "line": "foreach ($p in @('zzsent')) { npm i $p }"
+  },
+  {
+    "shell": "pwsh",
+    "line": "'zzsent' | ForEach-Object { npm i $_ }"
+  },
+  {
+    "shell": "pwsh",
+    "line": "try { npm i zzsent } catch { }"
+  },
+  {
+    "shell": "pwsh",
+    "line": "$null = npm i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "$out = npm i zzsent"
+  },
+  {
+    "shell": "pwsh",
+    "line": "[void](npm i zzsent)"
+  },
+  {
+    "shell": "pwsh",
+    "line": "Write-Host (npm i zzsent)"
+  },
+  {
+    "shell": "pwsh",
+    "line": "Push-Location app; npm i zzsent; Pop-Location"
+  },
+  {
+    "shell": "pwsh",
+    "line": "npm i zzsent -and $true"
+  },
+  {
+    "shell": "pwsh",
+    "line": "npx.ps1 zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "npm i ^\r\n  zzsent",
+    "conservative": "a caret continues the line in a batch file; cmd /c stops at the newline"
+  },
+  {
+    "shell": "cmd",
+    "line": "npm i ^\n  zzsent",
+    "conservative": "a caret continues the line in a batch file; cmd /c stops at the newline"
+  },
+  {
+    "shell": "cmd",
+    "line": "n^p^m i zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "npm i zz-foster^-sentinel-404"
+  },
+  {
+    "shell": "cmd",
+    "line": "set P=zzsent && npm i %P%",
+    "conservative": "cmd expands %P% before set runs on the same line; guard assumes the value"
+  },
+  {
+    "shell": "cmd",
+    "line": "set \"P=zzsent\" & npm i %P%",
+    "conservative": "cmd expands %P% before set runs on the same line; guard assumes the value"
+  },
+  {
+    "shell": "cmd",
+    "line": "call npm i zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "call npm.cmd install zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "start /b npm i zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "start \"\" npm i zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "start /wait cmd /c npm i zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "npm i zzsent & echo done"
+  },
+  {
+    "shell": "cmd",
+    "line": "npm i react && npm i zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "npm i react || npm i zzsent",
+    "conservative": "the second install runs whenever the first fails, so guard checks both"
+  },
+  {
+    "shell": "cmd",
+    "line": "@npm i zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "@echo off\r\nnpm i zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "if exist package.json npm i zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "if not exist node_modules npm i zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "if errorlevel 1 npm i zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "for %p in (zzsent) do npm i %p"
+  },
+  {
+    "shell": "cmd",
+    "line": "for /f %p in (deps.txt) do npm i %p"
+  },
+  {
+    "shell": "cmd",
+    "line": "cmd /v:on /c \"npm i zzsent\""
+  },
+  {
+    "shell": "cmd",
+    "line": "cmd /k npm i zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "(npm i zzsent)"
+  },
+  {
+    "shell": "cmd",
+    "line": "npm i zzsent|more"
+  },
+  {
+    "shell": "cmd",
+    "line": "npm i zzsent >nul 2>&1"
+  },
+  {
+    "shell": "cmd",
+    "line": "npm i \"zzsent\""
+  },
+  {
+    "shell": "cmd",
+    "line": "npx.cmd zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "%ComSpec% /c npm i zzsent"
+  },
+  {
+    "shell": "cmd",
+    "line": "\"%ProgramFiles%\\nodejs\\npm.cmd\" i zzsent"
+  }
+]

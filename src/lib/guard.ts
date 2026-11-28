@@ -83,6 +83,9 @@ const SHELLS = new Set(["bash", "sh", "zsh", "dash", "ksh", "fish", "ash", "mksh
 const baseName = (t: string) => t.replace(/^.*[\\/]/, "").replace(/\.(exe|cmd|bat|ps1)$/i, "").toLowerCase();
 
 /** Split a shell line into simple commands (on ;, &&, ||, |, newlines) and tokens, honouring quotes. */
+/** The commands splitCommands found right after a "(": PowerShell's iex ("npm i " + "x"), $a = @('i','x'). */
+const AFTER_PAREN = new WeakSet<string[]>();
+
 export function splitCommands(line: string): string[][] {
   const commands: string[][] = [];
   const extra: string[] = []; // scripts handed to a shell as a here-string: bash <<< "npm i x"
@@ -97,9 +100,14 @@ export function splitCommands(line: string): string[][] {
     cur = "";
     hasToken = false;
   };
+  let paren = false;
   const pushCommand = () => {
     pushToken();
-    if (tokens.length) commands.push(tokens);
+    if (tokens.length) {
+      commands.push(tokens);
+      if (paren) AFTER_PAREN.add(tokens);
+      paren = false;
+    }
     tokens = [];
   };
   const continuation = (i: number) => line[i + 1] === "\n" ? 1 : line[i + 1] === "\r" && line[i + 2] === "\n" ? 2 : 0;
@@ -184,6 +192,7 @@ export function splitCommands(line: string): string[][] {
     // a brace inside a word (${VAR}, a={b}) stays part of it
     if (ch === "(" || ch === ")" || (ch === "{" && !hasToken) || (ch === "}" && !cur.includes("{"))) {
       pushCommand();
+      if (ch === "(") paren = true;
       continue;
     }
     // redirections ("> out.log", "2>&1", "&>>x", "*> x", "< in.txt") are not arguments: drop the
@@ -302,8 +311,11 @@ function flagValues(args: string[], ...names: string[]): string[] {
   return out;
 }
 
-/** A shell variable, expression or loop variable Foster cannot see the value of: $P, ${P}, $env:P, %P%, %%p, $_. */
-const VAR_REF = /\$\{?[A-Za-z_][\w:]*\}?|%[A-Za-z_]\w*%|^%%?[A-Za-z]$|^\$\(?$|^\$_$/;
+/**
+ * A shell variable, expression or loop variable Foster cannot see the value of: $P, ${P}, $env:P, %P%,
+ * %%p, $_, and a function's or script's arguments ($1, ${2}, "$@", $*, %1, %*, %~1).
+ */
+const VAR_REF = /\$\{?[A-Za-z_][\w:]*\}?|\$\{?(\d+|[@*])\}?|%[A-Za-z_]\w*%|%(?:~[a-z]*)?[\d*](?![0-9A-Fa-f])|^%%?[A-Za-z]$|^\$\(?$|^\$_$/;
 
 /** A few advisory IDs and a count, not a wall of 40. */
 function listIds(ids: string[], max = 5): string {
@@ -572,12 +584,26 @@ const assignment = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s;
 
 /** Replace the variables Foster saw assigned earlier on the line: $P, ${P}, $env:P, %P%. Unknown ones stay. */
 function expandVars(token: string, vars: Map<string, string>): string {
-  if (!vars.size || !/[$%]/.test(token)) return token;
+  if (!vars.size || !/[$%@]/.test(token)) return token;
   const get = (name: string) => vars.get(name) ?? vars.get(name.toLowerCase());
   return token
+    .replace(/^@([A-Za-z_]\w*)$/, (m, n: string) => get(n) ?? m) // PowerShell splatting: npm @a
     .replace(/\$\{([A-Za-z_]\w*)\}/g, (m, n: string) => get(n) ?? m)
     .replace(/\$(env:[A-Za-z_]\w*|[A-Za-z_]\w*)/gi, (m, n: string) => get(n) ?? m)
     .replace(/%([A-Za-z_]\w*)%/g, (m, n: string) => get(n) ?? m);
+}
+
+/**
+ * The value of a PowerShell expression made of literals: "npm i " + "x" is one string, 'i','x' (or
+ * @('i', 'x')) a list, kept as words separated by NUL so `npm $a` and `npm @a` pass each as an argument.
+ * Anything else (a call, a property) is null: Foster cannot know it.
+ */
+function psValue(parts: string[]): string | null {
+  if (!parts.length) return null;
+  if (parts.length > 1 && parts.length % 2 === 1 && parts.every((p, i) => (i % 2 === 1) === (p === "+"))) return parts.filter((_, i) => i % 2 === 0).join("");
+  const joined = parts.length === 1 ? parts[0]! : parts.slice(0, -1).every((p) => p.endsWith(",")) ? parts.join("") : null;
+  if (joined === null) return null;
+  return joined.includes(",") && !/\s/.test(joined) ? joined.split(",").filter(Boolean).join("\0") : joined;
 }
 
 /**
@@ -603,9 +629,12 @@ function recordAssignments(tokens: string[], vars: Map<string, string>): boolean
     set(ps[1]!, ps[2]);
     return true;
   }
-  if (ps && t[1] === "=" && t.length === 3) {
-    set(ps[1]!, t[2]!);
-    return true;
+  if (ps && t[1] === "=" && t.length >= 3) {
+    const value = psValue(t.slice(2));
+    if (value !== null) {
+      set(ps[1]!, value);
+      return true;
+    }
   }
   if (/^set$/i.test(t[0] ?? "") && t.length === 2 && assignment.test(t[1]!)) {
     const m = assignment.exec(t[1]!)!;
@@ -843,20 +872,44 @@ export function parseCommand(
   const found: RequestedPackage[] = [];
   const locked: LockfileInstall[] = [];
   let dir = cwd;
-  const nested = (script: string) => {
+  const nested = (script: string, env: Map<string, string> = vars) => {
     if (depth + 1 >= MAX_DEPTH) {
       found.push(unresolvedSpec("npm", `${script.slice(0, 80)} (nested ${MAX_DEPTH} shells deep)`));
       return;
     }
-    const inner = parseCommand(script, dir, depth + 1, new Map(vars));
+    const inner = parseCommand(script, dir, depth + 1, new Map(env));
     found.push(...inner.packages);
     locked.push(...inner.lockfiles);
   };
   let prev: string[] | null = null;
+  // PowerShell's ( … ) is its own command here, so what it feeds waits for it: iex ("npm i " + "x"),
+  // [scriptblock]::Create("npm i x"), $a = @('i','x')
+  let pending: { script: true } | { name: string } | null = null;
   for (const raw of splitCommands(line)) {
-    let tokens = raw.map((t) => expandVars(t, vars));
+    let tokens = raw.flatMap((t) => expandVars(t, vars).split("\0"));
     const previous = prev;
     prev = tokens;
+    const waiting = pending;
+    pending = null;
+    if (waiting && AFTER_PAREN.has(raw)) {
+      const value = psValue(tokens) ?? tokens.join(" ");
+      if ("script" in waiting) nested(value.replace(/\0/g, " "));
+      else {
+        vars.set(waiting.name, value);
+        vars.set(waiting.name.toLowerCase(), value);
+      }
+      continue;
+    }
+    const target = /^\$((?:env:)?[A-Za-z_]\w*)$/i.exec(tokens[0] ?? "");
+    if (/^\[scriptblock\]::create$/i.test(tokens.at(-1) ?? "")) {
+      pending = { script: true };
+      continue;
+    }
+    if (target && tokens[1] === "=" && (tokens.length === 2 || (tokens.length === 3 && tokens[2] === "@"))) {
+      pending = { name: target[1]! };
+      continue;
+    }
+    if (tokens.length === 1 && /^(iex|invoke-expression)$/i.test(tokens[0]!)) pending = { script: true };
     if (recordAssignments(tokens, vars)) continue;
     // a command line handed to another shell: bash -c "…", cmd /c …, powershell -Command "…", eval, iex,
     // and text piped into one: echo "npm i x" | sh, "npm i x" | iex
@@ -868,15 +921,19 @@ export function parseCommand(
     };
     let script = handed(tokens);
     let stdin = false;
+    let env = vars;
     if (script === null) {
-      // strip env assignments, wrappers (sudo -E, timeout 60, nice, call, start /b, …) and shell keywords
-      const w = stripWrappers(tokens, vars);
-      tokens = w.tokens.map((t) => expandVars(t, vars));
+      // strip env assignments, wrappers (sudo -E, timeout 60, nice, call, start /b, …) and shell keywords.
+      // P=x npm i $P: the shell expands $P before P=x applies, and only for this command, so a prefix
+      // assignment reaches a shell it starts (P=x sh -c 'npm i $P') but not the words on this line.
+      env = new Map(vars);
+      const w = stripWrappers(tokens, env);
+      tokens = w.tokens;
       stdin = w.stdin;
       script = handed(tokens);
     }
     if (script !== null) {
-      nested(script);
+      nested(script, env);
       continue;
     }
     // corepack runs the package manager a project pins: "corepack pnpm install", "corepack yarn@4.1.0 add x"
@@ -1089,7 +1146,7 @@ export function parseCommand(
       const version = flagValue(args, "-v", "--version");
       positional(args, "bundle").forEach((s) => spec("rubygems", s, (x) => gemSpec(x, version)));
     } else if ((cmd === "bundle" || cmd === "bundler") && (sub === undefined || ["install", "i", "update"].includes(sub))) {
-      const gemfile = flagValue(args, "--gemfile") ?? vars.get("BUNDLE_GEMFILE");
+      const gemfile = flagValue(args, "--gemfile") ?? env.get("BUNDLE_GEMFILE");
       lock(`bundle ${sub ?? "install"}`, "rubygems", gemfile ? dirname(gemfile) : undefined);
     } else if (cmd === "composer" && sub && (["require", "req", "r"].includes(sub) || (sub === "global" && ["require", "req", "r"].includes(args[0] ?? "")))) {
       const list = positional(sub === "global" ? args.slice(1) : args, "composer");

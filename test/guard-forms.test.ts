@@ -50,6 +50,35 @@ describe("variables and substitutions", () => {
     has(`"npm i ${S}" | iex`);
     has(`@'\nnpm i ${S}\n'@ | iex`);
   });
+  it("asks about a function's or script's arguments", () => {
+    for (const line of [`function f { npm i "$1"; }; f ${S}`, `f() { npm i "$@"; }; f ${S}`, "npm i ${2}", "npm i %1", "npm i %*", `function f($p) { npm i $p }; f ${S}`]) {
+      expect(seen(line).some((n) => n.startsWith("?")), line).toBe(true);
+    }
+    // a URL-encoded tarball is not an argument reference
+    expect(seen("npm i https://example.com/%40s%2fp.tgz")).toEqual(["https://example.com/%40s%2fp.tgz"]);
+  });
+  it("applies a prefix assignment only to the command it starts", () => {
+    // bash expands $P before P=x applies: npm sees no name, guard asks rather than assuming one
+    expect(seen(`P=${S} npm i $P`)).toEqual(["?$P"]);
+    expect(seen(`P=${S} npm i react; npm i $P`)).toEqual(["react", "?$P"]);
+    // a shell it starts does see it
+    expect(seen(`P=${S} sh -c 'npm i $P'`)).toEqual([S]);
+    expect(seen(`env P=${S} bash -c 'npm i "$P"'`)).toEqual([S]);
+  });
+  it("reads PowerShell lists, splatting, concatenation and script blocks", () => {
+    for (const line of [
+      `$a = @('i','${S}'); npm @a`,
+      `$a = @('i', '${S}'); npm @a`,
+      `$a = 'i','${S}'; & npm $a`,
+      `iex ("npm i " + "${S}")`,
+      `$x = "npm i" + " ${S}"; iex $x`,
+      `$sb = [scriptblock]::Create("npm i ${S}"); & $sb`,
+      `& ([scriptblock]::Create("npm i ${S}"))`,
+    ]) {
+      expect(seen(line), line).toEqual([S]);
+    }
+    expect(seen(`$out = npm i ${S}`)).toEqual([S]);
+  });
 });
 
 describe("wrapper commands", () => {
