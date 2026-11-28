@@ -64,6 +64,8 @@ export interface SkillInstallResult {
   unknownAgents: string[];
   /** settings files that now allow Foster's check, and ones that could not be read */
   permissions: { updated: string[]; skipped: string[] };
+  /** skill folders that could not be written (read-only, a file in the way) */
+  failed: { path: string; error: string }[];
 }
 
 /**
@@ -75,18 +77,26 @@ export interface SkillInstallResult {
  */
 export const CHECK_RULES = [
   "Bash(npx -y foster-oss@latest guard:*)",
-  "Bash(npx -y foster-oss guard:*)",
-  "Bash(npx foster-oss guard:*)",
   "Bash(foster-oss guard:*)",
   "Bash(npx -y foster-oss@latest check:*)",
-  "Bash(npx foster-oss check:*)",
   "Bash(foster-oss check:*)",
   "PowerShell(npx -y foster-oss@latest guard *)",
-  "PowerShell(npx foster-oss guard *)",
   "PowerShell(foster-oss guard *)",
   "PowerShell(npx -y foster-oss@latest check *)",
-  "PowerShell(npx foster-oss check *)",
   "PowerShell(foster-oss check *)",
+];
+
+/**
+ * Rules earlier versions added that are unsafe: without "@latest", npx runs a project's own
+ * node_modules/.bin/foster-oss when there is one, so a cloned repository could ship a fake Foster that
+ * these rules let run without a prompt. `skill install` removes them.
+ */
+export const UNSAFE_RULES = [
+  "Bash(npx -y foster-oss guard:*)",
+  "Bash(npx foster-oss guard:*)",
+  "Bash(npx foster-oss check:*)",
+  "PowerShell(npx foster-oss guard *)",
+  "PowerShell(npx foster-oss check *)",
 ];
 
 /**
@@ -106,22 +116,29 @@ export function fosterOnPath(env: NodeJS.ProcessEnv = process.env, platform: Nod
 /** Merge CHECK_RULES into a Claude Code settings file. Returns false when the file exists but is not JSON. */
 export function allowChecks(settingsPath: string): boolean {
   let settings: Record<string, unknown> = {};
+  let raw = "";
   if (existsSync(settingsPath)) {
     try {
-      const parsed = JSON.parse(readFileSync(settingsPath, "utf8")) as unknown;
+      // PowerShell 5.1 writes UTF-8 with a BOM; an empty file is an empty object
+      raw = readFileSync(settingsPath, "utf8").replace(/^﻿/, "");
+      const parsed = (raw.trim() ? JSON.parse(raw) : {}) as unknown;
       if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return false;
       settings = parsed as Record<string, unknown>;
     } catch {
       return false; // never rewrite a file we cannot read
     }
   }
-  const perms = (settings.permissions && typeof settings.permissions === "object" ? settings.permissions : {}) as Record<string, unknown>;
-  const allow = Array.isArray(perms.allow) ? (perms.allow as unknown[]).filter((r): r is string => typeof r === "string") : [];
-  const missing = CHECK_RULES.filter((r) => !allow.includes(r));
-  if (!missing.length) return true;
-  settings.permissions = { ...perms, allow: [...(Array.isArray(perms.allow) ? perms.allow : []), ...missing] };
+  if (settings.permissions !== undefined && (typeof settings.permissions !== "object" || Array.isArray(settings.permissions) || settings.permissions === null)) return false;
+  const perms = (settings.permissions ?? {}) as Record<string, unknown>;
+  // "allow": "Bash(ls:*)" (one rule as a string) is kept as the first rule of the list
+  const existing: unknown[] = Array.isArray(perms.allow) ? perms.allow : typeof perms.allow === "string" ? [perms.allow] : [];
+  const kept = existing.filter((r) => !(typeof r === "string" && UNSAFE_RULES.includes(r)));
+  const missing = CHECK_RULES.filter((r) => !kept.includes(r));
+  if (!missing.length && kept.length === existing.length && Array.isArray(perms.allow)) return true;
+  settings.permissions = { ...perms, allow: [...kept, ...missing] };
   mkdirSync(join(settingsPath, ".."), { recursive: true });
-  writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n");
+  const eol = raw.includes("\r\n") ? "\r\n" : "\n";
+  writeFileSync(settingsPath, JSON.stringify(settings, null, 2).replace(/\n/g, eol) + eol);
   return true;
 }
 
@@ -155,16 +172,28 @@ export function installSkill(dir: string, opts: SkillInstallOptions = {}): Skill
     for (const [, p] of AGENT_DIRS) if (existsSync(join(dir, p.split("/")[0]!))) targets.add(p);
   }
   const installed: string[] = [];
+  const failed: { path: string; error: string }[] = [];
   for (const rel of [...targets].sort()) {
     const dest = join(base, rel, "foster");
-    mkdirSync(dest, { recursive: true });
-    cpSync(SKILL_DIR, dest, { recursive: true });
-    installed.push(dest);
+    try {
+      mkdirSync(dest, { recursive: true });
+      cpSync(SKILL_DIR, dest, { recursive: true, force: true });
+      installed.push(dest);
+    } catch (err) {
+      // a read-only copy or a file in the way: report it and go on with the other folders
+      failed.push({ path: dest, error: (err as NodeJS.ErrnoException).code ?? (err as Error).message });
+    }
   }
   const permissions = { updated: [] as string[], skipped: [] as string[] };
   if (opts.permissions !== false && [...targets].includes(".claude/skills")) {
     const file = join(base, ".claude", "settings.json");
-    (allowChecks(file) ? permissions.updated : permissions.skipped).push(file);
+    let ok = false;
+    try {
+      ok = allowChecks(file);
+    } catch {
+      ok = false; // read-only settings: leave them, and say so
+    }
+    (ok ? permissions.updated : permissions.skipped).push(file);
   }
-  return { installed, unknownAgents, permissions };
+  return { installed, unknownAgents, permissions, failed };
 }

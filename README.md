@@ -23,11 +23,11 @@ install first, including the `npm create` that starts a new project. Also a Clau
 and MCP server in one step), an MCP server in the official registry, a CLI and a GitHub Action.
 
 ```bash
-npx foster-oss skill install                       # teach your coding agent to check every install first
-npx foster-oss guard -- npm install some-package   # check an install before it runs
-npx foster-oss scan                                # what in my lockfile is orphaned, or vulnerable with no fix?
-npx foster-oss fund                                # which at-risk dependencies I rely on, and who to sponsor
-npx foster-oss fix                                 # switch to published drop-in patches (edits package.json)
+npx foster-oss@latest skill install                       # teach your coding agent to check every install first
+npx foster-oss@latest guard -- npm install some-package   # check an install before it runs
+npx foster-oss@latest scan                                # what in my lockfile is orphaned, or vulnerable with no fix?
+npx foster-oss@latest fund                                # which at-risk dependencies I rely on, and who to sponsor
+npx foster-oss@latest fix                                 # switch to published drop-in patches (edits package.json)
 ```
 
 <p align="center"><img src="brand/guard-demo.svg" alt="foster-oss guard blocking known malware (lodahs), a hallucinated name and an abandoned vulnerable package (request)" width="820"></p>
@@ -57,7 +57,10 @@ known malware, or abandoned with holes nobody will fix. `foster-oss guard` decid
 | Everything else | allowed silently |
 
 Install scripts are questions, not blocks: native modules run them too. A typical check takes one to two
-seconds, and guard **fails open**: if the registry or OSV can't be reached, the install goes ahead.
+seconds, and guard **fails open**: if the registry or OSV can't be reached, the install goes ahead and guard says
+which packages it **could not check** (known malware is still looked up on OSV when the package index is down).
+It gives up after 30 s rather than holding an agent. A name it cannot see (`npm i $PKG`, `xargs npm i`) is an
+ask, not a silent pass.
 
 ### What guard reads
 
@@ -129,7 +132,7 @@ or `/plugin marketplace add foster-oss/foster` then `/plugin install foster@fost
     "PreToolUse": [
       {
         "matcher": "Bash|PowerShell",
-        "hooks": [{ "type": "command", "command": "npx -y foster-oss guard --hook claude", "timeout": 60 }]
+        "hooks": [{ "type": "command", "command": "npx -y foster-oss@latest guard --hook claude", "timeout": 60 }]
       }
     ]
   }
@@ -144,7 +147,7 @@ your `AGENTS.md` (or `.cursorrules`, `GEMINI.md`, `.github/copilot-instructions.
 
 ```markdown
 Before running any command that installs packages, call the `foster_check_install_command` tool
-(or run `npx -y foster-oss guard -- <the exact command>`). If it says DENY, do not run the command:
+(or run `npx -y foster-oss@latest guard -- <the exact command>`). If it says DENY, do not run the command:
 explain why and suggest the alternative it names. If it says ASK, show the reason and let the user decide.
 ```
 
@@ -190,8 +193,13 @@ without guard noticing. It found 15 bypasses (`npm ci`, aliases, overrides, core
 dependencies, …) and one regression; each is now a unit test. Because unit tests stub the network, a
 [CI job](.github/workflows/ci.yml) also replays real malware (`crossenv`, `@ctrl/tinycolor@4.1.1`,
 `ua-parser-js@0.7.29`, a malicious override, a workspace and a peer dependency) against the live npm
-registry and OSV on every change. Found another way past it?
-[Report it](SECURITY.md).
+registry and OSV on every change.
+
+Later rounds tested how guard is really used: 486 command forms through bash, PowerShell and cmd (wrappers
+such as `timeout`, `sudo -E`, `call`, `Start-Process`, variables, line continuations, nested shells, here-docs),
+the other five ecosystems against real malicious packages from OSV, about 300 everyday installs and a dozen
+real repositories (vite, express, rails, ripgrep, yarn berry, …) for false positives, and Claude Code in auto
+mode. Every miss and false alarm they found is a unit test. Found another way past it? [Report it](SECURITY.md).
 
 ## Why: the data
 
@@ -234,10 +242,10 @@ already published". **Foster is that connection: an open, vendor-neutral index a
 
 1. **Upstream first.** If anyone still answers, send the fix or report to the original project.
 2. **Fund the maintainers.** Orphaned packages are a funding problem before they are a security problem.
-   `npx foster-oss fund` lists the at-risk dependencies you rely on and who to sponsor (most of them come down
+   `npx foster-oss@latest fund` lists the at-risk dependencies you rely on and who to sponsor (most of them come down
    to a handful of people), or, when nobody takes sponsorship, where to offer help or co-maintenance.
 3. **Move to a maintained alternative** when one exists (`consider:` in the scan output).
-4. **Use a drop-in patch** only as a stopgap while you do one of the above (`npx foster-oss fix`).
+4. **Use a drop-in patch** only as a stopgap while you do one of the above (`npx foster-oss@latest fix`).
 
 ## Scan, fund and fix
 
@@ -285,7 +293,7 @@ Node 20+. Reads lockfiles from six ecosystems:
 | `foster-oss scan --sbom <file>` | Same, from a CycloneDX or SPDX JSON SBOM (any tool that emits one) |
 | `foster-oss fund [dir]` | At-risk dependencies you rely on, ranked, with their maintainers' sponsorship links (GitHub Sponsors, Open Collective, Tidelift, …), the few people who cover most of them, and where to help when there is no link |
 | `foster-oss fix [dir]` | Point dependencies at published drop-in patches. `--dry-run`, `--force` |
-| `foster-oss check <name[@version]>` | Maintenance status, reach, unfixed advisories, patches and replacements for one package. `--ecosystem pypi\|cargo\|go\|rubygems\|packagist` |
+| `foster-oss check <name[@version]>` | Maintenance status, reach, unfixed advisories, patches and replacements for one package. Exits 1 when the package is known malware, does not exist, or the version does not exist. `--ecosystem pypi\|cargo\|go\|rubygems\|packagist` |
 | `foster-oss mcp` | Start the MCP server for AI agents |
 
 What the findings mean:
@@ -346,7 +354,7 @@ you can find it; read the provider's source and advisory before adopting it.
 
 On pull requests the Action checks **only the dependencies the PR adds or changes** (`only-new: true`,
 compared with the base branch), so existing debt doesn't drown out what the PR introduces. On pushes and
-schedules it checks everything. Locally: `npx foster-oss scan --since main`. Known malware fails the job at
+schedules it checks everything. Locally: `npx foster-oss@latest scan --since main`. Known malware fails the job at
 every level except `none`.
 
 The report is also written to the job summary. With `sarif: true`, findings appear in GitHub code
@@ -358,14 +366,14 @@ Listed in the official [MCP Registry](https://registry.modelcontextprotocol.io) 
 or configure it directly (Claude Code, Codex, Cursor, …):
 
 ```json
-{ "mcpServers": { "foster": { "command": "npx", "args": ["-y", "foster-oss", "mcp"] } } }
+{ "mcpServers": { "foster": { "command": "npx", "args": ["-y", "foster-oss@latest", "mcp"] } } }
 ```
 
 Tools: `foster_check_install_command` (call it before running an install command), `foster_check_package`
 (call it before adding a dependency; it also catches names that don't exist, a common sign of a hallucinated
 package), `foster_scan_project`, `foster_fund_project`, `foster_list_patches`.
 
-**Skill**: `npx foster-oss skill install` (see [Set it up](#set-it-up)), or copy [`skills/foster`](skills/foster/SKILL.md)
+**Skill**: `npx foster-oss@latest skill install` (see [Set it up](#set-it-up)), or copy [`skills/foster`](skills/foster/SKILL.md)
 into your agent's skills folder.
 
 ### Library

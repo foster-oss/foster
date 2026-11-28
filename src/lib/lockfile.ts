@@ -23,6 +23,7 @@ export type LockfileKind =
   | "package-lock"
   | "pnpm-lock"
   | "yarn-lock"
+  | "bun-lock"
   | "requirements"
   | "uv-lock"
   | "poetry-lock"
@@ -44,6 +45,8 @@ const CANDIDATES: LockfileInfo[] = [
   { file: "npm-shrinkwrap.json", kind: "package-lock", ecosystem: "npm", manager: "npm" },
   { file: "pnpm-lock.yaml", kind: "pnpm-lock", ecosystem: "npm", manager: "pnpm" },
   { file: "yarn.lock", kind: "yarn-lock", ecosystem: "npm", manager: "yarn" },
+  // bun reads npm-style "overrides" from package.json, so `fix` writes those for it
+  { file: "bun.lock", kind: "bun-lock", ecosystem: "npm", manager: "npm" },
   { file: "uv.lock", kind: "uv-lock", ecosystem: "pypi" },
   { file: "poetry.lock", kind: "poetry-lock", ecosystem: "pypi" },
   { file: "Pipfile.lock", kind: "pipfile-lock", ecosystem: "pypi" },
@@ -169,6 +172,10 @@ export function readDependencies(dir: string, lock: LockfileInfo, textOverride?:
       pairs = parseYarnLock(text);
       direct = directNpmNames(dir);
       graph = yarnLockGraph(text, npmSpecs(dir));
+      break;
+    case "bun-lock":
+      pairs = parseBunLock(text);
+      direct = directNpmNames(dir);
       break;
     case "requirements":
       pairs = parseRequirements(text);
@@ -487,9 +494,60 @@ export function splitNameVersion(spec: string): [string, string] | null {
   return [spec.slice(0, at), spec.slice(at + 1)];
 }
 
+/**
+ * bun.lock (bun 1.2+, text JSONC): "packages" maps each key to ["name@version", registry, info, integrity].
+ * Workspace, link, file and git entries are not registry packages and are skipped.
+ */
+export function parseBunLock(text: string): [string, string][] {
+  // JSONC: drop comments and trailing commas outside strings
+  let json = "";
+  let inString = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]!;
+    if (inString) {
+      json += ch;
+      if (ch === "\\") json += text[++i] ?? "";
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+      json += ch;
+    } else if (ch === "/" && text[i + 1] === "/") {
+      while (i < text.length && text[i] !== "\n") i++;
+    } else if (ch === "/" && text[i + 1] === "*") {
+      i = text.indexOf("*/", i + 2);
+      if (i < 0) break;
+      i++;
+    } else json += ch;
+  }
+  json = json.replace(/,(\s*[}\]])/g, "$1");
+  const doc = JSON.parse(json) as { packages?: Record<string, unknown> };
+  const out: [string, string][] = [];
+  for (const entry of Object.values(doc.packages ?? {})) {
+    const id = Array.isArray(entry) && typeof entry[0] === "string" ? entry[0] : null;
+    const nv = id ? splitNameVersion(id) : null;
+    if (!nv || /[:/]/.test(nv[1])) continue; // workspace:, link:, file:, github:… are not registry versions
+    out.push(nv);
+  }
+  return out;
+}
+
+/**
+ * The lockfile document of a pnpm-lock.yaml. pnpm 11+ can write several YAML documents into one file (a
+ * leading document about the package manager itself, then the lockfile): take the one with the packages.
+ */
+export function pnpmLockDocument(text: string): Record<string, unknown> | null {
+  const docs = YAML.parseAllDocuments(text).map((d) => d.toJS() as unknown);
+  const objects = docs.filter((d): d is Record<string, unknown> => !!d && typeof d === "object");
+  // the leading document can have its own small "packages" (pnpm's own dependencies): take the biggest
+  const size = (d: Record<string, unknown>) => Object.keys((d.packages as object | undefined) ?? {}).length + Object.keys((d.snapshots as object | undefined) ?? {}).length;
+  return [...objects].sort((a, b) => size(b) - size(a))[0] ?? null;
+}
+
 /** pnpm-lock.yaml, lockfile versions 5.x, 6.x and 9.x. */
 export function parsePnpmLock(text: string): [string, string][] {
-  const doc = YAML.parse(text) as { packages?: Record<string, { name?: string; version?: string }> } | null;
+  const doc = pnpmLockDocument(text) as { packages?: Record<string, { name?: string; version?: string }> } | null;
   const out: [string, string][] = [];
   for (const [rawKey, entry] of Object.entries(doc?.packages ?? {})) {
     let key = rawKey.replace(/^\//, "");

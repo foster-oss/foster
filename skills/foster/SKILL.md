@@ -66,7 +66,8 @@ Foster's package is exactly `foster-oss` on npm. Never install, or suggest, anot
 
 Guard has no offline mode: known malware and "does this name exist" need the registries and OSV. When it
 cannot reach them it does not block development; it allows and prints **"could not be checked"** for those
-packages. Treat that like ask: tell the user which packages were not checked and let them decide.
+packages (or "could not finish checking" after 30 s). Treat that like ask: tell the user which packages
+were not checked and let them decide. `guard --offline` is refused for the same reason.
 (`scan --offline` only uses the maintenance data bundled with Foster; it does not check for malware.)
 
 ## Monorepos and other directories
@@ -83,7 +84,8 @@ command exactly as you will run it: keep `cd packages/web && …`, `--prefix`, `
    it again: Foster reads the generated package.json and lockfile.
 3. When you add a dependency by editing a manifest instead of running a command, check each new name
    first: `foster-oss check <name>@<version>` (add `--ecosystem pypi|cargo|go|rubygems|packagist`
-   outside npm). "not found" means the name does not exist: never invent a replacement name, ask the user.
+   outside npm). It exits 1 for known malware, a name that does not exist, or a version that does not exist
+   ("VERSION NOT FOUND"). "not found" means the name does not exist: never invent a replacement name, ask the user.
 
 ## Never work around a block
 

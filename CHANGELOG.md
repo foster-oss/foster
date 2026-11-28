@@ -1,5 +1,56 @@
 # Changelog
 
+## 0.9.7
+
+A wide test round: 486 command forms in bash, PowerShell and cmd; the other five ecosystems against real
+malicious packages from OSV; about 300 everyday installs and a dozen real repositories for false alarms; every
+integration surface. What it found, fixed, each now a test:
+
+**Commands guard did not see** (they now are checked):
+- wrappers with options: `timeout 60`, `nice -n 10`, `sudo -E`/`-u`/`-H`, `env -i`/`-S`, `stdbuf`, `time -p`,
+  `command -p`, `exec -a`, `doas`, `watch`, `flock`, `xvfb-run`, `wsl -e`, `nvm exec`, `fnm exec`, `mise exec`,
+  `volta run`/`install`, `xargs`, `find -exec`, `npx cross-env`/`dotenv`, `npx npm@10`, `node …/npm-cli.js`;
+  cmd's `call`, `start /b`, `@npm`, `if exist …`; PowerShell's `$null = npm i x`, `. npm`, `Start-Process`.
+- line continuations (`\`, `` ` ``, `^`), variables assigned on the line (`P=x; npm i $P`, `$x='x'`, `set P=x`),
+  backtick substitution, text piped into a shell (`echo "npm i x" | sh`, `"…" | iex`), here-strings, `sh -c '…' x`,
+  `bash -c --`, `su -c`, `script -qc`, `busybox sh`, `powershell "npm i x"`, `/Command`, `-CommandWithArgs`,
+  every prefix of `-EncodedCommand`, `cmd /c"…"`, `%ComSpec%`, nesting up to 8 shells deep.
+- `npm it`/`install-test` (which installs named packages), `npm update`, npm's `ins`/`instal`/`isnt`, every
+  `-p`/`--package`, `name@<url>`, `pnpm add --workspace`, `yarn workspace … add`, `bun x`, `deno add|install|run npm:`.
+- Python: unpinned and ranged lines in requirements files, nested `-r`, `-rfile`, several `-r`, `-e git+…`,
+  `pip install .`, `pip download`/`wheel`, `py -3.12 -m pip`, `python -mpip`, `python -m uv`, `uvx`,
+  `uv tool run`, `uv run --with`, `pipx run`/`inject`, `poetry run pip …`; Ruby: `gem install x:1.2`, `-v1.2`,
+  `gem i`, `bundle i`/`update`, `bundler`, `BUNDLE_GEMFILE`; PHP: `composer require a/b 5.0.2`, `:==`,
+  `@stable`, `global require`, `r`, `create-project`, `update`; Rust: `cargo +nightly`, `binstall`, `--git`,
+  `run`/`test`/`check`/`clippy`; Go: `go run x@v`, `go mod download`, `go build`.
+- files: pnpm lockfiles written as several YAML documents (pnpm 11; `scan` crashed on vite's), `bun.lock`,
+  `pnpm-workspace.yaml` packages in flow style, its `overrides` and `catalog:` specs, `packages/{a,b}` globs, the
+  root's `postinstall` scripts, and Python/PHP/Ruby/Rust manifests when there is no lockfile.
+- A name Foster cannot see (`npm i $PKG`, `xargs npm i`, nesting too deep) is now an ask, not a silent pass.
+
+**False alarms removed**: `npx http-server -p 8080` and `npx tsc -p tsconfig.json` (the tool's own `-p` was read
+as npx's); `express@4` read as version 4.0.0; option values such as `--otp 123456`, `--before 2020-01-01`,
+`--network-timeout 100000`, `pip --timeout 60` read as packages; comments and here-doc text; `> out.log` style
+targets in more forms; RustSec "unmaintained" notices treated as vulnerabilities (`cargo add chrono` was
+blocked); package families taken for look-alikes (`serde_core`, `aws-sdk-sts`); npm's empty `0.0.1-security`
+placeholders in a lockfile (yarn berry's `fs`) now a note; an unfixable advisory in a project's own dependency
+(`npm install` in express) now a note; `npx <bin>` checks no registry package when the project has the bin.
+
+**Security**: `skill install` no longer allows `npx foster-oss …` without `@latest`, and removes those rules: npx
+runs a project's own `node_modules/.bin/foster-oss` first, so a cloned repository could ship a fake Foster that
+ran without a prompt. Docs, shell-init and MCP config use `foster-oss@latest`.
+
+**Honest when unsure**: a check that fails says "could not check" instead of "nothing to flag", known malware is
+still looked up on OSV when the package index is down, guard gives up after 30 s instead of 90, `guard --offline`
+is refused, hijacked releases worded "contained malicious …" or tagged CWE-506 count as malware, and ranges
+outside npm are checked against malware in any release. `check` exits 1 for malware, a missing name or a
+missing version ("VERSION NOT FOUND"); `scan` of an empty folder says nothing was checked.
+
+**Integration**: shell-init checks every call except subcommands that never install (so `npm --prefix app
+install`, `npm create`, `bun x` are covered); the hook and `skill install` read files with a BOM; `skill
+install` reports read-only files instead of crashing; the MCP tool `foster_check_install_command` takes a `cwd`;
+an invalid SBOM is a usage error; `--sarif` creates its folder.
+
 ## 0.9.6
 
 - **Look-alikes of Foster itself.** A security tool is installed on trust, so its look-alikes are worth a

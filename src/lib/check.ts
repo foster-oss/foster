@@ -2,7 +2,7 @@ import { alternativesFor, type AlternativeSet } from "./replacements.js";
 import { toOrphanRecord } from "./classify.js";
 import { findPatch, indexKey, loadRegistry } from "./data.js";
 import { getPackage } from "./ecosystems.js";
-import { HttpError } from "./http.js";
+import { fetchJson, HttpError } from "./http.js";
 import { malwareReports } from "./osv.js";
 import { analyzeDependencies } from "./scan.js";
 import type { Ecosystem, Finding, OrphanRecord, PatchEntry } from "./types.js";
@@ -62,4 +62,29 @@ export async function malwareNotice(ecosystem: Ecosystem, name: string, version:
   if (version || reports.some((r) => r.wholePackage))
     return `MALWARE: ${name}${version ? `@${version}` : ""} (${ecosystem}) is known malware: ${list}. Do not install it; if it is installed, remove it and rotate the credentials and tokens this machine holds.`;
   return `MALWARE: some releases of ${name} (${ecosystem}) were malicious: ${list}. Check the exact version before you install or keep it.`;
+}
+
+/**
+ * Does this exact version exist on the registry? `check x@99.0.0` must not read as "no known
+ * vulnerability" for a version nobody can install. null when the registry cannot say (or is not asked).
+ */
+export async function versionExists(ecosystem: Ecosystem, name: string, version: string): Promise<boolean | null> {
+  const e = encodeURIComponent;
+  const npmName = name.startsWith("@") ? `@${e(name.slice(1))}` : e(name);
+  const url: Partial<Record<Ecosystem, string>> = {
+    npm: `https://registry.npmjs.org/${npmName}/${e(version)}`,
+    pypi: `https://pypi.org/pypi/${e(name)}/${e(version)}/json`,
+    cargo: `https://crates.io/api/v1/crates/${e(name)}/${e(version)}`,
+    rubygems: `https://rubygems.org/api/v2/rubygems/${e(name)}/versions/${e(version)}.json`,
+    go: `https://proxy.golang.org/${name.replace(/[A-Z]/g, (c) => `!${c.toLowerCase()}`)}/@v/${e(version)}.info`,
+  };
+  const target = url[ecosystem];
+  if (!target || !/^[\w.+-]+$/.test(version)) return target ? false : null;
+  try {
+    await fetchJson(target, { timeoutMs: 10_000, retries: 1 });
+    return true;
+  } catch (err) {
+    if (err instanceof HttpError && (err.status === 404 || err.status === 410)) return false;
+    return null;
+  }
 }

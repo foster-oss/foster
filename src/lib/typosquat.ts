@@ -67,6 +67,24 @@ const OWN_REPOS_TRUSTED = 1000;
 const DOWNLOADS_TRUSTED = 100_000;
 
 /**
+ * Siblings in one family of packages, not a typo of each other: serde_core / serde_cbor, aws-sdk-sts /
+ * aws-sdk-s3. Same words up to the last separator, and the last words are different words (not one
+ * word with a letter swapped): a squat changes a letter, a family adds a member.
+ */
+function sameFamily(a: string, b: string): boolean {
+  const split = (s: string) => {
+    const i = Math.max(s.lastIndexOf("-"), s.lastIndexOf("_"), s.lastIndexOf("."));
+    return i > 0 ? [s.slice(0, i + 1), s.slice(i + 1)] as const : null;
+  };
+  const x = split(a);
+  const y = split(b);
+  if (!x || !y || x[0] !== y[0] || x[1].length < 2 || y[1].length < 2) return false;
+  // SDK families name members with short codes (aws-sdk-sts, aws-sdk-sns, aws-sdk-s3): one letter apart, still siblings
+  if ((x[0].match(/[-_.]/g)?.length ?? 0) >= 2 && x[0].length >= 8 && x[1].length <= 3 && y[1].length <= 3) return true;
+  return editDistance(x[1], y[1], 2) >= 2;
+}
+
+/**
  * The popular package `name` most likely imitates, or undefined. `ownRepos` is the requested
  * package's own dependent-repo count when known: a name that is itself widely used is not a squat.
  */
@@ -87,6 +105,7 @@ export function lookAlike(ecosystem: Ecosystem, name: string, ownRepos?: number 
     if (Math.abs(candidate.length - k.length) > maxDist) continue;
     const dist = editDistance(k, candidate, maxDist);
     if (dist > maxDist) continue;
+    if (sameFamily(k, candidate)) continue;
     // separator-only differences ("lodash.merge" vs "lodash-merge") are a classic trick too
     if (!best || repos > best.dependentRepos) best = { name: candidate, dependentRepos: repos, distance: dist };
   }

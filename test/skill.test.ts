@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { CHECK_RULES, fosterOnPath, installSkill, skillText } from "../src/lib/skill.js";
+import { allowChecks, CHECK_RULES, fosterOnPath, installSkill, skillText, UNSAFE_RULES } from "../src/lib/skill.js";
 
 const dirs: string[] = [];
 const tmp = () => { const d = mkdtempSync(join(tmpdir(), "foster-skill-")); dirs.push(d); return d; };
@@ -100,5 +100,35 @@ describe("skill", () => {
     const { installed, unknownAgents } = installSkill(dir, { agents: ["cursor", "kiro", "nope"], home: tmp() });
     expect(installed.map((p) => p.slice(dir.length + 1).replace(/\\/g, "/"))).toEqual([".agents/skills/foster", ".kiro/skills/foster"]);
     expect(unknownAgents).toEqual(["nope"]);
+  });
+});
+
+describe("allow rules", () => {
+  const settingsIn = (text: string) => {
+    const dir = mkdtempSync(join(tmpdir(), "foster-settings-"));
+    mkdirSync(join(dir, ".claude"), { recursive: true });
+    writeFileSync(join(dir, ".claude", "settings.json"), text);
+    return join(dir, ".claude", "settings.json");
+  };
+  const allowOf = (file: string) => (JSON.parse(readFileSync(file, "utf8").replace(/^﻿/, "")) as { permissions: { allow: string[] } }).permissions.allow;
+
+  it("never allows npx without @latest, which would run a project's own node_modules/.bin/foster-oss", () => {
+    for (const r of CHECK_RULES) expect(r, r).not.toMatch(/npx (-y )?foster-oss (guard|check)/);
+  });
+  it("removes the unsafe rules earlier versions added, and keeps the user's own", () => {
+    const file = settingsIn(JSON.stringify({ permissions: { allow: ["Bash(ls:*)", "Bash(npx foster-oss guard:*)", "PowerShell(npx foster-oss check *)"] } }));
+    expect(allowChecks(file)).toBe(true);
+    const allow = allowOf(file);
+    expect(allow[0]).toBe("Bash(ls:*)");
+    for (const bad of UNSAFE_RULES) expect(allow).not.toContain(bad);
+    for (const good of CHECK_RULES) expect(allow).toContain(good);
+  });
+  it("reads settings with a BOM, an empty file and a single rule written as a string", () => {
+    expect(allowChecks(settingsIn("﻿{}"))).toBe(true);
+    expect(allowChecks(settingsIn(""))).toBe(true);
+    const file = settingsIn(JSON.stringify({ permissions: { allow: "Bash(ls:*)" } }));
+    expect(allowChecks(file)).toBe(true);
+    expect(allowOf(file)[0]).toBe("Bash(ls:*)");
+    expect(allowChecks(settingsIn(JSON.stringify({ permissions: [1, 2] })))).toBe(false);
   });
 });

@@ -75,7 +75,8 @@ export function formatText(result: ScanResult, color = false, showAll = false): 
   for (const w of result.warnings) lines.push(c(33, `warning: ${w}`));
   lines.push("");
   if (result.findings.length === 0) {
-    lines.push(c(32, "No orphaned or unpatched dependencies found."));
+    // an empty folder is not a clean project: say that nothing was checked
+    lines.push(result.dependencyCount === 0 && !result.since && !result.lockfiles.length ? c(33, "Nothing was checked: no supported lockfile here.") : c(32, "No orphaned or unpatched dependencies found."));
     return lines.join("\n");
   }
   const quiet = result.findings.filter((f) => f.kind === "orphaned");
@@ -124,7 +125,7 @@ export function formatText(result: ScanResult, color = false, showAll = false): 
   lines.push(summaryLine(result.findings));
   if (result.findings.some((f) => f.kind === "malicious"))
     lines.push(c(41, "Known malware is installed. Remove it, then rotate every credential and token this machine and your CI can reach."));
-  if (result.findings.some((f) => f.kind === "patch-available")) lines.push(c(36, "Run `npx foster-oss fix` to switch to the patched packages."));
+  if (result.findings.some((f) => f.kind === "patch-available")) lines.push(c(36, "Run `npx foster-oss@latest fix` to switch to the patched packages."));
   if (shown.some((f) => f.kind !== "patch-available" && f.kind !== "orphaned" && f.dependency.via?.length))
     lines.push(c(90, "A transitive package is fixed by upgrading (or replacing) the direct dependency named after \"via\"."));
   if (result.findings.some((f) => f.kind === "orphaned-vulnerable"))
@@ -144,7 +145,7 @@ export function formatMarkdown(result: ScanResult): string {
   const out: string[] = ["## 🏠 Foster dependency check", ""];
   if (result.since) out.push(`Dependencies **added or changed** since \`${result.since.slice(0, 12)}\` (${result.unchangedCount ?? 0} unchanged packages skipped).`, "");
   if (result.findings.length === 0) {
-    out.push(result.since && result.dependencyCount === 0 ? "No dependency changes. ✅" : `No orphaned or unpatched dependencies among ${result.dependencyCount} ${result.since ? "new or changed " : ""}packages. ✅`);
+    out.push(result.dependencyCount === 0 && !result.since && !result.lockfiles.length ? "Nothing was checked: no supported lockfile found." : result.since && result.dependencyCount === 0 ? "No dependency changes. ✅" : `No orphaned or unpatched dependencies among ${result.dependencyCount} ${result.since ? "new or changed " : ""}packages. ✅`);
   } else {
     for (const kind of Object.keys(KIND_TITLE) as FindingKind[]) {
       const group = result.findings.filter((f) => f.kind === kind);
@@ -163,7 +164,7 @@ export function formatMarkdown(result: ScanResult): string {
           : stuck
           ? `replace ${stuck.map((n) => `\`${n}\``).join(", ")} (unmaintained, will not move to the fix)${f.fixedIn ? `, or force ${f.fixedIn}` : ""}`
           : f.kind === "patch-available"
-            ? `\`npx foster-oss fix\` → \`${f.patch!.replacement.name}@${f.patch!.replacement.version}\``
+            ? `\`npx foster-oss@latest fix\` → \`${f.patch!.replacement.name}@${f.patch!.replacement.version}\``
             : f.kind === "upgrade-available"
               ? `upgrade${f.fixedIn ? ` to ${f.fixedIn}` : ""}`
               : f.alternatives
@@ -228,7 +229,7 @@ const SECURITY_SEVERITY: Record<string, string | undefined> = { CRITICAL: "9.5",
 
 const RULE_HELP: Record<FindingKind, string> = {
   malicious: "This exact package version is a known malicious package or a hijacked release (OSV, OpenSSF malicious-packages). Remove it or move to an unaffected version, then rotate every credential and token the machine or CI runner could reach: install scripts run before any of your code does.",
-  "patch-available": "A published drop-in security patch exists for this exact version. Run `npx foster-oss fix` to switch to it through an npm alias; your imports do not change.",
+  "patch-available": "A published drop-in security patch exists for this exact version. Run `npx foster-oss@latest fix` to switch to it through an npm alias; your imports do not change.",
   "orphaned-vulnerable": "This dependency has a known vulnerability that no release fixes, and nobody appears to maintain it. Replace it, or nominate it for adoption.",
   "unpatched-vulnerable": "This dependency has a known vulnerability with no fixed release yet. The package still looks maintained; watch for a release.",
   "upgrade-available": "This dependency has a known vulnerability that a newer upstream release fixes. Upgrade it.",

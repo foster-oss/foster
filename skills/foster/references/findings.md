@@ -32,4 +32,4 @@
 - `foster-oss scan --sbom <file>`: a CycloneDX or SPDX JSON SBOM.
 - `foster-oss scan --since <git-ref>`: only dependencies added or changed since a ref (pull requests).
 - `foster-oss fix <dir>`: point dependencies at released drop-in patches; run the project's install and tests afterwards.
-- Exit codes for `scan`: 1 when findings reach `--fail-on` (default: malware).
+- Exit codes for `scan`: 1 when findings reach `--fail-on` (default: `malicious`).

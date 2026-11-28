@@ -7,7 +7,7 @@ import { findPatch, indexByName, indexKey, loadOrphanIndex, loadRegistry, type P
 import { getPackage } from "./ecosystems.js";
 import { mapLimit } from "./http.js";
 import { detectLockfiles, mergeInto, readDependencies } from "./lockfile.js";
-import { describeForDependency, getVulns, lowestFixAbove, newerReleaseEscapes, queryBatch, type OsvVuln, type VulnForDependency } from "./osv.js";
+import { describeForDependency, isInformational, getVulns, lowestFixAbove, newerReleaseEscapes, queryBatch, type OsvVuln, type VulnForDependency } from "./osv.js";
 import { compareVersions, rangeIncludes } from "./versions.js";
 import { alternativesFor } from "./replacements.js";
 import type { AdvisorySummary, Dependency, Finding, FindingSummary, MaintenanceStatus, OrphanRecord, ScanResult, Severity } from "./types.js";
@@ -98,7 +98,7 @@ export async function scanProject(dirInput: string, opts: ScanOptions = {}): Pro
   }
   if (lockfiles.length === 0) {
     warnings.push(
-      `no supported lockfile found${opts.recursive ? " in this folder or its subfolders" : " (use --recursive for monorepos)"}: package-lock.json, pnpm-lock.yaml, yarn.lock, uv.lock, poetry.lock, Pipfile.lock, requirements.txt, Cargo.lock, go.mod, Gemfile.lock, composer.lock`,
+      `no supported lockfile found${opts.recursive ? " in this folder or its subfolders" : " (use --recursive for monorepos)"}: package-lock.json, pnpm-lock.yaml, yarn.lock, bun.lock, uv.lock, poetry.lock, Pipfile.lock, requirements.txt, Cargo.lock, go.mod, Gemfile.lock, composer.lock`,
     );
   }
   // The same package version used by several sub-projects is reported once (first lockfile wins).
@@ -200,7 +200,7 @@ export async function analyzeDependencies(deps: Dependency[], opts: ScanOptions 
     const vulns: VulnForDependency[] = [];
     for (const id of vulnIds[i] ?? []) {
       const v = vulnDetails.get(id);
-      if (!v || v.withdrawn) continue;
+      if (!v || v.withdrawn || isInformational(v)) continue;
       const d = describeForDependency(v, dep);
       vulns.push(d);
     }

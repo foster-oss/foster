@@ -1,12 +1,13 @@
 #!/usr/bin/env node
-import { appendFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import { dirname, resolve as resolvePath } from "node:path";
 import { parseArgs } from "node:util";
-import { checkPackage, malwareNotice, parseSpec } from "./lib/check.js";
+import { checkPackage, malwareNotice, parseSpec, versionExists } from "./lib/check.js";
 import { applyFixes, installCommand } from "./lib/fix.js";
 import { fosterVersion } from "./lib/http.js";
 import { formatFix, formatMarkdown, formatRecord, formatSarif, formatText } from "./lib/report.js";
 import { describeAlternatives } from "./lib/replacements.js";
-import { commandLineFrom, guardCommand, installsSomething, splitGuardArgs } from "./lib/guard.js";
+import { commandLineFrom, guardCommand, guardWithin, installsSomething, splitGuardArgs } from "./lib/guard.js";
 import { shellInit, SHELLS, type Shell } from "./lib/shell.js";
 import { FOSTER_PACKAGE, fosterImpostorMessage, impersonatesFoster } from "./lib/typosquat.js";
 import { AGENT_DIRS, fosterOnPath, installSkill, skillText } from "./lib/skill.js";
@@ -36,13 +37,13 @@ Usage:
   foster-oss mcp                   Start the MCP server (stdio) for AI agents
 
 Examples:
-  npx foster-oss guard -- npm install left-pad
-  npx foster-oss guard -- npm ci
-  npx foster-oss skill install
-  npx foster-oss scan --since main
+  npx foster-oss@latest guard -- npm install left-pad
+  npx foster-oss@latest guard -- npm ci
+  npx foster-oss@latest skill install
+  npx foster-oss@latest scan --since main
 
 Options:
-  --json                 Machine-readable output (scan, check)
+  --json                 Machine-readable output (scan, check, guard, fund)
   --markdown             Markdown report (scan)
   --all                  List every unmaintained dependency, not only the vulnerable ones (scan)
   -r, --recursive        Also scan lockfiles in subfolders (monorepos)
@@ -159,11 +160,19 @@ async function main(argv: string[]): Promise<number> {
       const failOn = values["fail-on"] as FailOn;
       if (!FAIL_LEVELS.includes(failOn)) throw new UsageError(`--fail-on must be one of ${FAIL_LEVELS.join(", ")}`);
       const scanOpts = { offline: values.offline, includeStaged: values["include-staged"], recursive: values.recursive, since: values.since };
-      const result = values.sbom ? await scanSbom(values.sbom, scanOpts) : await scanProject(arg ?? ".", scanOpts);
+      let result;
+      try {
+        result = values.sbom ? await scanSbom(values.sbom, scanOpts) : await scanProject(arg ?? ".", scanOpts);
+      } catch (err) {
+        // a file that is not an SBOM is the user's input, not a crash
+        if (values.sbom && !(err as { code?: string }).code) throw new UsageError(`${values.sbom} is not a CycloneDX or SPDX JSON SBOM (${(err as Error).message})`);
+        throw err;
+      }
       if (values.json) console.log(JSON.stringify(result, null, 2));
       else if (values.markdown) console.log(formatMarkdown(result));
       else console.log(formatText(result, process.stdout.isTTY ?? false, values.all));
       if (values["summary-file"]) appendFileSync(values["summary-file"], formatMarkdown(result) + "\n");
+      if (values.sarif) mkdirSync(dirname(resolvePath(values.sarif)), { recursive: true });
       if (values.sarif) writeFileSync(values.sarif, formatSarif(result, fosterVersion(), process.cwd(), values.all));
       return shouldFail(result.findings, failOn) ? 1 : 0;
     }
@@ -180,41 +189,53 @@ async function main(argv: string[]): Promise<number> {
       if (!ECOSYSTEMS.includes(ecosystem)) throw new UsageError(`--ecosystem must be one of ${ECOSYSTEMS.join(", ")}`);
       const { name, version } = parseSpec(arg);
       const result = await checkPackage(ecosystem, name, version, { includeStaged: values["include-staged"] });
-      const malware = result.notFound ? null : await malwareNotice(ecosystem, name, version, result.findings);
+      const [malware, exists] = result.notFound ? [null, null] : await Promise.all([malwareNotice(ecosystem, name, version, result.findings), version ? versionExists(ecosystem, name, version) : Promise.resolve(null)]);
+      const versionMissing = exists === false;
+      // exit 1 when the package is malware, does not exist, or the version does not exist: `check x && add x` stops
+      const code = result.notFound || versionMissing || malware || result.findings.some((f) => f.kind === "malicious") ? 1 : 0;
       if (values.json) {
-        console.log(JSON.stringify(malware ? { ...result, malware } : result, null, 2));
-        return 0;
+        console.log(JSON.stringify({ ...result, ...(malware ? { malware } : {}), ...(versionMissing ? { versionNotFound: true } : {}) }, null, 2));
+        return code;
       }
       if (result.notFound) {
         console.log(`${name} was not found on ${ecosystem}.${impersonatesFoster(ecosystem, name) ? ` Did you mean ${FOSTER_PACKAGE} (Foster itself, on npm)?` : ""}`);
         return 1;
       }
+      if (versionMissing) console.log(`VERSION NOT FOUND: ${name}@${version} does not exist on ${ecosystem}. Check the version before adding it.\n`);
       if (malware) console.log(`${malware}\n`);
       if (impersonatesFoster(ecosystem, name)) console.log(`NOT FOSTER: ${fosterImpostorMessage(ecosystem, name)}\n`);
       if (result.record) console.log(formatRecord(result.record));
       for (const f of result.findings) console.log(`\n${f.message}`);
-      if (version && result.findings.length === 0) console.log(`
+      if (version && !versionMissing && result.findings.length === 0) console.log(`
 ${name}@${version}: no known vulnerabilities.`);
       if (result.alternatives && result.record && result.record.status !== "active") console.log(`
 Maintained alternatives: ${describeAlternatives(result.alternatives)}`);
-      return 0;
+      return code;
     }
     case "guard": {
       if (values.hook !== undefined) {
         if (values.hook !== "claude") throw new UsageError('--hook supports "claude"');
         await runClaudeHook();
-        return 0;
+        // pending lookups after a timeout must not keep the hook (and the agent) waiting
+        await new Promise<void>((done) => process.stdout.write("", () => done()));
+        process.exit(0);
       }
+      if (values.offline) throw new UsageError("guard needs the network: it asks the registries and OSV about each package (scan --offline works without it)");
       const rest = guardArgs?.command ?? positionals.slice(1);
       // Windows PowerShell 5.1 splits a --command value at its inner double quotes
       // ('iex "npm i x"' arrives as "iex npm", "i", "x"): words after the value belong to it
       const line = values.command !== undefined ? [values.command, ...rest].join(" ") : commandLineFrom(rest);
       if (!line.trim()) throw new UsageError("guard needs a command, e.g. foster-oss guard -- npm install left-pad");
-      const result = await guardCommand(line);
+      const result = await guardWithin(line);
       if (values.json) console.log(JSON.stringify(result, null, 2));
-      else if (!(values.quiet && result.decision === "allow")) console.log(result.message);
+      else if (!(values.quiet && result.decision === "allow" && !result.verdicts.some((v) => v.unchecked) && !result.timedOut)) console.log(result.message);
       // ask is its own exit code, so "guard -- x && x" stops and a wrapper can ask the person
-      return result.decision === "deny" || (values.strict && result.decision === "ask") ? 1 : result.decision === "ask" ? 10 : 0;
+      const code = result.decision === "deny" || (values.strict && result.decision === "ask") ? 1 : result.decision === "ask" ? 10 : 0;
+      if (result.timedOut) {
+        await new Promise<void>((done) => process.stdout.write("", () => done()));
+        process.exit(code);
+      }
+      return code;
     }
     case "skill": {
       const action = arg ?? "install";
@@ -230,7 +251,8 @@ Maintained alternatives: ${describeAlternatives(result.alternatives)}`);
       const list = result.installed.map((p) => `  ${p}`).join("\n");
       console.log(`Installed the Foster skill:\n${list}\n\nAgents that read these folders now check every install with foster-oss guard before running it.`);
       for (const f of result.permissions.updated) console.log(`Claude Code may run Foster's check (guard, check) without asking: ${f}`);
-      for (const f of result.permissions.skipped) console.error(`foster-oss: ${f} is not valid JSON, so it was left alone; allow "Bash(foster-oss guard:*)" and "PowerShell(foster-oss guard *)" there yourself.`);
+      for (const f of result.permissions.skipped) console.error(`foster-oss: ${f} could not be updated (not valid JSON, or read-only), so it was left alone; allow "Bash(foster-oss guard:*)", "Bash(foster-oss check:*)", "PowerShell(foster-oss guard *)" and "PowerShell(foster-oss check *)" there yourself.`);
+      for (const f of result.failed) console.error(`foster-oss: could not write ${f.path} (${f.error})`);
       if (!fosterOnPath()) console.log(`
 Tip: install Foster once with "npm i -g foster-oss". Agents then run "foster-oss guard" directly: about
 1.5 s faster, and not blocked by permission systems that refuse "npx -y …@latest" (Claude Code's auto mode).
@@ -274,16 +296,13 @@ async function runClaudeHook(): Promise<void> {
       process.stdin.on("end", () => resolve(data));
       process.stdin.on("error", reject);
     });
-    const input = JSON.parse(raw || "{}") as { hook_event_name?: string; tool_name?: string; cwd?: string; tool_input?: { command?: string } };
+    const input = JSON.parse(raw.replace(/^﻿/, "") || "{}") as { hook_event_name?: string; tool_name?: string; cwd?: string; tool_input?: { command?: string } };
     if (!["Bash", "PowerShell"].includes(input.tool_name ?? "") || (input.hook_event_name && input.hook_event_name !== "PreToolUse")) return;
     const line = input.tool_input?.command ?? "";
     const cwd = input.cwd || process.cwd();
     if (!installsSomething(line, cwd)) return;
-    const result = await Promise.race([
-      guardCommand(line, undefined, undefined, { cwd }),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 25_000).unref()),
-    ]);
-    if (!result || result.decision === "allow") return;
+    const result = await guardWithin(line, { cwd }, 25_000);
+    if (result.decision === "allow") return;
     process.stdout.write(
       JSON.stringify({
         hookSpecificOutput: {

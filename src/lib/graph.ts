@@ -1,5 +1,4 @@
-import YAML from "yaml";
-import { splitNameVersion } from "./lockfile.js";
+import { pnpmLockDocument, splitNameVersion } from "./lockfile.js";
 
 /**
  * Dependency graphs read from lockfiles, used to say which direct dependency brings in each
@@ -161,7 +160,7 @@ type PnpmDeps = Record<string, string | { version?: string }> | undefined;
 export function pnpmLockGraph(text: string): DepGraph | null {
   type Entry = { name?: string; version?: string; dependencies?: PnpmDeps; optionalDependencies?: PnpmDeps };
   type Importer = { dependencies?: PnpmDeps; devDependencies?: PnpmDeps; optionalDependencies?: PnpmDeps };
-  const doc = YAML.parse(text) as
+  const doc = pnpmLockDocument(text) as
     | ({ importers?: Record<string, Importer>; snapshots?: Record<string, Entry>; packages?: Record<string, Entry> } & Importer)
     | null;
   if (!doc) return null;

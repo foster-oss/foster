@@ -6,7 +6,7 @@
     {
       "name": "foster",
       "source": "./",
-      "description": "Blocks installs of known malware, hallucinated and look-alike packages before they run: a PreToolUse hook on Bash, the foster skill and the Foster MCP server"
+      "description": "Blocks installs of known malware, hallucinated and look-alike packages before they run: a PreToolUse hook on Bash and PowerShell, the foster skill and the Foster MCP server"
     }
   ]
 }

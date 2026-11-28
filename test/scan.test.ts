@@ -47,7 +47,7 @@ describe("offline scan with bundled data", () => {
   it("warns when there is no lockfile", async () => {
     const result = await scanProject(mkdtempSync(join(tmpdir(), "foster-empty-")), { offline: true, registryFile, indexFile });
     expect(result.warnings[0]).toMatch(/no supported lockfile/);
-    expect(formatText(result)).toMatch(/No orphaned/);
+    expect(formatText(result)).toMatch(/Nothing was checked/);
   });
 });
 

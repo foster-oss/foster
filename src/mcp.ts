@@ -1,12 +1,12 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { checkPackage, malwareNotice } from "./lib/check.js";
+import { checkPackage, malwareNotice, versionExists } from "./lib/check.js";
 import { loadRegistry } from "./lib/data.js";
 import { fosterVersion } from "./lib/http.js";
 import { formatMarkdown, formatRecord } from "./lib/report.js";
 import { scanProject } from "./lib/scan.js";
-import { guardCommand } from "./lib/guard.js";
+import { guardWithin } from "./lib/guard.js";
 import { formatFund, fundProject } from "./lib/fund.js";
 import { describeAlternatives } from "./lib/replacements.js";
 import { fosterImpostorMessage, impersonatesFoster } from "./lib/typosquat.js";
@@ -26,7 +26,7 @@ export function createMcpServer(): McpServer {
         "Check whether a package (npm, PyPI, Cargo, Go, RubyGems or Packagist) is still maintained, whether it has vulnerabilities with no fix, " +
         "and whether a published drop-in security patch exists (from Foster or providers like Keep LTS). Call this before adding a new dependency.",
       inputSchema: {
-        name: z.string().describe("Package name, e.g. 'ip' or '@scope/name'"),
+        name: z.string().min(1).max(214).describe("Package name, e.g. 'ip' or '@scope/name'"),
         version: z.string().optional().describe("Exact version to check, e.g. '2.0.1'"),
         ecosystem: z.enum(["npm", "pypi", "cargo", "go", "rubygems", "packagist"]).default("npm"),
       },
@@ -37,6 +37,7 @@ export function createMcpServer(): McpServer {
       if (r.notFound) return text(`${name} was not found on ${ecosystem}. Check the spelling: it may be a hallucinated or typosquatted name.`);
       const parts: string[] = [];
       const malware = await malwareNotice(ecosystem, name, version, r.findings);
+      if (version && (await versionExists(ecosystem, name, version)) === false) parts.push(`VERSION NOT FOUND: ${name}@${version} does not exist on ${ecosystem}. Check the version before adding it.`);
       if (malware) parts.push(malware);
       if (impersonatesFoster(ecosystem, name)) parts.push(`NOT FOSTER: ${fosterImpostorMessage(ecosystem, name)}`);
       if (r.record) parts.push(formatRecord(r.record));
@@ -76,15 +77,17 @@ export function createMcpServer(): McpServer {
         "Before running a shell command that installs packages (npm/pnpm/yarn/bun, npx, pip/uv/poetry, cargo, go get, gem, composer), " +
         "check every package it would install. Returns deny for known malware, names that do not exist (hallucinated or typo'd) and " +
         "vulnerabilities no release fixes; ask for look-alike names, brand-new npm packages or fresh releases that run install scripts, " +
-        "and fixable vulnerable versions; allow otherwise, with a note for unmaintained packages.",
+        "and fixable vulnerable versions; allow otherwise, with a note for unmaintained packages. Pass cwd, the folder the command runs in: " +
+        "installs that read a lockfile or package.json (npm ci, npm install, pip install -r) are checked from there.",
       inputSchema: {
-        command: z.string().describe("The exact shell command you are about to run, e.g. 'npm install left-pad'"),
+        command: z.string().min(1).max(100_000).describe("The exact shell command you are about to run, e.g. 'npm install left-pad'"),
+        cwd: z.string().max(4096).optional().describe("Absolute path of the folder the command runs in (default: the server's working directory)"),
       },
       annotations: { readOnlyHint: true, openWorldHint: true },
     },
-    async ({ command }) => {
-      const r = await guardCommand(command);
-      return text(`Decision: ${r.decision.toUpperCase()}
+    async ({ command, cwd }) => {
+      const r = await guardWithin(command, cwd ? { cwd } : {});
+      return text(`Decision: ${r.decision.toUpperCase()}${r.timedOut || r.verdicts.some((v) => v.unchecked) ? " (partly unverified: treat it like ASK)" : ""}
 ${r.message}`);
     },
   );

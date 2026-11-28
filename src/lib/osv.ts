@@ -28,13 +28,22 @@ export interface OsvVuln {
   details?: string;
   aliases?: string[];
   withdrawn?: string;
-  database_specific?: { severity?: string };
+  database_specific?: { severity?: string; cwe_ids?: string[] };
   affected?: {
     package?: { ecosystem?: string; name?: string };
     ranges?: { type?: string; events?: OsvRangeEvent[] }[];
     versions?: string[];
-    database_specific?: { severity?: string };
+    database_specific?: { severity?: string; informational?: string };
   }[];
+}
+
+/**
+ * RustSec notices that are not vulnerabilities ("unmaintained", "unsound", "notice"): maintenance
+ * information, which Foster reports from its own index and never blocks on.
+ */
+export function isInformational(v: Pick<OsvVuln, "affected">): boolean {
+  const affected = v.affected ?? [];
+  return affected.length > 0 && affected.every((a) => !!a.database_specific?.informational);
 }
 
 export interface VulnForDependency {
@@ -166,10 +175,13 @@ export const MALWARE_TITLE = /malicious|malware|compromised|hijack|embedded .*(c
  * vulnerability ("session hijacking", "lets an attacker inject malicious code into ...") is not
  * mistaken for a malicious release.
  */
-const MALWARE_REPORT = /\b(embedded )?(malicious (code|package|version|release|payload)s?|malware|protestware) in\b|\bis (a )?malware\b|\bcontains? (malware|malicious code)\b|^malware\b|\bcompromised (package|version|release)s?\b/i;
+const MALWARE_REPORT =
+  /\b(embedded )?(malicious (code|package|version|release|payload)s?|malware|protestware) in\b|\bis (a )?malware\b|\bcontain(s|ed)? (a )?(malware|malicious (code|crypto ?miner|payload|version))\b|^malware\b|\bcompromised (package|version|release)s?\b|\bmalicious (version|release)s? (caus|of|with|publish)/i;
 
 /** Is this OSV record a malware report (a malicious package or a hijacked release) rather than a vulnerability? */
-export function isMalwareRecord(v: Pick<OsvVuln, "id" | "aliases" | "summary">): boolean {
+export function isMalwareRecord(v: Pick<OsvVuln, "id" | "aliases" | "summary"> & { database_specific?: OsvVuln["database_specific"] }): boolean {
+  // CWE-506: Embedded Malicious Code
+  if (v.database_specific?.cwe_ids?.includes("CWE-506")) return true;
   return v.id.startsWith("MAL-") || (v.aliases ?? []).some((a) => a.startsWith("MAL-")) || MALWARE_REPORT.test(v.summary ?? "");
 }
 

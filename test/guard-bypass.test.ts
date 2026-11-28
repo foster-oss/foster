@@ -41,7 +41,7 @@ describe("lockfile installs (npm ci and friends)", () => {
     expect(l("pnpm install --frozen-lockfile")).toEqual([`pnpm install|${cwd}|`]);
     expect(l("yarn")).toEqual([`yarn install|${cwd}|`]);
     expect(l("yarn --immutable")).toEqual([`yarn install|${cwd}|`]);
-    expect(l("pip install -r requirements/dev.txt")).toEqual([`pip install -r|${cwd}|requirements/dev.txt`]);
+    expect(l("pip install -r requirements/dev.txt")).toEqual([`pip install -r|${cwd}|${resolve(cwd, "requirements/dev.txt")}`]);
     // uv and poetry read the same Python lockfiles here: checked once
     expect(l("uv sync && poetry install && bundle install && composer install")).toHaveLength(3);
     // these install nothing from a lockfile
@@ -63,9 +63,23 @@ describe("lockfile installs (npm ci and friends)", () => {
       },
     });
     expect(seen.sort()).toEqual(["crossenv@0.0.2-security", "lodash@4.17.21"]);
+    // npm's empty placeholder installs nothing: a note that names it, not a block (yarnpkg/berry pins fs@0.0.1-security)
+    expect(r.decision).toBe("allow");
+    expect(r.message).toMatch(/empty placeholder for a removed malicious package: crossenv/);
+  });
+
+  it("denies a lockfile that pins a real malicious release", async () => {
+    const dir = lockDir({ "ua-parser-js": "0.7.29", lodash: "4.17.21" });
+    const r = await guardCommand("npm ci", healthy, async () => true, {
+      ...quiet,
+      cwd: dir,
+      lockfileMalware: async (deps) => {
+        const evil = deps.find((d) => d.name === "ua-parser-js")!;
+        return [{ dependency: evil, report: { id: "GHSA-pjwm-rvh2-c87w", url: "", title: "Embedded malware in ua-parser-js", wholePackage: false } }];
+      },
+    });
     expect(r.decision).toBe("deny");
-    expect(r.message).toMatch(/npm ci \(package-lock\.json\) would install known malware: crossenv@0\.0\.2-security/);
-    expect(r.message).toMatch(/security placeholder/);
+    expect(r.message).toMatch(/would install known malware: ua-parser-js@0\.7\.29/);
   });
 
   it("allows a clean lockfile and says how much it checked", async () => {
@@ -151,13 +165,16 @@ describe("version ranges", () => {
 });
 
 describe("shell-init", () => {
-  it("wraps install subcommands only, and lets guard failures through", () => {
+  it("checks every call except subcommands that never install, and lets guard failures through", () => {
     const sh = shellInit("bash");
-    expect(sh).toMatch(/^npm\(\) \{ case "\$\{1:-\}" in install\|i\|/m);
-    expect(sh).toMatch(/^yarn\(\) \{ case "\$\{1:-\}" in ""\|add/m);
+    // npm run / test / ls skip the check; everything else (npm --prefix app install, npm create, npm exec) goes to guard
+    expect(sh).toMatch(/^npm\(\) \{ case "\$\{1:-\}" in ""\|-h\|[^)]*\|run\|[^)]*\) ;; \*\) __foster_guard npm "\$@"/m);
+    expect(sh).not.toMatch(/^npm\(\) \{ case "\$\{1:-\}" in [^)]*\|(install|exec|create|ci)\|/m);
+    // yarn with no arguments installs, so it is checked
+    expect(sh).not.toMatch(/^yarn\(\) \{ case "\$\{1:-\}" in ""/m);
     expect(sh).toMatch(/^npx\(\) \{ __foster_guard npx "\$@" \|\| return 1; command npx "\$@"; \}/m);
     expect(sh).toContain("*) return 0 ;; # guard itself could not run");
-    expect(shellInit("powershell")).toMatch(/function global:npm \{ if \(+\$args.Count -gt 0 -and @\('install'/);
+    expect(shellInit("powershell")).toMatch(/function global:npm \{ if \(-not \(\$args.Count -eq 0 -or \(\$args.Count -gt 0 -and @\('-h'/);
   });
 
   it("produces valid bash", () => {
@@ -232,10 +249,17 @@ describe("found in the 0.8.0 review", () => {
 describe("look-alikes that are simply new and huge", () => {
   it("trusts names with heavy downloads even when dependent counts lag", async () => {
     const { lookAlike } = await import("../src/lib/typosquat.js");
-    // call-bound vs call-bind: a billion downloads a month, but ecosyste.ms counts 0 dependent repos
-    expect(lookAlike("npm", "call-bound", 0)).toBeDefined();
-    expect(lookAlike("npm", "call-bound", 0, 1_000_000_000)).toBeUndefined();
+    // a new package with a billion downloads a month but "0 dependent repos" in ecosyste.ms is not a squat
+    expect(lookAlike("npm", "expres", 0)).toBeDefined();
+    expect(lookAlike("npm", "expres", 0, 1_000_000_000)).toBeUndefined();
     expect(lookAlike("npm", "lodahs", 0, 40)).toBeDefined();
+    // siblings in one family are not typos of each other: call-bound/call-bind, serde_core/serde_cbor, aws-sdk-sts/aws-sdk-sns
+    expect(lookAlike("npm", "call-bound", 0)).toBeUndefined();
+    expect(lookAlike("cargo", "serde_core", 0)).toBeUndefined();
+    expect(lookAlike("rubygems", "aws-sdk-sts", 0)).toBeUndefined();
+    // a letter changed inside the last word is still a look-alike
+    expect(lookAlike("npm", "cross-evn", 0)?.name).toBe("cross-env");
+    expect(lookAlike("npm", "react-dmo", 0)?.name).toBe("react-dom");
   });
 });
 
@@ -286,7 +310,7 @@ describe("found in the 0.8.1 review", () => {
     expect(names("npm exec crossenv")).toEqual(["crossenv"]);
     expect(names("npm x -- cowsay hi")).toEqual(["cowsay"]);
     expect(names("npm exec --package=create-vite@5 -- create-vite app")).toEqual(["create-vite"]);
-    expect(shellInit("bash")).toMatch(/^npm\(\) \{ case "\$\{1:-\}" in [^)]*\|exec\|x\)/m);
+    expect(shellInit("bash")).not.toMatch(/^npm\(\) \{ case "\$\{1:-\}" in [^)]*\|(exec|x)\|/m);
   });
 
   it("notes unmaintained packages without stopping the install", async () => {
@@ -483,7 +507,7 @@ describe("found in the 0.8.4 review", () => {
     expect(parseCommand("corepack pnpm@9.1.0 add crossenv", cwd).packages.map((p) => p.name)).toEqual(["crossenv"]);
     expect(parseCommand("pnpx crossenv", cwd).packages.map((p) => p.name)).toEqual(["crossenv"]);
     expect(parseCommand("corepack enable", cwd)).toEqual({ packages: [], lockfiles: [] });
-    expect(shellInit("bash")).toMatch(/^corepack\(\) \{ case "\$\{1:-\}" in npm\|npx\|pnpm\|pnpx\|yarn\)/m);
+    expect(shellInit("bash")).toMatch(/^corepack\(\) \{ case "\$\{1:-\}" in [^)]*enable\|disable\) ;; \*\) __foster_guard corepack/m);
   });
 });
 
