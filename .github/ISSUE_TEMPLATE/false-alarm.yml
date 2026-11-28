@@ -1,0 +1,40 @@
+name: False alarm from guard or scan
+description: Foster blocked, questioned or flagged a package that is fine.
+title: "False alarm: <ecosystem>/<package>"
+labels: ["false-alarm"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks: every false alarm is a bug, and they are fixed first. Until the fix is released, a person
+        (not an agent) can allow the package for one project in `.foster.json`: `{"allow": ["name"]}`.
+        Known malware is blocked whatever the list says. Please do not post private package names here.
+  - type: input
+    id: command
+    attributes:
+      label: Command
+      description: What was checked, for example `npm i some-package` or `foster-oss scan`.
+      placeholder: npm i some-package
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: What Foster said
+      description: Paste guard's or scan's message.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it is fine
+      description: For example "it is a real package by the same team", "it is on our private registry".
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: foster-oss version
+      description: Output of `foster-oss --version`.
+      placeholder: 0.9.8

@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.9.8
+
+Guard is now tested against the real shells, and false alarms have a way out that never lets malware in.
+
+**Tested against real shells.** `scripts/shell-diff.mjs` runs 347 command forms in bash, PowerShell 7,
+Windows PowerShell and cmd with fake package managers that only record their arguments, and compares what
+each shell really passed them with what guard saw. CI runs it on Linux, macOS and Windows and fails on a
+package guard missed or one it flagged that the shell never installs. It found, now fixed:
+- a function's or script's arguments (`f() { npm i "$1"; }`, `"$@"`, `%1`, `%*`) were dropped; they are an ask.
+- PowerShell splatting (`npm @a`), list variables (`$a = 'i','x'; npm $a`), `iex ("npm i " + "x")` and
+  `[scriptblock]::Create("npm i x")` were not followed.
+- `P=x npm i $P` was read as installing x; bash expands `$P` before the assignment applies (a shell it
+  starts, `P=x sh -c 'npm i $P'`, still sees it).
+
+**Look-alikes.** A one-letter member of a package family (`aws-sdk-ecs` next to `aws-sdk-ecr`) was always
+treated as a sibling, so a typo-squat shaped like one (`aws-sdk-ecx`) passed. Now it is a sibling only when
+the same registry accounts publish it (npm maintainers, PyPI, crates.io and RubyGems owners, the repository
+owner where RubyGems hides them) or the owner is in the name (an npm scope, a Packagist vendor, a Go path).
+
+**False alarms and private packages.**
+- Scoped npm packages that an `.npmrc` maps to a private registry are installed with a note instead of being
+  called missing.
+- `.foster.json` (`{"allow": ["acme-internal", "npm:@acme/*"]}`, in the project or a folder above) and
+  `FOSTER_ALLOW` list packages a project accepts: their questions and "does not exist" become a note naming
+  the list. Known malware is blocked whatever the list says, and the skill tells agents never to edit it.
+- Every flag that is not known malware ends with a link to report the false alarm (new issue template).
+
 ## 0.9.7
 
 A wide test round: 486 command forms in bash, PowerShell and cmd; the other five ecosystems against real

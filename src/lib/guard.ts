@@ -10,6 +10,7 @@ import { npmInstallRisk, resolveNpmVersion, type InstallRisk } from "./npmrisk.j
 import { lockfileMalware, malwareReports, queryBatch, type LockedMalware, type MalwareReport } from "./osv.js";
 import { describeAlternatives } from "./replacements.js";
 import type { Dependency, Ecosystem } from "./types.js";
+import { loadAllowList, privateScopeRegistry, type AllowList } from "./allow.js";
 import { existsOnRegistry, FOSTER_PACKAGE, fosterImpostorMessage, impersonatesFoster, lookAlike, samePublisher, type LookAlike } from "./typosquat.js";
 
 /**
@@ -21,6 +22,8 @@ import { existsOnRegistry, FOSTER_PACKAGE, fosterImpostorMessage, impersonatesFo
 export interface RequestedPackage {
   ecosystem: Ecosystem;
   name: string;
+  /** Where it is installed, when a cd moved there: its .npmrc decides the registry of a scope. */
+  dir?: string;
   /** Exact version when the command pins one. */
   version?: string;
   /** A range or dist-tag ("^4.1.0", "next") to resolve against the registry (npm). */
@@ -67,6 +70,8 @@ export interface PackageVerdict {
   note?: string;
   /** The check itself failed (network): allowed, and said so. */
   unchecked?: boolean;
+  /** Known malware: blocked whatever an allow list says. */
+  malware?: boolean;
 }
 
 export interface GuardResult {
@@ -82,9 +87,10 @@ export interface GuardResult {
 const SHELLS = new Set(["bash", "sh", "zsh", "dash", "ksh", "fish", "ash", "mksh", "busybox"]);
 const baseName = (t: string) => t.replace(/^.*[\\/]/, "").replace(/\.(exe|cmd|bat|ps1)$/i, "").toLowerCase();
 
-/** Split a shell line into simple commands (on ;, &&, ||, |, newlines) and tokens, honouring quotes. */
 /** The commands splitCommands found right after a "(": PowerShell's iex ("npm i " + "x"), $a = @('i','x'). */
 const AFTER_PAREN = new WeakSet<string[]>();
+
+/** Split a shell line into simple commands (on ;, &&, ||, |, newlines) and tokens, honouring quotes. */
 
 export function splitCommands(line: string): string[][] {
   const commands: string[][] = [];
@@ -967,7 +973,8 @@ export function parseCommand(
     const sub = rest[k];
     const args = [...lead, ...rest.slice(k + 1)];
     const before = found.length;
-    const add = (r: RequestedPackage | null) => r && found.push(r);
+    // a scoped npm package remembers where it is installed: that folder's .npmrc may map the scope to a private registry
+    const add = (r: RequestedPackage | null) => r && found.push(r.ecosystem === "npm" && r.name.startsWith("@") && dir !== cwd ? { ...r, dir } : r);
     // a name Foster cannot see ($PKG, %PKG%, $(…)) is reported as such, not skipped
     const spec = (ecosystem: Ecosystem, s: string, parse: (s: string) => RequestedPackage | null) => {
       if (VAR_REF.test(s)) return add(unresolvedSpec(ecosystem, s));
@@ -1258,9 +1265,9 @@ export function verdictFor(requested: RequestedPackage, check: CheckResult, extr
     const what = malware[0]!.title;
     // Without a version we only know some releases were malicious, unless the report covers them all.
     if (extras.versionKnown === false && !malware.some((m) => m.wholePackage)) {
-      return { requested, decision: "ask", reason: `Some releases of ${label} were malicious (${ids}: ${what}). Pin a version that is not affected: https://osv.dev/vulnerability/${malware[0]!.id}` };
+      return { requested, decision: "ask", malware: true, reason: `Some releases of ${label} were malicious (${ids}: ${what}). Pin a version that is not affected: https://osv.dev/vulnerability/${malware[0]!.id}` };
     }
-    return { requested, decision: "deny", reason: `${label} is known malware (${ids}: ${what}). Do not install it. If it is already installed, remove it and rotate any credentials and tokens this machine holds. Details: ${malware[0]!.url}` };
+    return { requested, decision: "deny", malware: true, reason: `${label} is known malware (${ids}: ${what}). Do not install it. If it is already installed, remove it and rotate any credentials and tokens this machine holds. Details: ${malware[0]!.url}` };
   }
   // Malware found by the version check outranks everything else, look-alike names included: a known
   // malicious package is a deny however it is reached (0.8.3 asked about crossenv as a cross-env typo).
@@ -1270,6 +1277,7 @@ export function verdictFor(requested: RequestedPackage, check: CheckResult, extr
     return {
       requested,
       decision: "deny",
+      malware: true,
       reason: `${label} is known malware (${malicious.advisories.map((a) => `${a.id}: ${a.title}`).join("; ")}). Do not install it. If it is already installed, remove it and rotate any credentials and tokens this machine holds.${first?.url ? ` Details: ${first.url}` : ""}`,
     };
   }
@@ -1339,6 +1347,8 @@ export interface GuardProbes {
 export interface GuardOptions extends Partial<GuardProbes> {
   /** Directory the command runs in: where lockfile installs read their lockfile. */
   cwd?: string;
+  /** Packages the project accepts (.foster.json, FOSTER_ALLOW); null for none. Read from cwd when omitted. */
+  allow?: AllowList | null;
 }
 
 const LIVE_PROBES: GuardProbes = {
@@ -1654,6 +1664,7 @@ async function checkLockfileInstall(
   probe: GuardProbes,
   check: Checker,
   exists: (e: Ecosystem, n: string) => Promise<boolean | null>,
+  allow: AllowList | null = null,
 ): Promise<{ verdict: PackageVerdict | null; count: number }> {
   const { files, deps } = lockedDependencies(install);
   if (deps.length === 0) return { verdict: null, count: 0 };
@@ -1662,7 +1673,7 @@ async function checkLockfileInstall(
   let failed: string | null = null;
   const [hits, { squats, unchecked }] = await Promise.all([
     probe.lockfileMalware(deps).catch((err: Error) => ((failed = err.message), [] as LockedMalware[])),
-    lockfileSquats(deps, check, exists, probe),
+    lockfileSquats(allow ? deps.filter((d) => !allow.matches(d.ecosystem, d.name)) : deps, check, exists, probe),
   ]);
   const reasons: string[] = [];
   let decision: Decision = "allow";
@@ -1717,14 +1728,20 @@ export async function goModuleOf(path: string, exists: (e: Ecosystem, n: string)
   return path;
 }
 
+/** Shown under every flag that is not known malware. Agents are told not to act on the allow list themselves. */
+export const FALSE_ALARM =
+  "Is this a false alarm? Report it: https://github.com/foster-oss/foster/issues/new?template=false-alarm.yml (a person, not an agent, can also allow a package for this project in .foster.json).";
+
 export async function guardCommand(
   line: string,
   check: Checker = checkPackage,
   exists: (ecosystem: Ecosystem, name: string) => Promise<boolean | null> = existsOnRegistry,
   options: GuardOptions = {},
 ): Promise<GuardResult> {
-  const { cwd, ...probes } = options;
+  const { cwd, allow: allowOption, ...probes } = options;
   const probe: GuardProbes = { ...LIVE_PROBES, ...probes };
+  const allowList = allowOption === undefined ? loadAllowList(cwd ?? process.cwd()) : allowOption;
+  const allow = allowList?.source ? allowList : null;
   const parsed = parseCommand(line, cwd);
   const requested = [...parsed.packages];
   const lockfiles: LockfileInstall[] = [];
@@ -1759,9 +1776,11 @@ export async function guardCommand(
     const mod = await goModuleOf(r.name, exists);
     if (mod !== r.name) requested[i] = { ...r, name: mod };
   });
+  // npm scopes an .npmrc maps to a private registry are not looked up on the public one
+  const privateOf = requested.map((r) => (r.ecosystem === "npm" && !r.remote && !r.unresolved ? privateScopeRegistry(r.dir ?? cwd ?? process.cwd(), r.name) : null));
   // 1. Which version each package would install: pinned, the range's best match, else the latest release.
-  const resolved = await mapLimit(requested, width, async (r): Promise<{ version?: string; first?: CheckResult; error?: Error }> => {
-    if (r.remote || r.unresolved || r.version) return { version: r.version };
+  const resolved = await mapLimit(requested, width, async (r, i): Promise<{ version?: string; first?: CheckResult; error?: Error }> => {
+    if (r.remote || r.unresolved || r.version || privateOf[i]) return { version: r.version };
     try {
       const first = await check(r.ecosystem, r.name);
       if (first.notFound) return { first };
@@ -1777,13 +1796,20 @@ export async function guardCommand(
   });
   // 2. One OSV request for all of them; the per-package checks below then find their answers cached.
   if (check === checkPackage) {
-    const deps = requested.flatMap((r, i) => (!r.remote && !r.unresolved && resolved[i]!.version ? [{ ecosystem: r.ecosystem, name: r.name, version: resolved[i]!.version!, direct: true, source: "guard" }] : []));
+    const deps = requested.flatMap((r, i) => (!r.remote && !r.unresolved && !privateOf[i] && resolved[i]!.version ? [{ ecosystem: r.ecosystem, name: r.name, version: resolved[i]!.version!, direct: true, source: "guard" }] : []));
     if (deps.length > 1) await queryBatch(deps).catch(() => undefined);
   }
   // 3. The checks themselves.
   const verdicts = await mapLimit(requested, width, async (r, i): Promise<PackageVerdict> => {
     if (r.remote) {
       return { requested: r, decision: "ask", reason: `${r.spec} is installed straight from a URL or git repository: no registry or advisory database covers it, so Foster cannot check it. Install it only from a source you trust.` };
+    }
+    // @acme/x from a private registry set in .npmrc: not on the public one, and no public database covers it
+    const privateRegistry = privateOf[i];
+    if (privateRegistry) {
+      const host = privateRegistry.replace(/^[a-z]+:\/\//i, "").replace(/\/.*$/, "");
+      const note = `${r.name} (npm) comes from ${host}, a private registry set in .npmrc: Foster checks public registries only.`;
+      return { requested: r, decision: "allow", reason: note, note };
     }
     if (r.unresolved) {
       return {
@@ -1823,10 +1849,24 @@ export async function guardCommand(
     }
   });
   let lockedCount = 0;
+  const lockVerdicts = new Set<PackageVerdict>();
   for (const install of lockfiles) {
-    const { verdict, count } = await checkLockfileInstall(install, probe, check, exists);
+    const { verdict, count } = await checkLockfileInstall(install, probe, check, exists, allow);
     lockedCount += count;
-    if (verdict) verdicts.push(verdict);
+    if (verdict) {
+      verdicts.push(verdict);
+      lockVerdicts.add(verdict);
+    }
+  }
+  // what the project's people accepted: an allow list turns a question or a "does not exist" into a note,
+  // never known malware, and never silently
+  if (allow) {
+    for (const v of verdicts) {
+      if (v.decision === "allow" || v.malware || v.requested.unresolved || lockVerdicts.has(v)) continue;
+      if (!allow.matches(v.requested.ecosystem, v.requested.remote ? v.requested.spec : v.requested.name)) continue;
+      v.decision = "allow";
+      v.note = `${v.reason} Allowed by ${allow.source}.`;
+    }
   }
   const decision = verdicts.reduce<Decision>((d, v) => (RANK[v.decision] > RANK[d] ? v.decision : d), "allow");
   const flagged = verdicts.filter((v) => v.decision !== "allow");
@@ -1844,7 +1884,10 @@ export async function guardCommand(
   // Notes do not stop the install; they say what is worth a look later. A few, not a wall of text.
   const MAX_NOTES = 5;
   const more = notes.length > MAX_NOTES ? `\n- …and ${notes.length - MAX_NOTES} more. \`npx foster-oss@latest scan --all\` lists them.` : "";
-  const message = notes.length ? `${head}\nNote (not blocking):\n${notes.slice(0, MAX_NOTES).join("\n")}${more}` : head;
+  // a person, not the agent, decides what a project accepts; and a false alarm is a bug worth hearing about
+  const footer = flagged.some((v) => !v.malware) ? `\n${FALSE_ALARM}` : "";
+  const broken = allowList?.error ? `\nNote: ${allowList.error}.` : "";
+  const message = (notes.length ? `${head}\nNote (not blocking):\n${notes.slice(0, MAX_NOTES).join("\n")}${more}` : head) + footer + broken;
   return { decision, verdicts, message };
 }
 

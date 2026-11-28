@@ -1,6 +1,6 @@
 {
   "name": "foster-oss",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "mcpName": "io.github.foster-oss/foster",
   "description": "Agent Skill, MCP server and CLI that stop AI coding agents installing malware, hallucinated or abandoned packages. Works in Claude Code, Codex, Cursor, Gemini CLI, Copilot and more; npm, PyPI, Cargo, Go, RubyGems, Packagist.",
   "keywords": [

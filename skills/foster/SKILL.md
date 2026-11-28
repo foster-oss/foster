@@ -92,6 +92,8 @@ command exactly as you will run it: keep `cd packages/web && …`, `--prefix`, `
 - Do not retry a denied package under another name, through a tarball or git URL, with `--ignore-scripts`,
   or by downloading it some other way.
 - Do not split a command so the risky part is no longer visible to the check.
+- Never create or edit `.foster.json`, or set `FOSTER_ALLOW`, yourself: that allow list is the user's
+  decision. If you think a flag is a false alarm, say so and let the user decide.
 - A deny for known malware means: if it is already installed, tell the user to remove it and rotate every
   credential and token the machine or CI can reach.
 

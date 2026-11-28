@@ -173,6 +173,23 @@ To skip the check once: `command npm install …` (bash/zsh).
 `foster-oss guard -- npm ci && npm ci` stops on both. `--strict` turns ask into 1, `--quiet` prints nothing
 on allow, `--json` returns every verdict.
 
+### False alarms and private packages
+
+Scoped npm packages that an `.npmrc` maps to a private registry (`@acme:registry=https://npm.acme.dev/`) are
+installed with a note: they are not on the public registry, so Foster does not call them missing.
+
+For anything else Foster flags that you know is fine (an internal package, a name that really is the one you
+mean), list it in `.foster.json` in the project or a folder above it, or in `FOSTER_ALLOW`:
+
+```json
+{ "allow": ["acme-internal", "npm:@acme/*", "pypi:acme-tools"] }
+```
+
+An allowed package installs with a note saying which list allowed it. Known malware is blocked whatever the
+list says, and the skill tells agents never to edit the list themselves. Please also
+[report the false alarm](https://github.com/foster-oss/foster/issues/new?template=false-alarm.yml): they are
+bugs, and fixed first.
+
 ### Make sure it is the real Foster
 
 A security tool is installed on trust, which makes its look-alikes worth a squatter's while. Foster is
@@ -199,7 +216,11 @@ Later rounds tested how guard is really used: 486 command forms through bash, Po
 such as `timeout`, `sudo -E`, `call`, `Start-Process`, variables, line continuations, nested shells, here-docs),
 the other five ecosystems against real malicious packages from OSV, about 300 everyday installs and a dozen
 real repositories (vite, express, rails, ripgrep, yarn berry, …) for false positives, and Claude Code in auto
-mode. Every miss and false alarm they found is a unit test. Found another way past it? [Report it](SECURITY.md).
+mode. Every miss and false alarm they found is a unit test. And on every change, CI runs
+[347 command forms](test/fixtures/shell-diff/corpus.json) in the real bash, PowerShell 7, Windows PowerShell and
+cmd on Linux, macOS and Windows, with fake package managers that only record their arguments, and fails if
+guard missed a package the shell really passed on, or flagged one it did not
+([scripts/shell-diff.mjs](scripts/shell-diff.mjs)). Found another way past it? [Report it](SECURITY.md).
 
 ## Why: the data
 
