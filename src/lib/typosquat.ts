@@ -97,6 +97,41 @@ export function lookAlike(ecosystem: Ecosystem, name: string, ownRepos?: number 
   return best;
 }
 
+// ---------------------------------------------------------------- Foster's own name
+
+/** Foster itself is published once: "foster-oss" on npm. */
+export const FOSTER_PACKAGE = "foster-oss";
+const FOSTER_FLAT = "fosteross";
+const FOSTER_SUFFIXES = ["", "cli", "guard", "mcp", "skill", "ai", "js", "node", "bin", "app", "agent", "check", "scan"];
+
+/**
+ * Does a name pose as Foster? A security tool is installed on trust, so its look-alikes are worth a
+ * squatter's while long before Foster is popular enough for the popularity-based check above to see
+ * them: foster-os, fostre-oss, foster-oss-cli, @foster-oss/guard, and foster-oss on any other registry.
+ */
+export function impersonatesFoster(ecosystem: Ecosystem, name: string): boolean {
+  const lower = name.toLowerCase();
+  if (ecosystem === "npm" && name === FOSTER_PACKAGE) return false;
+  const flat = (s: string) => s.replace(/[-_.\s]+/g, "");
+  const parts = lower.startsWith("@") && lower.includes("/") ? [lower.slice(1, lower.indexOf("/")), lower.slice(lower.indexOf("/") + 1)] : [lower];
+  // the last path element too: github.com/x/foster-oss, vendor/foster-oss
+  parts.push(lower.split("/").pop()!);
+  return parts.some((p) => {
+    const f = flat(p);
+    if (f.length < 6) return false;
+    if (editDistance(f, FOSTER_FLAT, 2) <= 2) return true;
+    for (const base of [FOSTER_FLAT, "foster"]) {
+      if (f.startsWith(base) && FOSTER_SUFFIXES.includes(f.slice(base.length)) && !(base === "foster" && f === "foster" && ecosystem !== "npm")) return true;
+    }
+    return false;
+  });
+}
+
+/** What guard and check say about a name that poses as Foster. */
+export function fosterImpostorMessage(ecosystem: Ecosystem, name: string): string {
+  return `${name} (${ecosystem}) is not Foster. Foster is published only as "${FOSTER_PACKAGE}" on npm, from github.com/foster-oss/foster; look-alike names of a security tool are an easy way to slip in malware. Install it only if this is really the package you want.`;
+}
+
 // ---------------------------------------------------------------- does it exist at all?
 
 /**

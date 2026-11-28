@@ -169,6 +169,19 @@ To skip the check once: `command npm install …` (bash/zsh).
 `foster-oss guard -- npm ci && npm ci` stops on both. `--strict` turns ask into 1, `--quiet` prints nothing
 on allow, `--json` returns every verdict.
 
+### Make sure it is the real Foster
+
+A security tool is installed on trust, which makes its look-alikes worth a squatter's while. Foster is
+published **only as `foster-oss` on npm**, from this repository (`github.com/foster-oss/foster`); there is no
+PyPI, Cargo or scoped (`@…/foster-oss`) package, and the unrelated npm package `foster` is not it.
+
+- Every release is built and published by [GitHub Actions](.github/workflows/release.yml) with npm provenance:
+  the npm page shows "Built and signed on GitHub Actions" linking to this repository, and
+  `npm audit signatures` verifies it on your machine.
+- Guard and `check` treat names that pose as Foster (`fostre-oss`, `foster-os`, `foster-oss-cli`,
+  `@x/foster-oss`, `foster-oss` on another registry, …) as look-alikes: blocked when nobody has registered
+  them, a question when someone has.
+
 ### How guard is tested
 
 Before release, an AI agent red-teamed guard for seven rounds with one goal: get known malware onto disk

@@ -9,6 +9,7 @@ import { scanProject } from "./lib/scan.js";
 import { guardCommand } from "./lib/guard.js";
 import { formatFund, fundProject } from "./lib/fund.js";
 import { describeAlternatives } from "./lib/replacements.js";
+import { fosterImpostorMessage, impersonatesFoster } from "./lib/typosquat.js";
 
 function text(s: string) {
   return { content: [{ type: "text" as const, text: s }] };
@@ -37,6 +38,7 @@ export function createMcpServer(): McpServer {
       const parts: string[] = [];
       const malware = await malwareNotice(ecosystem, name, version, r.findings);
       if (malware) parts.push(malware);
+      if (impersonatesFoster(ecosystem, name)) parts.push(`NOT FOSTER: ${fosterImpostorMessage(ecosystem, name)}`);
       if (r.record) parts.push(formatRecord(r.record));
       for (const f of r.findings) parts.push(f.message);
       if (version && r.findings.length === 0) parts.push(`${name}@${version}: no known vulnerabilities.`);

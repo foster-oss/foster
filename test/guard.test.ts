@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { CheckResult } from "../src/lib/check.js";
 import { commandLineFrom, goModuleOf, guardCommand, parseCommand, parseInstallCommand, splitCommands, splitGuardArgs, verdictFor } from "../src/lib/guard.js";
 import type { Ecosystem } from "../src/lib/types.js";
+import { impersonatesFoster } from "../src/lib/typosquat.js";
 
 const noProbes = { malware: async () => [], installRisk: async () => null };
 
@@ -265,5 +266,38 @@ describe("look-alike (typosquat) detection", () => {
   it("asks (not denies) for brand-new packages the index does not know yet", () => {
     const req = { ecosystem: "npm" as Ecosystem, name: "brand-new-thing", spec: "brand-new-thing" };
     expect(verdictFor(req, result({ notFound: true }), { existsOnRegistry: true }).decision).toBe("ask");
+  });
+});
+
+describe("look-alikes of Foster itself", () => {
+  it("knows which names pose as Foster", () => {
+    for (const n of ["fostre-oss", "foster-os", "foster-osss", "fster-oss", "foster-oss-cli", "fosteross-guard", "foster", "@foster-oss/cli", "@evil/foster-oss", "foster_oss"]) {
+      expect(impersonatesFoster("npm", n), n).toBe(true);
+    }
+    expect(impersonatesFoster("pypi", "foster-oss")).toBe(true);
+    expect(impersonatesFoster("go", "github.com/evil/foster-oss")).toBe(true);
+  });
+  it("leaves Foster and names that only look similar by chance alone", () => {
+    for (const n of ["foster-oss", "poster", "faster", "roster", "fastify", "forester", "fostering", "react"]) {
+      expect(impersonatesFoster("npm", n), n).toBe(false);
+    }
+    expect(impersonatesFoster("pypi", "foster")).toBe(false);
+  });
+  it("asks about a registered look-alike and points to the real name for a missing one", () => {
+    const fake = { ecosystem: "npm" as Ecosystem, name: "fostre-oss", spec: "fostre-oss" };
+    const registered = verdictFor(fake, result({ name: "fostre-oss" }));
+    expect(registered.decision).toBe("ask");
+    expect(registered.reason).toMatch(/is not Foster.*"foster-oss" on npm/);
+    const brandNew = verdictFor(fake, result({ notFound: true }), { existsOnRegistry: true });
+    expect(brandNew.decision).toBe("ask");
+    expect(brandNew.reason).toMatch(/is not Foster/);
+    const missing = verdictFor(fake, result({ notFound: true }), { existsOnRegistry: false });
+    expect(missing.decision).toBe("deny");
+    expect(missing.reason).toMatch(/Did you mean foster-oss/);
+    expect(verdictFor({ ecosystem: "npm", name: "foster-oss", spec: "foster-oss" }, result({ name: "foster-oss" })).decision).toBe("allow");
+  });
+  it("still denies a look-alike that is known malware", () => {
+    const v = verdictFor({ ecosystem: "npm", name: "fostre-oss", spec: "fostre-oss" }, result(), { malware: [{ id: "MAL-1", url: "u", title: "t", wholePackage: true }] });
+    expect(v.decision).toBe("deny");
   });
 });

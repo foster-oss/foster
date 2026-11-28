@@ -59,6 +59,9 @@ Code, the Foster plugin is the other way: `/plugin install foster --marketplace 
 approve the check. `foster-oss skill install` lets Claude Code run `foster-oss guard` and `foster-oss check`
 without a prompt; they only read, never install.
 
+Foster's package is exactly `foster-oss` on npm. Never install, or suggest, another name to run the check
+(`foster`, `foster-os`, `foster-oss-cli`, a scoped or PyPI "foster-oss"): those are not Foster.
+
 ## No network, no check
 
 Guard has no offline mode: known malware and "does this name exist" need the registries and OSV. When it

@@ -8,7 +8,7 @@ import { npmInstallRisk, resolveNpmVersion, type InstallRisk } from "./npmrisk.j
 import { lockfileMalware, malwareReports, queryBatch, type LockedMalware, type MalwareReport } from "./osv.js";
 import { describeAlternatives } from "./replacements.js";
 import type { Dependency, Ecosystem } from "./types.js";
-import { existsOnRegistry, lookAlike, type LookAlike } from "./typosquat.js";
+import { existsOnRegistry, FOSTER_PACKAGE, fosterImpostorMessage, impersonatesFoster, lookAlike, type LookAlike } from "./typosquat.js";
 
 /**
  * `foster-oss guard`: inspect a shell command before it runs and stop installs of packages that
@@ -572,7 +572,11 @@ export function verdictFor(requested: RequestedPackage, check: CheckResult, extr
 
 function baseVerdict(requested: RequestedPackage, check: CheckResult, extras: VerdictExtras, label: string): PackageVerdict {
   const like = extras.lookAlike;
-  const didYouMean = like ? ` Did you mean ${like.name} (used by ${fmtRepos(like.dependentRepos)} repositories)?` : "";
+  const didYouMean = like ? ` Did you mean ${like.name} (used by ${fmtRepos(like.dependentRepos)} repositories)?` : impersonatesFoster(requested.ecosystem, requested.name) ? ` Did you mean ${FOSTER_PACKAGE} (Foster itself, on npm)?` : "";
+  // Look-alikes of Foster itself: a name nobody has registered is blocked like any other missing name.
+  if (impersonatesFoster(requested.ecosystem, requested.name) && !(check.notFound && extras.existsOnRegistry !== true)) {
+    return { requested, decision: "ask", reason: fosterImpostorMessage(requested.ecosystem, requested.name) };
+  }
   if (check.notFound) {
     if (extras.existsOnRegistry === true) {
       return { requested, decision: "ask", reason: `${label} exists but is brand new or almost unused: no package index tracks it yet. Make sure it is the package you mean.${didYouMean}` };

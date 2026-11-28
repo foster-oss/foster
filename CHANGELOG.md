@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.9.6
+
+- **Look-alikes of Foster itself.** A security tool is installed on trust, so its look-alikes are worth a
+  squatter's while long before Foster is popular enough for the popularity-based look-alike check to see
+  them. Guard, `check` and the MCP tool now treat names that pose as Foster (`fostre-oss`, `foster-os`,
+  `foster-oss-cli`, `@x/foster-oss`, the unrelated npm package `foster`, `foster-oss` on PyPI or any other
+  registry) as look-alikes: blocked with "Did you mean foster-oss?" while nobody has registered them, a
+  question once someone has. Known malware is still a deny.
+- README: "Make sure it is the real Foster" (one npm name, provenance, `npm audit signatures`). The skill
+  tells agents never to install another name to run the check.
+
 ## 0.9.5
 
 Fixes from a wider test run: 76 command lines from bash, Windows PowerShell 5.1 and cmd, every MCP tool,

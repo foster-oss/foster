@@ -8,6 +8,7 @@ import { formatFix, formatMarkdown, formatRecord, formatSarif, formatText } from
 import { describeAlternatives } from "./lib/replacements.js";
 import { commandLineFrom, guardCommand, installsSomething, splitGuardArgs } from "./lib/guard.js";
 import { shellInit, SHELLS, type Shell } from "./lib/shell.js";
+import { FOSTER_PACKAGE, fosterImpostorMessage, impersonatesFoster } from "./lib/typosquat.js";
 import { AGENT_DIRS, fosterOnPath, installSkill, skillText } from "./lib/skill.js";
 import { formatFund, fundProject } from "./lib/fund.js";
 import { scanProject, scanSbom, shouldFail, type FailOn } from "./lib/scan.js";
@@ -185,10 +186,11 @@ async function main(argv: string[]): Promise<number> {
         return 0;
       }
       if (result.notFound) {
-        console.log(`${name} was not found on ${ecosystem}.`);
+        console.log(`${name} was not found on ${ecosystem}.${impersonatesFoster(ecosystem, name) ? ` Did you mean ${FOSTER_PACKAGE} (Foster itself, on npm)?` : ""}`);
         return 1;
       }
       if (malware) console.log(`${malware}\n`);
+      if (impersonatesFoster(ecosystem, name)) console.log(`NOT FOSTER: ${fosterImpostorMessage(ecosystem, name)}\n`);
       if (result.record) console.log(formatRecord(result.record));
       for (const f of result.findings) console.log(`\n${f.message}`);
       if (version && result.findings.length === 0) console.log(`
