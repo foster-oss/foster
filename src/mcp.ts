@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { checkPackage } from "./lib/check.js";
+import { checkPackage, malwareNotice } from "./lib/check.js";
 import { loadRegistry } from "./lib/data.js";
 import { fosterVersion } from "./lib/http.js";
 import { formatMarkdown, formatRecord } from "./lib/report.js";
@@ -35,6 +35,8 @@ export function createMcpServer(): McpServer {
       const r = await checkPackage(ecosystem, name, version);
       if (r.notFound) return text(`${name} was not found on ${ecosystem}. Check the spelling: it may be a hallucinated or typosquatted name.`);
       const parts: string[] = [];
+      const malware = await malwareNotice(ecosystem, name, version, r.findings);
+      if (malware) parts.push(malware);
       if (r.record) parts.push(formatRecord(r.record));
       for (const f of r.findings) parts.push(f.message);
       if (version && r.findings.length === 0) parts.push(`${name}@${version}: no known vulnerabilities.`);

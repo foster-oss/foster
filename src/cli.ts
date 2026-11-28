@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { appendFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
-import { checkPackage, parseSpec } from "./lib/check.js";
+import { checkPackage, malwareNotice, parseSpec } from "./lib/check.js";
 import { applyFixes, installCommand } from "./lib/fix.js";
 import { fosterVersion } from "./lib/http.js";
 import { formatFix, formatMarkdown, formatRecord, formatSarif, formatText } from "./lib/report.js";
@@ -179,14 +179,16 @@ async function main(argv: string[]): Promise<number> {
       if (!ECOSYSTEMS.includes(ecosystem)) throw new UsageError(`--ecosystem must be one of ${ECOSYSTEMS.join(", ")}`);
       const { name, version } = parseSpec(arg);
       const result = await checkPackage(ecosystem, name, version, { includeStaged: values["include-staged"] });
+      const malware = result.notFound ? null : await malwareNotice(ecosystem, name, version, result.findings);
       if (values.json) {
-        console.log(JSON.stringify(result, null, 2));
+        console.log(JSON.stringify(malware ? { ...result, malware } : result, null, 2));
         return 0;
       }
       if (result.notFound) {
         console.log(`${name} was not found on ${ecosystem}.`);
         return 1;
       }
+      if (malware) console.log(`${malware}\n`);
       if (result.record) console.log(formatRecord(result.record));
       for (const f of result.findings) console.log(`\n${f.message}`);
       if (version && result.findings.length === 0) console.log(`
@@ -201,7 +203,10 @@ Maintained alternatives: ${describeAlternatives(result.alternatives)}`);
         await runClaudeHook();
         return 0;
       }
-      const line = values.command ?? commandLineFrom(guardArgs?.command ?? positionals.slice(1));
+      const rest = guardArgs?.command ?? positionals.slice(1);
+      // Windows PowerShell 5.1 splits a --command value at its inner double quotes
+      // ('iex "npm i x"' arrives as "iex npm", "i", "x"): words after the value belong to it
+      const line = values.command !== undefined ? [values.command, ...rest].join(" ") : commandLineFrom(rest);
       if (!line.trim()) throw new UsageError("guard needs a command, e.g. foster-oss guard -- npm install left-pad");
       const result = await guardCommand(line);
       if (values.json) console.log(JSON.stringify(result, null, 2));
@@ -300,7 +305,8 @@ main(process.argv.slice(2)).then(
     if (code >= 0) process.exitCode = code;
   },
   (err: unknown) => {
-    if (err instanceof UsageError || (err as { code?: string }).code?.startsWith("ERR_PARSE_ARGS")) {
+    const code = (err as { code?: string }).code;
+    if (err instanceof UsageError || code?.startsWith("ERR_PARSE_ARGS") || code === "FOSTER_NO_DIR" || code === "ENOENT") {
       console.error(`foster-oss: ${(err as Error).message}`);
       process.exitCode = 2;
     } else {

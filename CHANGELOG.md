@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.9.5
+
+Fixes from a wider test run: 76 command lines from bash, Windows PowerShell 5.1 and cmd, every MCP tool,
+the Claude Code hook, `shell-init`, and Claude Code in auto mode.
+
+- **Redirections are not packages.** `npm i react > out.log` blocked the install, because `out.log` was
+  checked as a package name that does not exist. `>`, `>>`, `2>`, `&>`, `*>`, `2>$null`, `< file` and their
+  targets are now skipped; `2>&1` already was.
+- **Go packages inside a module.** `go install golang.org/x/tools/cmd/goimports@latest` was blocked as a name
+  that does not exist: a package path is not a module. Guard now checks the module it belongs to
+  (`golang.org/x/tools`). Module paths with capitals are asked for the way the Go proxy spells them
+  (`github.com/!burnt!sushi/toml`).
+- **`check` names malware.** `foster-oss check crossenv` and the MCP tool `foster_check_package` reported
+  crossenv as dead, without saying it is malware (guard always blocked it). They now say so, and for a package
+  with some hijacked releases (ua-parser-js) they say to check the version.
+- **`scan` and `fund` of a folder that is not there** reported "no orphaned or unpatched dependencies" and
+  exited 0. They now fail with "no such folder" (exit 2); a missing `--sbom` file prints one line, not a stack.
+- **Windows PowerShell 5.1** splits a `--command` value at inner double quotes (`'iex "npm i x"'` arrives as
+  `iex npm`, `i`, `x`): the words after the value are joined back onto it. `NPM`, `npm.ps1` and `npm.bat` are
+  recognised as npm.
+- Tested in Claude Code's auto mode, headless: dayjs checked and installed; crossenv refused with cross-env
+  offered; for `expres` the agent stopped and asked, and installed it once the user confirmed; `npm install`
+  of a package.json that lists crossenv blocked before anything was installed.
+
 ## 0.9.4
 
 Windows and Linux terminals, and Claude Code's auto mode, tested end to end.

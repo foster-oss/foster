@@ -109,7 +109,8 @@ export async function existsOnRegistry(ecosystem: Ecosystem, name: string): Prom
     npm: `https://registry.npmjs.org/${name.startsWith("@") ? `@${enc(name.slice(1))}` : enc(name)}`,
     pypi: `https://pypi.org/pypi/${enc(name)}/json`,
     cargo: `https://crates.io/api/v1/crates/${enc(name)}`,
-    go: `https://proxy.golang.org/${name.toLowerCase().replace(/[A-Z]/g, (c) => `!${c.toLowerCase()}`)}/@v/list`,
+    // the module proxy writes capitals as "!" plus the lower-case letter (github.com/!burnt!sushi/toml)
+    go: `https://proxy.golang.org/${name.replace(/[A-Z]/g, (c) => `!${c.toLowerCase()}`)}/@v/list`,
     rubygems: `https://rubygems.org/api/v1/gems/${enc(name)}.json`,
     packagist: `https://repo.packagist.org/p2/${name.toLowerCase()}.json`,
   };

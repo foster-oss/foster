@@ -121,6 +121,24 @@ export function splitCommands(line: string): string[][] {
       pushCommand();
       continue;
     }
+    // redirections ("> out.log", "2>&1", "&>>x", "*> x", "< in.txt") are not arguments: drop the
+    // operator, its file descriptor and its target, so "npm i react > out.log" installs only react
+    if (ch === ">" || ch === "<") {
+      if (/^(\d+|&|\*)$/.test(cur)) { cur = ""; hasToken = false; }
+      else pushToken();
+      while (i + 1 < line.length && /[<>&|]/.test(line[i + 1]!)) i++;
+      if (line[i] === "&" && /\d|-/.test(line[i + 1] ?? "")) { i++; continue; } // >&1, <&-: a descriptor, no file
+      while (i + 1 < line.length && (line[i + 1] === " " || line[i + 1] === "\t")) i++;
+      let q: string | null = null;
+      while (i + 1 < line.length) {
+        const c = line[i + 1]!;
+        if (q) { if (c === q) q = null; i++; continue; }
+        if (c === '"' || c === "'") { q = c; i++; continue; }
+        if (/[\s;|&()<>]/.test(c)) break;
+        i++;
+      }
+      continue;
+    }
     if (ch === " " || ch === "\t" || ch === "\r") {
       pushToken();
       continue;
@@ -373,8 +391,8 @@ export function parseCommand(line: string, cwd: string = process.cwd(), depth = 
     if (/^corepack(\.cmd|\.exe)?$/i.test(tokens[0] ?? "") && /^(npm|npx|pnpm|pnpx|yarn)(@[^\s]+)?$/.test(tokens[1] ?? "")) tokens = tokens.slice(1);
     const [cmd0, ...rest] = tokens;
     if (!cmd0) continue;
-    // "pnpm@9.1.0" (the corepack form) is pnpm
-    const cmd = cmd0.replace(/^.*[\\/]/, "").replace(/\.(exe|cmd)$/i, "").replace(/^(npm|npx|pnpm|pnpx|yarn)@.*$/, "$1");
+    // "pnpm@9.1.0" (the corepack form) is pnpm; Windows finds NPM, npm.cmd and npm.ps1 alike
+    const cmd = cmd0.replace(/^.*[\\/]/, "").replace(/\.(exe|cmd|bat|ps1)$/i, "").toLowerCase().replace(/^(npm|npx|pnpm|pnpx|yarn)@.*$/, "$1");
     if (["cd", "pushd", "chdir", "set-location", "sl", "push-location"].includes(cmd.toLowerCase())) {
       // PowerShell: Set-Location -Path web; cmd: cd /d D:\web
       const to = rest.filter((a) => !/^-(path|literalpath)$/i.test(a) && !/^\/d$/i.test(a))[0];
@@ -877,6 +895,21 @@ async function checkLockfileInstall(
   return { verdict: { requested, decision: "allow", reason, ...(note ? { note } : {}) }, count: deps.length };
 }
 
+/**
+ * The module a Go package path belongs to: the path itself when the module proxy knows it, else the
+ * longest parent it knows (golang.org/x/tools/cmd/goimports -> golang.org/x/tools). When no parent is
+ * known either, the path is returned as given, so it is reported as not found.
+ */
+export async function goModuleOf(path: string, exists: (e: Ecosystem, n: string) => Promise<boolean | null>): Promise<string> {
+  if ((await exists("go", path)) !== false) return path;
+  const parts = path.split("/");
+  for (let n = parts.length - 1; n >= 2; n--) {
+    const parent = parts.slice(0, n).join("/");
+    if ((await exists("go", parent)) === true) return parent;
+  }
+  return path;
+}
+
 export async function guardCommand(
   line: string,
   check: Checker = checkPackage,
@@ -906,6 +939,12 @@ export async function guardCommand(
   }
   // Packages are checked in parallel (a few at a time): guard runs before every install.
   const width = requested.length > 30 ? 16 : requested.length > 8 ? 8 : 4;
+  // 0. "go install golang.org/x/tools/cmd/goimports" names a package inside a module: check the module.
+  await mapLimit(requested, width, async (r, i) => {
+    if (r.ecosystem !== "go" || r.remote) return;
+    const mod = await goModuleOf(r.name, exists);
+    if (mod !== r.name) requested[i] = { ...r, name: mod };
+  });
   // 1. Which version each package would install: pinned, the range's best match, else the latest release.
   const resolved = await mapLimit(requested, width, async (r): Promise<{ version?: string; first?: CheckResult; error?: Error }> => {
     if (r.remote || r.version) return { version: r.version };

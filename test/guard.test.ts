@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CheckResult } from "../src/lib/check.js";
-import { commandLineFrom, guardCommand, parseCommand, parseInstallCommand, splitCommands, splitGuardArgs, verdictFor } from "../src/lib/guard.js";
+import { commandLineFrom, goModuleOf, guardCommand, parseCommand, parseInstallCommand, splitCommands, splitGuardArgs, verdictFor } from "../src/lib/guard.js";
 import type { Ecosystem } from "../src/lib/types.js";
 
 const noProbes = { malware: async () => [], installRisk: async () => null };
@@ -51,6 +51,42 @@ describe("scaffolders", () => {
   it("leaves plain npm init and git templates alone", () => {
     expect(names("npm init -y")).toEqual([]);
     expect(names("bun create user/repo app")).toEqual([]);
+  });
+});
+
+describe("redirections and command names", () => {
+  it("does not take a redirection's target for a package", () => {
+    expect(names("npm i react > out.log 2>&1")).toEqual(["npm:react"]);
+    expect(names("npm i react >> out.log")).toEqual(["npm:react"]);
+    expect(names("npm i react 2> err.txt")).toEqual(["npm:react"]);
+    expect(names("npm i react &> all.log")).toEqual(["npm:react"]);
+    expect(names("npm i react *> all.log")).toEqual(["npm:react"]);
+    expect(names("npm i react 2>$null")).toEqual(["npm:react"]);
+    expect(names('npm i react > "my log.txt" && npm i zod')).toEqual(["npm:react", "npm:zod"]);
+    expect(names("npm i react 2>&1 | tee log.txt")).toEqual(["npm:react"]);
+    expect(names("npm i react >out.log")).toEqual(["npm:react"]);
+    expect(names("pip install -r requirements.txt < /dev/null")).toEqual([]);
+  });
+  it("finds the tool whatever its case or Windows extension", () => {
+    expect(names("NPM i crossenv")).toEqual(["npm:crossenv"]);
+    expect(names("npm.ps1 i crossenv")).toEqual(["npm:crossenv"]);
+    expect(names("C:\\nodejs\\npx.cmd crossenv")).toEqual(["npm:crossenv"]);
+  });
+});
+
+describe("Go modules", () => {
+  const known = new Set(["golang.org/x/tools", "golang.org/x/tools/gopls", "github.com/spf13/cobra"]);
+  const exists = async (_e: Ecosystem, n: string) => known.has(n);
+  it("checks the module a package path belongs to", async () => {
+    expect(await goModuleOf("golang.org/x/tools/cmd/goimports", exists)).toBe("golang.org/x/tools");
+    expect(await goModuleOf("golang.org/x/tools/gopls", exists)).toBe("golang.org/x/tools/gopls");
+    expect(await goModuleOf("github.com/spf13/cobra", exists)).toBe("github.com/spf13/cobra");
+  });
+  it("keeps a path nobody knows, so it is reported as not found", async () => {
+    expect(await goModuleOf("github.com/nobody/nothing/cmd/x", exists)).toBe("github.com/nobody/nothing/cmd/x");
+  });
+  it("keeps the path when the proxy cannot be reached", async () => {
+    expect(await goModuleOf("golang.org/x/tools/cmd/goimports", async () => null)).toBe("golang.org/x/tools/cmd/goimports");
   });
 });
 

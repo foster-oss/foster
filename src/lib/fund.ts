@@ -1,8 +1,7 @@
-import { resolve } from "node:path";
 import { indexByName, indexKey, loadOrphanIndex, type LoadOptions } from "./data.js";
 import { detectLockfiles, readDependencies } from "./lockfile.js";
 import { alternativesFor, describeAlternatives, type AlternativeSet } from "./replacements.js";
-import { findProjectDirs } from "./scan.js";
+import { findProjectDirs, projectDir } from "./scan.js";
 import type { Dependency, MaintenanceStatus, OrphanRecord } from "./types.js";
 
 /**
@@ -84,7 +83,7 @@ export function fundingCandidates(deps: Dependency[], records: Map<string, Recor
 }
 
 export async function fundProject(dirInput: string, opts: LoadOptions & { recursive?: boolean; indexFile?: string } = {}): Promise<FundResult> {
-  const dir = resolve(dirInput);
+  const dir = projectDir(dirInput);
   const warnings: string[] = [];
   const dirs = opts.recursive ? findProjectDirs(dir) : [dir];
   const deps: Dependency[] = [];

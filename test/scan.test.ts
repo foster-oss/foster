@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { findPatch, type PatchRegistry } from "../src/lib/data.js";
-import { analyzeDependencies, scanProject, shouldFail } from "../src/lib/scan.js";
+import { analyzeDependencies, projectDir, scanProject, shouldFail } from "../src/lib/scan.js";
 import { formatMarkdown, formatText } from "../src/lib/report.js";
 import { compareVersions, rangeIncludes } from "../src/lib/versions.js";
 import type { Dependency, Finding } from "../src/lib/types.js";
@@ -107,5 +107,14 @@ describe("recursive (monorepo) scan", () => {
   it("without --recursive, a monorepo root with no lockfile suggests the flag", async () => {
     const result = await scanProject(fixtures, { offline: true, registryFile, indexFile });
     expect(result.warnings[0]).toMatch(/--recursive/);
+  });
+});
+
+describe("folders that are not there", () => {
+  it("is an error, not a clean scan of nothing", async () => {
+    expect(() => projectDir(join(__dirname, "no-such-folder"))).toThrow(/no such folder/);
+    expect(() => projectDir(join(__dirname, "scan.test.ts"))).toThrow(/no such folder/);
+    await expect(scanProject(join(__dirname, "no-such-folder"), { offline: true })).rejects.toMatchObject({ code: "FOSTER_NO_DIR" });
+    expect(projectDir(__dirname)).toBe(__dirname);
   });
 });

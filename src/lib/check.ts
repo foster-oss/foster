@@ -3,6 +3,7 @@ import { toOrphanRecord } from "./classify.js";
 import { findPatch, indexKey, loadRegistry } from "./data.js";
 import { getPackage } from "./ecosystems.js";
 import { HttpError } from "./http.js";
+import { malwareReports } from "./osv.js";
 import { analyzeDependencies } from "./scan.js";
 import type { Ecosystem, Finding, OrphanRecord, PatchEntry } from "./types.js";
 
@@ -45,4 +46,20 @@ export async function checkPackage(ecosystem: Ecosystem, name: string, version?:
     patch = findPatch(await loadRegistry(), dep, opts.includeStaged);
   }
   return { ecosystem, name, version, record, findings, patch, notFound, alternatives: alternativesFor(ecosystem, name) };
+}
+
+/**
+ * What `check` says about known malware: with no version a package check looks at the latest release
+ * only, and a package taken down for malware (crossenv) or hijacked in a few releases (ua-parser-js)
+ * would read as merely unmaintained. Asks OSV about the package as a whole; null when nothing is known
+ * or the lookup fails (it fails open, like every other lookup).
+ */
+export async function malwareNotice(ecosystem: Ecosystem, name: string, version: string | undefined, findings: Finding[]): Promise<string | null> {
+  if (findings.some((f) => f.kind === "malicious")) return null;
+  const reports = await malwareReports(ecosystem, name, version).catch(() => []);
+  if (reports.length === 0) return null;
+  const list = reports.slice(0, 3).map((r) => `${r.id} (${r.url})`).join(", ");
+  if (version || reports.some((r) => r.wholePackage))
+    return `MALWARE: ${name}${version ? `@${version}` : ""} (${ecosystem}) is known malware: ${list}. Do not install it; if it is installed, remove it and rotate the credentials and tokens this machine holds.`;
+  return `MALWARE: some releases of ${name} (${ecosystem}) were malicious: ${list}. Check the exact version before you install or keep it.`;
 }

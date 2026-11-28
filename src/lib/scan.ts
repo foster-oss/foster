@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readdirSync, type Dirent } from "node:fs";
+import { readdirSync, statSync, type Dirent } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { readSbom } from "./sbom.js";
 import { maxSeverity, toOrphanRecord } from "./classify.js";
@@ -57,8 +57,21 @@ export function findProjectDirs(root: string, maxDepth = 6): string[] {
   return out;
 }
 
-export async function scanProject(dirInput: string, opts: ScanOptions = {}): Promise<ScanResult> {
+/** The folder to scan, resolved; a path that is not a folder is an error, never an empty, clean result. */
+export function projectDir(dirInput: string): string {
   const dir = resolve(dirInput);
+  let isDir = false;
+  try {
+    isDir = statSync(dir).isDirectory();
+  } catch {
+    // missing or unreadable
+  }
+  if (!isDir) throw Object.assign(new Error(`no such folder: ${dir}`), { code: "FOSTER_NO_DIR" });
+  return dir;
+}
+
+export async function scanProject(dirInput: string, opts: ScanOptions = {}): Promise<ScanResult> {
+  const dir = projectDir(dirInput);
   const warnings: string[] = [];
   const projectDirs = opts.recursive ? findProjectDirs(dir) : [dir];
   const lockfiles: string[] = [];
