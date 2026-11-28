@@ -7,6 +7,7 @@
   <a href="https://github.com/foster-oss/foster/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/foster-oss/foster/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://foster-oss.github.io/foster/"><img alt="Orphan Index" src="https://img.shields.io/badge/Orphan%20Index-weekly-orange"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-blue"></a>
+  <a href="https://glama.ai/mcp/servers/foster-oss/foster"><img alt="foster-oss/foster MCP server on Glama" src="https://glama.ai/mcp/servers/foster-oss/foster/badges/score.svg"></a>
 </p>
 
 **Stop AI agents, and people, from installing malware, hallucinated names and packages nobody can fix.
