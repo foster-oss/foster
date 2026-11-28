@@ -51,7 +51,7 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: "22"
 
@@ -86,14 +86,14 @@ runs:
         if [ "$code" -gt 1 ]; then echo "::error::foster-oss failed to run (exit $code)"; exit "$code"; fi
 
     - if: inputs.sarif == 'true'
-      uses: github/codeql-action/upload-sarif@74c1aea9df7c0f02e9b7bfe4a8935abf2e5e3aa6 # v3.39.5
+      uses: github/codeql-action/upload-sarif@915412ff23e8b7659517e607487dbeae018f2934 # v4.39.5
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
         category: foster
         token: ${{ inputs.github-token }}
 
     - if: inputs.comment == 'true' && github.event_name == 'pull_request'
-      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       env:
         FOSTER_REPORT: ${{ steps.scan.outputs.report }}
       with:

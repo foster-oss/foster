@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: npm-release
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22"
           registry-url: https://registry.npmjs.org
@@ -42,7 +42,7 @@ jobs:
     env:
       MCP_PUBLISHER_VERSION: v1.8.1
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: server.json and package.json agree
         run: |
           v=$(node -p "require('./package.json').version")
@@ -55,7 +55,7 @@ jobs:
           for i in $(seq 1 60); do npm view "foster-oss@$v" mcpName >/dev/null 2>&1 && exit 0; sleep 20; done
           echo "foster-oss@$v is not visible on npm yet"; exit 1
       - name: Install cosign
-        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        uses: sigstore/cosign-installer@881c63bd87e38389154debd8331404ce7ca8a3ab # v4.1.4
       - name: Download and verify mcp-publisher
         run: |
           set -euo pipefail
