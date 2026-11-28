@@ -25,7 +25,8 @@
   },
   {
     "shell": "bash",
-    "line": "npm install \\\r\n  zzsent"
+    "line": "npm install \\\r\n  zzsent",
+    "conservative": "bash on Linux and macOS ends the command at a CRLF after a backslash; guard reads it as a continuation, as Git Bash does"
   },
   {
     "shell": "bash",
