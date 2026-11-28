@@ -20,7 +20,7 @@
 | Finding | Meaning | What to do |
 |---|---|---|
 | `MALWARE` | Known malicious package or hijacked release | Stop. Tell the user to remove it now and rotate credentials and tokens the machine or CI can reach. |
-| `PATCH READY` | A published drop-in patch exists for this exact version | Show the user, then `foster-oss fix` (ask before editing package.json). |
+| `PATCH READY` | A published drop-in patch exists for this exact version | Show the user, then `foster-oss fix` (ask before editing package.json or pnpm-workspace.yaml). |
 | `ORPHANED+VULN` | Known vulnerability, no fix anywhere, package dead or dormant | Prefer a maintained alternative; otherwise it can be nominated for adoption. |
 | `NO FIX YET` | Known vulnerability, no fix released, package seems maintained | Watch for a release; consider mitigations. |
 | `UPGRADE` | Fixed upstream | Upgrade normally. |

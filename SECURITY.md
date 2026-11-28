@@ -35,7 +35,7 @@ works on publicly disclosed issues.
 - `foster-oss` downloads the patch registry and the Orphan Index from this repository's `main`
   branch (falling back to the copy bundled in the npm release). Changes to `registry/` only land
   through reviewed pull requests, and CI validates every entry.
-- `foster-oss fix` only rewrites `package.json`; it never installs anything. Run it with
+- `foster-oss fix` only rewrites `package.json` or existing overrides in `pnpm-workspace.yaml`; it never installs anything. Run it with
   `--dry-run` first, read the provider's source for each patch it proposes, then install yourself.
 - Set `FOSTER_REGISTRY_URL` / `FOSTER_INDEX_URL` to pin your own reviewed copies, or use
   `--offline` to rely only on the data bundled in the release you installed.

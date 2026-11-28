@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import semver from "semver";
+import { isAlias, isCollection, isMap, isScalar, parseDocument, Scalar, visit, type YAMLMap } from "yaml";
 import { detectLockfiles, readDependencies, type NodeManager } from "./lockfile.js";
 import type { Finding } from "./types.js";
 
@@ -10,6 +11,8 @@ export interface FixChange {
   package: string;
   /** Where the change goes: a dependency field, or the manager's override field. */
   field: string;
+  /** Omitted for package.json, for compatibility with existing consumers. */
+  file?: string;
   key: string;
   from?: string;
   to: string;
@@ -41,13 +44,124 @@ export function detectManager(dir: string): NodeManager | null {
 
 type Json = Record<string, unknown>;
 
-function overrideContainer(pkg: Json, manager: NodeManager): { field: string; obj: Record<string, string> } {
+interface OverrideContainer {
+  field: string;
+  file?: string;
+  get(key: string): unknown;
+  set(key: string, value: string): void;
+  stringify?(): string;
+}
+
+function overrideContainer(pkg: Json, manager: NodeManager, dir: string): OverrideContainer {
+  const file = "pnpm-workspace.yaml";
+  if (manager === "pnpm" && existsSync(join(dir, file))) {
+    const raw = readFileSync(join(dir, file), "utf8");
+    const original = raw.replace(/^\uFEFF/, "");
+    const doc = parseDocument(original, { merge: true });
+    if (doc.errors.length) throw new Error(`${file}: ${doc.errors[0]!.message}`);
+    // pnpm reads resolved YAML values, including aliases and merge keys.
+    const configuration = () => {
+      try {
+        return doc.toJS({ mapAsMap: true });
+      } catch (error) {
+        throw new Error(`${file}: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    };
+    const config = configuration();
+    if (config instanceof Map && config.has("overrides")) {
+      const effectiveOverrides = (): Map<unknown, unknown> => {
+        const values = configuration().get("overrides");
+        if (!(values instanceof Map)) throw new Error(`${file}: overrides must be a mapping`);
+        return values;
+      };
+      effectiveOverrides();
+      const keyNode = (map: YAMLMap | undefined, key: string) => {
+        const matches = map?.items.filter((pair) => {
+          const node = isAlias(pair.key) ? pair.key.resolve(doc) : pair.key;
+          return (isScalar(node) ? node.value : node) === key;
+        }) ?? [];
+        if (matches.length > 1) throw new Error(`${file}: duplicate override ${key}`);
+        return matches[0]?.key ?? key;
+      };
+      const rootKey = keyNode(isMap(doc.contents) ? doc.contents : undefined, "overrides");
+      const source = doc.get(rootKey, true);
+      let overrides = isMap(source) ? source : undefined;
+      let flowCollectionPadding = true;
+      visit(doc, (_, node) => {
+        if (isCollection(node) && node.flow && node.range) {
+          flowCollectionPadding = /\s/.test(original[node.range[0] + 1] ?? "");
+          return visit.BREAK;
+        }
+      });
+      return {
+        field: "overrides", file,
+        get: (key) => {
+          keyNode(overrides, key); // reject ambiguous explicit selectors before considering a replacement
+          const values = effectiveOverrides();
+          if (!values.has(key)) return undefined;
+          const value = values.get(key);
+          if (typeof value !== "string") throw new Error(`${file}: override ${key} must be a string`);
+          return value;
+        },
+        set: (key, value) => {
+          if (!overrides) {
+            // Materialise inherited values locally, leaving defaults and their other consumers intact.
+            overrides = doc.createNode(effectiveOverrides());
+            if (isAlias(source)) {
+              overrides.comment = source.comment;
+              overrides.commentBefore = source.commentBefore;
+              overrides.spaceBefore = source.spaceBefore;
+            }
+            doc.set(rootKey, overrides);
+          }
+          const selectedKey = keyNode(overrides, key);
+          const node = overrides.get(selectedKey, true);
+          // Editing an anchor also changes its aliases, possibly outside overrides.
+          visit(doc, (_, alias) => {
+            if (isAlias(alias) && (alias.resolve(doc) === overrides || (node && alias.resolve(doc) === node))) {
+              throw new Error(`${file}: override ${key} uses a shared YAML anchor; edit it manually`);
+            }
+          });
+          if (isAlias(node)) {
+            const replacement = new Scalar(value);
+            replacement.comment = node.comment;
+            replacement.commentBefore = node.commentBefore;
+            replacement.spaceBefore = node.spaceBefore;
+            overrides.set(selectedKey, replacement);
+          } else overrides.set(selectedKey, value);
+        },
+        stringify: () => {
+          const indent = original.match(/^( +)\S/m)?.[1]?.length ?? 2;
+          let out = doc.toString({ indent, indentSeq: !/^- /m.test(original), lineWidth: 0, flowCollectionPadding });
+          if (!original.endsWith("\n")) out = out.replace(/\n$/, "");
+          if (original.includes("\r\n")) out = out.replace(/\n/g, "\r\n");
+          return (raw.startsWith("\uFEFF") ? "\uFEFF" : "") + out;
+        },
+      };
+    }
+  }
+
+  let field: string;
+  let obj: Json;
   if (manager === "pnpm") {
     const pnpm = (pkg.pnpm ??= {}) as Json;
-    return { field: "pnpm.overrides", obj: (pnpm.overrides ??= {}) as Record<string, string> };
+    field = "pnpm.overrides";
+    obj = (pnpm.overrides ??= {}) as Json;
+  } else {
+    field = manager === "yarn" ? "resolutions" : "overrides";
+    obj = (pkg[field] ??= {}) as Json;
   }
-  if (manager === "yarn") return { field: "resolutions", obj: (pkg.resolutions ??= {}) as Record<string, string> };
-  return { field: "overrides", obj: (pkg.overrides ??= {}) as Record<string, string> };
+  return {
+    field,
+    get: (key) => obj[key],
+    set: (key, value) => {
+      const existing = obj[key];
+      if (typeof existing === "object" && existing !== null) {
+        // npm nested override: keep the child overrides, replace only the package itself.
+        (existing as Json)["."] = value;
+      } else obj[key] = value;
+    },
+  };
 }
 
 /**
@@ -100,6 +214,9 @@ export function applyFixes(dirInput: string, findings: Finding[], opts: FixOptio
     byName.set(f.dependency.name, list);
   }
 
+  // Resolve the override destination only if a transitive fix needs it. Direct fixes stay in package.json.
+  let overrides: OverrideContainer | undefined;
+
   for (const [name, group] of byName) {
     for (const f of group) {
       const version = f.dependency.version;
@@ -122,7 +239,9 @@ export function applyFixes(dirInput: string, findings: Finding[], opts: FixOptio
         continue;
       }
 
-      const { field, obj } = overrideContainer(pkg, manager);
+      overrides ??= overrideContainer(pkg, manager, dir);
+      const { field, file } = overrides;
+      const location = file ? { file } : {};
       let key = `${name}@${version}`;
       if (manager === "yarn") {
         // Yarn resolutions cannot target one resolved version, so only override when every installed copy is affected.
@@ -134,27 +253,27 @@ export function applyFixes(dirInput: string, findings: Finding[], opts: FixOptio
         }
         key = name;
       }
-      const existing = (obj as Record<string, unknown>)[key];
+      const existing = overrides.get(key);
       const existingValue = typeof existing === "object" && existing !== null ? (existing as Record<string, string>)["."] : (existing as string | undefined);
       if (existingValue === target) continue;
       if (existing !== undefined && !opts.force) {
-        result.changes.push({ package: name, field, key, from: existingValue ?? JSON.stringify(existing), to: target, applied: false, note: "existing override kept; rerun with --force to replace it" });
+        result.changes.push({ package: name, field, ...location, key, from: existingValue ?? JSON.stringify(existing), to: target, applied: false, note: "existing override kept; rerun with --force to replace it" });
         continue;
       }
-      if (typeof existing === "object" && existing !== null) {
-        // npm nested override: keep the child overrides, replace only the package itself.
-        (existing as Record<string, string>)["."] = target;
-      } else {
-        obj[key] = target;
-      }
-      result.changes.push({ package: name, field, key, from: existingValue, to: target, applied: true });
+      overrides.set(key, target);
+      result.changes.push({ package: name, field, ...location, key, from: existingValue, to: target, applied: true });
       if (manager === "yarn") break; // one name-level resolution covers every copy
     }
   }
 
-  const applied = result.changes.some((c) => c.applied);
-  if (applied && !opts.dryRun) {
-    writeFileSync(pkgPath, (hasBom ? "﻿" : "") + stringifyLike(original, pkg));
+  const files = new Set(result.changes.filter((c) => c.applied).map((c) => c.file ?? "package.json"));
+  if (files.size && !opts.dryRun) {
+    // Serialise every changed document before writing, so a YAML error cannot leave a partial fix.
+    const writes = [...files].map((file) => [
+      join(dir, file),
+      file === "package.json" ? (hasBom ? "﻿" : "") + stringifyLike(original, pkg) : overrides!.stringify!(),
+    ] as const);
+    for (const [path, content] of writes) writeFileSync(path, content);
     result.written = true;
   }
   return result;

@@ -31,7 +31,7 @@ Usage:
   foster-oss scan [dir]            Check a project's lockfiles
   foster-oss scan --sbom <file>    Check a CycloneDX or SPDX JSON SBOM instead
   foster-oss fund [dir]            Which at-risk dependencies you rely on, and where to fund their maintainers
-  foster-oss fix [dir]             Point dependencies at released drop-in patches (edits package.json)
+  foster-oss fix [dir]             Point dependencies at released drop-in patches (edits package.json or pnpm-workspace.yaml)
   foster-oss check <name[@ver]>    Look up one package
   foster-oss mcp                   Start the MCP server (stdio) for AI agents
 

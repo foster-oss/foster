@@ -188,10 +188,13 @@ export function formatFix(result: FixResult, installCmd: string): string {
   if (result.changes.length === 0 && result.skipped.length === 0) return "Nothing to fix: no released drop-in patch matches your dependencies.";
   for (const ch of result.changes) {
     const verb = ch.applied ? (result.written ? "updated" : "would update") : "kept";
-    lines.push(`${verb} ${ch.field}["${ch.key}"]: ${ch.from ?? "(none)"} → ${ch.to}${ch.note ? `  (${ch.note})` : ""}`);
+    lines.push(`${verb} ${ch.file ? `${ch.file} ` : ""}${ch.field}["${ch.key}"]: ${ch.from ?? "(none)"} → ${ch.to}${ch.note ? `  (${ch.note})` : ""}`);
   }
   for (const s of result.skipped) lines.push(`skipped ${s.package}: ${s.reason}`);
-  if (result.written) lines.push("", `package.json updated. Now run \`${installCmd}\` and your tests.`);
+  if (result.written) {
+    const files = [...new Set(result.changes.filter((ch) => ch.applied).map((ch) => ch.file ?? "package.json"))];
+    lines.push("", `${files.join(", ")} updated. Now run \`${installCmd}\` and your tests.`);
+  }
   return lines.join("\n");
 }
 
