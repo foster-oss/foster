@@ -92,9 +92,9 @@
         <p class="muted">It asks about look-alikes of popular packages and brand-new packages that run install scripts, and reads what a command
           really installs: lockfiles (<code>npm ci</code>), package.json, monorepo workspaces, overrides, aliases, <code>npx</code> and <code>corepack</code>.
           Six ecosystems, no account, and it fails open if the network is down.</p>
-        <p class="muted"><b>Works in your coding agent</b>: <code>npx foster-oss skill install</code> adds the Foster
+        <p class="muted"><b>Works in your coding agent</b>: <code>npm i -g foster-oss</code>, then <code>foster-oss skill install</code> adds the Foster
           <a href="https://agentskills.io">Agent Skill</a> for Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot,
-          OpenCode, Hermes and 20+ more, so the agent checks every install itself, including <code>npm create</code>.</p>
+          OpenCode, Hermes and 20+ more, so the agent checks every install itself, including <code>npm create</code>. The same commands work in bash, zsh, PowerShell and cmd, on Linux, macOS and Windows, and in Claude Code&#39;s auto mode.</p>
       </div>
 <pre class="term" aria-label="Real output of foster-oss guard"><span class="c"># an AI agent wants to run:</span>
 <span class="p">$</span> npm install lodahs react-pdf-renderer-utils request
@@ -111,11 +111,12 @@
 # It turned out to be real, reported malware.</span></pre>
     </div>
     <div class="setup">
-      <div><b>Any coding agent</b>An Agent Skill for Codex, Cursor, Gemini CLI, Copilot, Claude Code and more: <code>npx foster-oss skill install</code></div>
+      <div><b>Any coding agent</b>An Agent Skill for Codex, Cursor, Gemini CLI, Copilot, Claude Code and more: <code>npm i -g foster-oss</code> then <code>foster-oss skill install</code></div>
       <div><b>Claude Code</b>Plugin with hook, skill and MCP: <code>/plugin install foster --marketplace foster-oss/foster</code></div>
       <div><b>Other agents</b>MCP server <code>io.github.foster-oss/foster</code> with a <code>foster_check_install_command</code> tool</div>
       <div><b>Your shell</b><code>eval "$(foster-oss shell-init bash)"</code>, also zsh and PowerShell</div>
-      <div><b>Scripts and CI</b><code>npx foster-oss guard -- &lt;command&gt;</code> exits 0 allow, 1 deny, 10 ask</div>
+      <div><b>Scripts and CI</b><code>foster-oss guard -- &lt;command&gt;</code> exits 0 allow, 1 deny, 10 ask</div>
+      <div><b>The real Foster</b>Only <code>foster-oss</code> on npm, published with provenance from this repository; check with <code>npm audit signatures</code></div>
     </div>
   </section>
 
@@ -141,11 +142,12 @@
   <section>
     <h2>Check your own project</h2>
     <p class="muted">Foster reads your lockfile and tells you which dependencies are malware, orphaned, or have security holes with no fix, which direct dependency brings each one in, who to fund, and which have a published drop-in security patch you can switch to in one command.</p>
-<pre>npx foster-oss guard -- npm install some-package   # check an install before it runs
-npx foster-oss scan          # what in my lockfile is orphaned or unpatched?
-npx foster-oss fund          # which at-risk dependencies I rely on, and who to sponsor
-npx foster-oss fix           # switch to published drop-in patches (edits package.json)
-npx foster-oss check ip@2.0.1</pre>
+<pre>npm i -g foster-oss          # or put npx in front of each command below
+foster-oss guard -- npm install some-package   # check an install before it runs
+foster-oss scan              # what in my lockfile is orphaned or unpatched?
+foster-oss fund              # which at-risk dependencies I rely on, and who to sponsor
+foster-oss fix               # switch to published drop-in patches (edits package.json)
+foster-oss check ip@2.0.1</pre>
     <p class="muted">Also as a <a href="https://github.com/foster-oss/foster#github-action">GitHub Action</a> that checks only what a pull request adds, with SARIF for the Security tab.</p>
   </section>
 
