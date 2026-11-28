@@ -109,7 +109,9 @@ jobs:
           check 0 --command "npm i react > out.log 2>&1"
           check 1 --command "bash -c \"npm i crossenv\""
           check 0 --command "go install golang.org/x/tools/cmd/goimports@latest"
-          foster-oss check crossenv | grep -q MALWARE || { echo "::error::check did not name crossenv as malware"; exit 1; }
+          # check exits 1 for malware (Actions runs bash with pipefail, so test the exit code and the text separately)
+          out=$(foster-oss check crossenv); got=$?
+          [ "$got" = 1 ] && echo "$out" | grep -q MALWARE || { echo "::error::check crossenv exited $got or did not name it as malware"; exit 1; }
           foster-oss scan ./no-such-folder >/dev/null 2>&1; [ $? = 2 ] && echo "scan of a missing folder fails" || { echo "::error::scan of a missing folder did not fail"; exit 1; }
           foster-oss skill install . >/dev/null && test -f .claude/skills/foster/SKILL.md && test -f .agents/skills/foster/SKILL.md && grep -q "PowerShell(foster-oss guard \*)" .claude/settings.json && echo "skill install ok"
       - name: PowerShell
