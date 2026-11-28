@@ -1,3 +1,5 @@
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { findPatch, type PatchRegistry } from "../src/lib/data.js";
@@ -43,7 +45,7 @@ describe("offline scan with bundled data", () => {
   });
 
   it("warns when there is no lockfile", async () => {
-    const result = await scanProject(join(fixtures, "fixme"), { offline: true, registryFile, indexFile });
+    const result = await scanProject(mkdtempSync(join(tmpdir(), "foster-empty-")), { offline: true, registryFile, indexFile });
     expect(result.warnings[0]).toMatch(/no supported lockfile/);
     expect(formatText(result)).toMatch(/No orphaned/);
   });
