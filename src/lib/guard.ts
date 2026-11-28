@@ -10,7 +10,7 @@ import { npmInstallRisk, resolveNpmVersion, type InstallRisk } from "./npmrisk.j
 import { lockfileMalware, malwareReports, queryBatch, type LockedMalware, type MalwareReport } from "./osv.js";
 import { describeAlternatives } from "./replacements.js";
 import type { Dependency, Ecosystem } from "./types.js";
-import { existsOnRegistry, FOSTER_PACKAGE, fosterImpostorMessage, impersonatesFoster, lookAlike, type LookAlike } from "./typosquat.js";
+import { existsOnRegistry, FOSTER_PACKAGE, fosterImpostorMessage, impersonatesFoster, lookAlike, samePublisher, type LookAlike } from "./typosquat.js";
 
 /**
  * `foster-oss guard`: inspect a shell command before it runs and stop installs of packages that
@@ -1293,7 +1293,7 @@ function baseVerdict(requested: RequestedPackage, check: CheckResult, extras: Ve
     return { requested, decision: "deny", reason: `${label} does not exist on the registry. It may be a misspelled or hallucinated name; attackers register such names ("slopsquatting").${didYouMean || " Check the exact package name first."}` };
   }
   if (like) {
-    return { requested, decision: "ask", reason: `${label} looks like a typo of a much more popular package: ${like.name} (used by ${fmtRepos(like.dependentRepos)} repositories; this one by ${fmtRepos(check.record?.dependentRepos ?? 0)}). Look-alike names are a common way to slip in malware. Install it only if this is really the package you want.` };
+    return { requested, decision: "ask", reason: `${label} looks like a typo of a much more popular package: ${like.name} (used by ${fmtRepos(like.dependentRepos)} repositories; this one by ${fmtRepos(check.record?.dependentRepos ?? 0)})${like.otherPublisher ? `, and it is not published by the accounts that publish ${like.name}` : ""}. Look-alike names are a common way to slip in malware. Install it only if this is really the package you want.` };
   }
   const alt = check.alternatives ? ` Maintained alternatives: ${describeAlternatives(check.alternatives)}.` : "";
   const finding = check.findings[0];
@@ -1332,6 +1332,8 @@ export interface GuardProbes {
   resolveRange: (name: string, range: string, latestKnown: string | null) => Promise<string | undefined>;
   /** Known malware among locked dependencies. */
   lockfileMalware: (deps: Dependency[]) => Promise<LockedMalware[]>;
+  /** Do two packages share a publisher (null when unknown)? Settles look-alikes shaped like family members. */
+  samePublisher: (ecosystem: Ecosystem, a: string, b: string) => Promise<boolean | null>;
 }
 
 export interface GuardOptions extends Partial<GuardProbes> {
@@ -1346,7 +1348,19 @@ const LIVE_PROBES: GuardProbes = {
   installRisk: (n, v, r) => npmInstallRisk(n, v, r),
   resolveRange: (n, range, latest) => resolveNpmVersion(n, range, latest),
   lockfileMalware,
+  samePublisher: (e, a, b) => samePublisher(e, a, b),
 };
+
+/**
+ * A look-alike shaped like a member of the popular package's family (aws-sdk-ecx next to aws-sdk-ecs)
+ * is one only when someone else publishes it. Only that evidence flags it: when the publishers cannot be
+ * read (owners hidden, a registry down), the family rule stands, as it did before Foster asked.
+ */
+async function settleLookAlike(like: LookAlike | undefined, ecosystem: Ecosystem, name: string, probe: GuardProbes): Promise<LookAlike | undefined> {
+  if (!like?.unlessSamePublisher) return like;
+  const same = await probe.samePublisher(ecosystem, name, like.name).catch(() => null);
+  return same === false ? { ...like, otherPublisher: true } : undefined;
+}
 
 /** npm replaces removed malware with an empty "0.0.1-security" placeholder. */
 const SECURITY_PLACEHOLDER = /^0\.0\.\d+-security(\.\d+)?$/;
@@ -1614,7 +1628,7 @@ interface LockSquat {
  * Names in a lockfile that look like a typo of a popular package. The first pass is offline (the
  * popular-package list); only those few are looked up: does the name exist, and how widely is it used?
  */
-async function lockfileSquats(deps: Dependency[], check: Checker, exists: (e: Ecosystem, n: string) => Promise<boolean | null>): Promise<{ squats: LockSquat[]; unchecked: number }> {
+async function lockfileSquats(deps: Dependency[], check: Checker, exists: (e: Ecosystem, n: string) => Promise<boolean | null>, probe: GuardProbes): Promise<{ squats: LockSquat[]; unchecked: number }> {
   const all = [...new Map(deps.filter((d) => lookAlike(d.ecosystem, d.name)).map((d) => [`${d.ecosystem}:${d.name}`, d])).values()];
   const suspects = all.slice(0, MAX_LOCK_SUSPECTS);
   const found = await mapLimit(suspects, 4, async (d): Promise<LockSquat | null> => {
@@ -1626,7 +1640,7 @@ async function lockfileSquats(deps: Dependency[], check: Checker, exists: (e: Ec
         if (there === null) return null;
       }
       const ownRepos = res.notFound ? 0 : res.record?.dependentRepos;
-      const like = lookAlike(d.ecosystem, d.name, ownRepos, res.record?.downloadsLastMonth);
+      const like = await settleLookAlike(lookAlike(d.ecosystem, d.name, ownRepos, res.record?.downloadsLastMonth), d.ecosystem, d.name, probe);
       return like ? { dependency: d, missing: false, like, ownRepos } : null;
     } catch {
       return null; // fail open
@@ -1648,7 +1662,7 @@ async function checkLockfileInstall(
   let failed: string | null = null;
   const [hits, { squats, unchecked }] = await Promise.all([
     probe.lockfileMalware(deps).catch((err: Error) => ((failed = err.message), [] as LockedMalware[])),
-    lockfileSquats(deps, check, exists),
+    lockfileSquats(deps, check, exists, probe),
   ]);
   const reasons: string[] = [];
   let decision: Decision = "allow";
@@ -1785,6 +1799,8 @@ export async function guardCommand(
       const result = version ? await check(r.ecosystem, r.name, version) : pre.first!;
       const extras: VerdictExtras = { lookAlike: lookAlike(r.ecosystem, r.name, result.record?.dependentRepos, result.record?.downloadsLastMonth) };
       if (result.notFound) extras.existsOnRegistry = await exists(r.ecosystem, r.name);
+      // a name that does not exist is not anyone's family member
+      if (extras.existsOnRegistry !== false) extras.lookAlike = await settleLookAlike(extras.lookAlike, r.ecosystem, r.name, probe);
       if (!(result.notFound && extras.existsOnRegistry === false)) {
         extras.versionKnown = version !== undefined;
         // Both lookups fail open: a slow registry must not block an install.

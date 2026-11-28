@@ -256,10 +256,46 @@ describe("look-alikes that are simply new and huge", () => {
     // siblings in one family are not typos of each other: call-bound/call-bind, serde_core/serde_cbor, aws-sdk-sts/aws-sdk-sns
     expect(lookAlike("npm", "call-bound", 0)).toBeUndefined();
     expect(lookAlike("cargo", "serde_core", 0)).toBeUndefined();
-    expect(lookAlike("rubygems", "aws-sdk-sts", 0)).toBeUndefined();
+    // aws-sdk-sts is one letter from aws-sdk-sns: a sibling only if the same people publish it
+    expect(lookAlike("rubygems", "aws-sdk-sts", 0)?.unlessSamePublisher).toBe(true);
+    // the owner is in the name: an npm scope, a Packagist vendor, a Go module path
+    expect(lookAlike("go", "gopkg.in/yaml.v4", 0)).toBeUndefined();
     // a letter changed inside the last word is still a look-alike
     expect(lookAlike("npm", "cross-evn", 0)?.name).toBe("cross-env");
     expect(lookAlike("npm", "react-dmo", 0)?.name).toBe("react-dom");
+  });
+});
+
+describe("family members are siblings only from the same publisher", () => {
+  const rarelyUsed = async (ecosystem: Ecosystem, name: string, version?: string): Promise<CheckResult> => {
+    const r = await healthy(ecosystem, name, version);
+    return { ...r, record: { ...r.record!, dependentRepos: 2, downloadsLastMonth: 30 } };
+  };
+  const sibling = (same: boolean | null) => ({ ...quiet, samePublisher: async () => same });
+  it("asks about a short-code sibling someone else publishes", async () => {
+    const r = await guardCommand("gem install aws-sdk-ecx", rarelyUsed, async () => true, sibling(false));
+    expect(r.decision).toBe("ask");
+    expect(r.message).toMatch(/not published by the accounts that publish aws-sdk-ec/);
+  });
+  it("allows one from the family's own publisher", async () => {
+    expect((await guardCommand("gem install aws-sdk-ecx", rarelyUsed, async () => true, sibling(true))).decision).toBe("allow");
+  });
+  it("keeps the family rule when the publishers cannot be read (RubyGems hides organisation owners)", async () => {
+    expect((await guardCommand("gem install aws-sdk-ecx", rarelyUsed, async () => true, sibling(null))).decision).toBe("allow");
+  });
+  it("compares registry accounts, case-insensitively, and the owner in the name", async () => {
+    const { samePublisher } = await import("../src/lib/typosquat.js");
+    const accounts: Record<string, string[] | null> = { a: ["Alice", "bot"], b: ["alice"], c: ["mallory"], d: null };
+    const lookup = async (_e: Ecosystem, n: string) => accounts[n] ?? null;
+    const noRepo = async () => null;
+    expect(await samePublisher("rubygems", "a", "b", lookup, noRepo)).toBe(true);
+    expect(await samePublisher("rubygems", "a", "c", lookup, noRepo)).toBe(false);
+    expect(await samePublisher("rubygems", "a", "d", lookup, noRepo)).toBeNull();
+    // hidden owners: the repository's owner decides
+    expect(await samePublisher("rubygems", "a", "d", lookup, async (_e, n) => (n === "d" ? "aws" : "aws"))).toBe(true);
+    expect(await samePublisher("rubygems", "a", "d", lookup, async (_e, n) => (n === "d" ? "mallory" : "aws"))).toBe(false);
+    expect(await samePublisher("npm", "@aws-sdk/client-s4", "@aws-sdk/client-s3", lookup)).toBe(true);
+    expect(await samePublisher("packagist", "aws/aws-sdk-phx", "aws/aws-sdk-php", lookup)).toBe(true);
   });
 });
 

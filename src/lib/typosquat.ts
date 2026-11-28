@@ -57,6 +57,97 @@ export interface LookAlike {
   name: string;
   dependentRepos: number;
   distance: number;
+  /**
+   * The name is a member of the popular package's family by its shape (aws-sdk-ecs next to aws-sdk-ecr):
+   * a look-alike only when someone else publishes it. Settle it with samePublisher before reporting.
+   */
+  unlessSamePublisher?: boolean;
+  /** Settled: shaped like a family member, but published by other accounts than the popular package. */
+  otherPublisher?: boolean;
+}
+
+/** Names whose owner is part of the name itself: an npm scope, a Packagist vendor, a Go module path. */
+function intrinsicOwner(ecosystem: Ecosystem, a: string, b: string): boolean {
+  const head = (s: string, sep: string, n: number) => s.split(sep).slice(0, n).join(sep);
+  if (ecosystem === "npm") return a.startsWith("@") && a.includes("/") && head(a, "/", 1) === head(b, "/", 1);
+  if (ecosystem === "packagist") return head(a, "/", 1) === head(b, "/", 1);
+  // github.com/owner/…, gopkg.in/yaml.v3: the host and owner (or gopkg.in's package) are the path's start
+  if (ecosystem === "go") return head(a, "/", a.startsWith("gopkg.in/") ? 2 : 3).replace(/\.v\d+$/, "") === head(b, "/", b.startsWith("gopkg.in/") ? 2 : 3).replace(/\.v\d+$/, "");
+  return false;
+}
+
+/** Who can publish a package: registry accounts, not the repository field anyone can copy. Null when unknown. */
+const publisherCache = new Map<string, Promise<string[] | null>>();
+
+export function publishers(ecosystem: Ecosystem, name: string): Promise<string[] | null> {
+  const k = `${ecosystem}:${name}`;
+  let p = publisherCache.get(k);
+  if (!p) publisherCache.set(k, (p = readPublishers(ecosystem, name)));
+  return p;
+}
+
+async function readPublishers(ecosystem: Ecosystem, name: string): Promise<string[] | null> {
+  const enc = encodeURIComponent;
+  try {
+    if (ecosystem === "npm") {
+      const doc = await fetchJson<{ maintainers?: { name?: string }[]; _npmUser?: { name?: string } }>(
+        `https://registry.npmjs.org/${name.startsWith("@") ? `@${enc(name.slice(1))}` : enc(name)}/latest`,
+        { timeoutMs: 10_000, retries: 1 },
+      );
+      const names = [...(doc.maintainers ?? []).map((m) => m.name), doc._npmUser?.name].filter((n): n is string => Boolean(n));
+      return names.length ? names : null;
+    }
+    if (ecosystem === "pypi") {
+      const doc = await fetchJson<{ ownership?: { organization?: string | null; roles?: { user?: string }[] } }>(`https://pypi.org/pypi/${enc(name)}/json`, { timeoutMs: 10_000, retries: 1 });
+      const names = [...(doc.ownership?.roles ?? []).map((r) => r.user), doc.ownership?.organization ? `org:${doc.ownership.organization}` : undefined].filter((n): n is string => Boolean(n));
+      return names.length ? names : null;
+    }
+    if (ecosystem === "cargo") {
+      const doc = await fetchJson<{ users?: { login?: string }[] }>(`https://crates.io/api/v1/crates/${enc(name)}/owners`, { timeoutMs: 10_000, retries: 1 });
+      const names = (doc.users ?? []).map((u) => u.login).filter((n): n is string => Boolean(n));
+      return names.length ? names : null;
+    }
+    if (ecosystem === "rubygems") {
+      const doc = await fetchJson<{ handle?: string; id?: number }[]>(`https://rubygems.org/api/v1/gems/${enc(name)}/owners.json`, { timeoutMs: 10_000, retries: 1 });
+      const names = doc.map((o) => o.handle ?? (o.id !== undefined ? `id:${o.id}` : undefined)).filter((n): n is string => Boolean(n));
+      return names.length ? names : null;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+/**
+ * Do two packages share a publisher? True or false when both are known; null when they cannot be read
+ * (offline, a registry error, owners hidden).
+ */
+export async function samePublisher(ecosystem: Ecosystem, a: string, b: string, lookup = publishers, repos = repoOwner): Promise<boolean | null> {
+  if (intrinsicOwner(ecosystem, a, b)) return true;
+  const overlap = (x: string[], y: string[]) => {
+    const theirs = new Set(y.map((n) => n.toLowerCase()));
+    return x.some((n) => theirs.has(n.toLowerCase()));
+  };
+  const [x, y] = await Promise.all([lookup(ecosystem, a), lookup(ecosystem, b)]);
+  if (x && y) return overlap(x, y);
+  // RubyGems hides the owners of organisation gems (aws-sdk-*): fall back to the repository's owner
+  const [p, q] = await Promise.all([repos(ecosystem, a), repos(ecosystem, b)]);
+  return p && q ? p === q : null;
+}
+
+/** The GitHub/GitLab owner of a package's source repository, from its registry metadata. Null when unknown. */
+export async function repoOwner(ecosystem: Ecosystem, name: string): Promise<string | null> {
+  if (ecosystem !== "rubygems") return null;
+  try {
+    const doc = await fetchJson<{ source_code_uri?: string | null; homepage_uri?: string | null }>(`https://rubygems.org/api/v1/gems/${encodeURIComponent(name)}.json`, { timeoutMs: 10_000, retries: 1 });
+    for (const url of [doc.source_code_uri, doc.homepage_uri]) {
+      const m = /^https?:\/\/(?:www\.)?(?:github|gitlab)\.com\/([^/]+)\/[^/]+/i.exec(url ?? "");
+      if (m) return m[1]!.toLowerCase();
+    }
+  } catch {
+    // unknown
+  }
+  return null;
 }
 
 /** Popular names that need to be at least this widely used to be "impersonated". */
@@ -71,17 +162,18 @@ const DOWNLOADS_TRUSTED = 100_000;
  * aws-sdk-s3. Same words up to the last separator, and the last words are different words (not one
  * word with a letter swapped): a squat changes a letter, a family adds a member.
  */
-function sameFamily(a: string, b: string): boolean {
+function sameFamily(a: string, b: string): "words" | "codes" | null {
   const split = (s: string) => {
     const i = Math.max(s.lastIndexOf("-"), s.lastIndexOf("_"), s.lastIndexOf("."));
     return i > 0 ? [s.slice(0, i + 1), s.slice(i + 1)] as const : null;
   };
   const x = split(a);
   const y = split(b);
-  if (!x || !y || x[0] !== y[0] || x[1].length < 2 || y[1].length < 2) return false;
-  // SDK families name members with short codes (aws-sdk-sts, aws-sdk-sns, aws-sdk-s3): one letter apart, still siblings
-  if ((x[0].match(/[-_.]/g)?.length ?? 0) >= 2 && x[0].length >= 8 && x[1].length <= 3 && y[1].length <= 3) return true;
-  return editDistance(x[1], y[1], 2) >= 2;
+  if (!x || !y || x[0] !== y[0] || x[1].length < 2 || y[1].length < 2) return null;
+  // SDK families name members with short codes (aws-sdk-sts, aws-sdk-sns, aws-sdk-s3): one letter apart,
+  // still siblings, but one letter is also what a typo changes, so these count only from the same publisher
+  if ((x[0].match(/[-_.]/g)?.length ?? 0) >= 2 && x[0].length >= 8 && x[1].length <= 3 && y[1].length <= 3) return "codes";
+  return editDistance(x[1], y[1], 2) >= 2 ? "words" : null;
 }
 
 /**
@@ -100,15 +192,23 @@ export function lookAlike(ecosystem: Ecosystem, name: string, ownRepos?: number 
   if (k.length < 4) return undefined; // very short names collide by chance
   const maxDist = k.length >= 8 ? 2 : 1;
   let best: LookAlike | undefined;
+  let sibling: LookAlike | undefined;
   for (const [candidate, repos] of list) {
     if (repos < MIN_TARGET_REPOS) continue;
     if (Math.abs(candidate.length - k.length) > maxDist) continue;
     const dist = editDistance(k, candidate, maxDist);
     if (dist > maxDist) continue;
-    if (sameFamily(k, candidate)) continue;
+    const family = sameFamily(k, candidate);
+    if (family === "words") continue;
+    if (family === "codes") {
+      // a member of the same family only if the same people publish it: see samePublisher
+      if (!intrinsicOwner(ecosystem, k, candidate) && (!sibling || repos > sibling.dependentRepos)) sibling = { name: candidate, dependentRepos: repos, distance: dist, unlessSamePublisher: true };
+      continue;
+    }
     // separator-only differences ("lodash.merge" vs "lodash-merge") are a classic trick too
     if (!best || repos > best.dependentRepos) best = { name: candidate, dependentRepos: repos, distance: dist };
   }
+  best ??= sibling;
   if (!best) return undefined;
   // A package many projects already use is a real package with a similar name (preact/react,
   // vuex/vue, ulid/uuid), not a squat. Squats typically have a handful of dependents.
